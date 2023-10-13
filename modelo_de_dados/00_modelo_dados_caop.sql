@@ -1,13 +1,7 @@
 -- Instalacao de extensoes
-
 CREATE EXTENSION IF NOT EXISTS postgis;
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Schema para guardar tabelas de dominios não editaveis a usar como reference em tabelas editaveis
--- talvez faca sentido deixar de fora ou noutro dominio as tabelas de relacao que podem ser editadas,
--- por exemplo as freguesias e concelhos podem ser alteradas as designacoes, ou mesmo necessitar da criação de novos códigos.
--- sendo portanto de alguma forma editaveis e precisam de ter controlo de versões
 
 -- Schema para guardar lista de valores a usar nas tabelas editáveis
 CREATE SCHEMA dominios;
@@ -51,7 +45,7 @@ nome varchar UNIQUE NOT NULL
 );
 
 CREATE TABLE base.nuts2 (
-identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), --necessário, ou não?
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 codigo varchar(4) UNIQUE NOT NULL,
 nome varchar UNIQUE NOT NULL,
 nuts1_cod varchar(3) REFERENCES base.nuts1(codigo) NOT NULL
@@ -111,12 +105,12 @@ CREATE TABLE base.fontes (
 CREATE TABLE base.trocos (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
-	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod),
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
 	pais VARCHAR(3) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
 	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
 	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
 	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
-	comprimento_m numeric(15,3), -- area calculada pela geometria no plano
+	comprimento_m numeric(15,3), -- area calculada pela geometria no plano RETIRAR, manter apenas NO export?
 	fonte_id uuid REFERENCES base.fontes(identificador), -- relação com a fonte de dados NOT NULL??
 	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
 	             -- tem de ser criada uma referencia para os trocos apagados
@@ -164,8 +158,3 @@ CREATE ROLE visualizador;
 -- Freguesia
 -- Trocos (eventualmente com os niveis)
 -- 
-
---inicio_objecto timestamp NOT NULL DEFAULT now(),
---fim_objeto timestamp,
---utilizador varchar(255),
---motivo_edicao varchar(255)
