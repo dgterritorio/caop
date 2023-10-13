@@ -45,34 +45,34 @@ CREATE SCHEMA base;
 COMMENT ON SCHEMA base IS 'Schema com as tabelas de base, editáveis e sob versionamento';
 
 CREATE TABLE base.nuts1 (
-identificador uuid PRIMARY KEY,
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 codigo varchar(3) UNIQUE NOT NULL,
-nome varchar NOT NULL
+nome varchar UNIQUE NOT NULL
 );
 
 CREATE TABLE base.nuts2 (
-identificador uuid PRIMARY KEY, --necessário, ou não?
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), --necessário, ou não?
 codigo varchar(4) UNIQUE NOT NULL,
-nome varchar NOT NULL,
+nome varchar UNIQUE NOT NULL,
 nuts1_cod varchar(3) REFERENCES base.nuts1(codigo) NOT NULL
 );
 
 CREATE TABLE base.nuts3 (
-identificador uuid PRIMARY KEY,
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 codigo varchar(5) UNIQUE NOT NULL,
-nome varchar NOT NULL,
+nome varchar UNIQUE NOT NULL,
 nuts2_cod varchar(4) REFERENCES base.nuts2(codigo) NOT NULL
 );
 
 CREATE TABLE base.distrito_ilha (
-identificador uuid PRIMARY KEY, 
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 di varchar(2) UNIQUE NOT NULL,
 nome varchar NOT NULL,
 nuts3_cod varchar(3) REFERENCES base.nuts3(codigo) NOT NULL
 );
 
-CREATE TABLE base.municipio ( -- mudar para municipio
-identificador uuid PRIMARY KEY, 
+CREATE TABLE base.municipio (
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 dico varchar(4) UNIQUE NOT NULL,
 nome VARCHAR NOT NULL,
 distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL -- sugestao relacao com os distritos- ilhas
@@ -81,25 +81,26 @@ distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL -- sugestao re
 
 -- Tabela das entidades administratvas alimentadas por duas tabelas filhas, freguesias e outras_entidades
 CREATE TABLE base.entidade_administrativa (
-identificador uuid PRIMARY KEY, 
+identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 cod VARCHAR(8) UNIQUE NOT NULL, -- para as freguesias isto equivale ao dicofre
 nome VARCHAR NOT NULL
 );
 
 CREATE TABLE base.freguesia (
-cod VARCHAR(8) UNIQUE NOT NULL,
-nome VARCHAR NOT NULL,
-municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) NOT NULL,
-INHERITS base.entidade_administrativa
-);
+	municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) NOT NULL
+) INHERITS (base.entidade_administrativa)
+;
+
+ALTER TABLE base.freguesia
+ADD CONSTRAINT freguesia_cod_key UNIQUE (cod);
 -- TODO: criar check constraint the obrigue a que o dicofre (cod) bata certo com o dico se este tiver preenchido
 
-CREATE TABLE base.outras_entidades (
-INHERITS dominios.entidade_administrativa
-);
+CREATE TABLE base.outras_entidades ()
+INHERITS (base.entidade_administrativa)
+;
 
 CREATE TABLE base.fontes (
-	identificador uuid PRIMARY KEY,
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	tipo_fonte varchar(3) REFERENCES dominios.tipo_fonte(identificador),
 	descricao VARCHAR(255) NOT NULL,
 	data date NOT NULL DEFAULT now(),
@@ -107,14 +108,14 @@ CREATE TABLE base.fontes (
 	diploma VARCHAR(255)
 );
 
-CREATE TABLE base.trocos ( -- DUVIDA MANTER OS NOMES FINAIS USADOS nos outputs finais dos trocos?
-	identificador uuid PRIMARY KEY,
-	ea_direita VARCHAR(8) REFERENCES dominios.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
-	ea_esquerda VARCHAR(8) REFERENCES dominios.entidade_administrativa(cod),
-	pais VARCHAR(3) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC manter ou não
-	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST manter ou não
-	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL manter ou não
-	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE CONFIRMAR COM DGT NECESSIDADE DE RELACAO N:1 talvez precise de tabela à parte
+CREATE TABLE base.trocos (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod),
+	pais VARCHAR(3) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
+	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
+	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
+	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
 	comprimento_m numeric(15,3), -- area calculada pela geometria no plano
 	fonte_id uuid REFERENCES base.fontes(identificador), -- relação com a fonte de dados NOT NULL??
 	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
@@ -123,12 +124,11 @@ CREATE TABLE base.trocos ( -- DUVIDA MANTER OS NOMES FINAIS USADOS nos outputs f
 	geometria geometry(LINESTRING, 3763)
 );
 
--- TODO ea_direita != ea_esquerda
-
+-- TODO CHECK ea_direita != ea_esquerda
 
 CREATE TABLE base.centroide_ea ( 
-	identificador uuid PRIMARY KEY,
-	entidade_administrativa VARCHAR(8) REFERENCES dominios.entidade_administrativa(cod),
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(cod),
 	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
 	geometria geometry(POINT, 3763) NOT NULL
 );
@@ -165,7 +165,7 @@ CREATE ROLE visualizador;
 -- Trocos (eventualmente com os niveis)
 -- 
 
-inicio_objecto timestamp NOT NULL DEFAULT now(),
-fim_objeto timestamp,
-utilizador varchar(255),
-motivo_edicao varchar(255)
+--inicio_objecto timestamp NOT NULL DEFAULT now(),
+--fim_objeto timestamp,
+--utilizador varchar(255),
+--motivo_edicao varchar(255)
