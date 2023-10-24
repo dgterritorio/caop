@@ -12,7 +12,7 @@ BEGIN
 
     -- copiar linha para a tabela de backup
     IF TG_OP IN ('UPDATE','DELETE') THEN
-        EXECUTE 'INSERT INTO backup.' || quote_ident(TG_TABLE_NAME || '_bk') ||
+        EXECUTE 'INSERT INTO versioning.' || quote_ident(TG_TABLE_NAME || '_bk') ||
                 ' SELECT ($1).*;'
         USING OLD;
     end IF;
@@ -31,7 +31,7 @@ CREATE OR REPLACE FUNCTION "vsr_bk_table_update"()
 RETURNS trigger AS
 $$
 BEGIN
-    -- update versioning fields on backup table
+    -- actualizar os campos de versioningna tabela de backups
         NEW.fim_objeto = now();
         NEW.fim_objecto_utilizador = user;
 		NEW.fim_objecto_operacao = user; -- TODO: Falta implementar
@@ -49,7 +49,7 @@ DECLARE
 	_table text;
 	bk_table_name text;
 BEGIN
-	-- Prepara nomes a usar em indexes e triggers
+	-- Prepara nomes a usar em indices e triggers
 	IF _t::text LIKE '%.%' THEN
 		_schema := regexp_replace (split_part(_t::text, '.', 1),'"','','g');
 		_table := regexp_replace (split_part(_t::text, '.', 2),'"','','g');
@@ -65,7 +65,7 @@ BEGIN
           ADD COLUMN "motivo" character varying(255)';
 
    -- adicionar indice na coluna inicio objeto para optimizar a resposta de queries
-	
+
 	EXECUTE 'CREATE INDEX ' || quote_ident(_table || '_time_idx') ||
 		' ON ' || _t || ' (inicio_objecto)';
 
@@ -75,8 +75,8 @@ BEGIN
 	-- Cria schema e tabela para guardar os backups
 	EXECUTE 'CREATE SCHEMA IF NOT EXISTS backup';
 
-	bk_table_name := 'backup.' || quote_ident(_table || '_bk');
-	
+	bk_table_name := 'versioning.' || quote_ident(_table || '_bk');
+
 	EXECUTE 'CREATE TABLE ' || bk_table_name ||
 		' (like ' || _t || ')';
 
@@ -87,7 +87,7 @@ BEGIN
 		  ADD COLUMN "fim_objecto_operacao" character varying(40)'
 		  ; -- confirmar se queremos isto, acho que nao fara sentido
 
-	EXECUTE	'CREATE INDEX ' || quote_ident(_table || '_bk_idx') || 
+	EXECUTE	'CREATE INDEX ' || quote_ident(_table || '_bk_idx') ||
 		' ON ' || bk_table_name || ' (inicio_objecto, fim_objeto)';
 
 	-- cria trigger para actualizar campos de versionamento na tabela original
@@ -121,8 +121,8 @@ BEGIN
 	END IF;
 
 	-- compose backup table name
-	_table_bk := 'backup.' || quote_ident(_table || '_bk');
-	
+	_table_bk := 'versioning.' || quote_ident(_table || '_bk');
+
 	-- Remove versioning fields from table
 	EXECUTE 'ALTER TABLE ' || _t ||
 		' DROP COLUMN IF EXISTS "inicio_objecto",
@@ -161,22 +161,22 @@ BEGIN
 	END IF;
 
 	-- compose backup table name
-	_table_bk := 'backup.' || quote_ident(_table || '_bk');
+	_table_bk := 'versioning.' || quote_ident(_table || '_bk');
 
 	-- getting columns from table
 	_col := (SELECT array_to_string(ARRAY(SELECT 'o' || '.' || c.column_name
 			FROM information_schema.columns As c
 			WHERE table_schema = _schema and table_name = _table), ', '));
-	
+
 	RETURN QUERY EXECUTE format(
-	'WITH g as 
+	'WITH g as
 		(
-		SELECT * 
-		  FROM %s AS f 
+		SELECT *
+		  FROM %s AS f
 		  WHERE f.inicio_objecto <= $1
 		UNION ALL
 		SELECT %s
-		  FROM %s AS o 
+		  FROM %s AS o
 		  WHERE o.inicio_objecto <= $1 AND o.fim_objeto > $1
 		)
 	SELECT DISTINCT ON (identificador) *
@@ -201,12 +201,18 @@ SELECT vsr_add_versioning_to('"base".centroide_ea');
 
 
 
--- EXAMPLES
+/*
+
+EXEMPLOS DE USO
+
+-- Adicionar versionamento a uma tabela
+-- Isto irá adicionar os campos necessários, criar tabelas de versionamento e
+-- Activar o triggers
 
 SELECT vsr_add_versioning_to('"base".nuts1');
 
 -- Remove versioning from table
--- This will remove versioning fields, backup table and related triggers 
+-- This will remove versioning fields, backup table and related triggers
 
 SELECT vsr_remove_versioning_from('"base".nuts1');
 
@@ -214,4 +220,7 @@ SELECT vsr_remove_versioning_from('"base".nuts1');
 SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57');
 
 -- See specific feature at certain time
-SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57') WHERE gid = 1;
+SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57')
+WHERE identificador = 298b0ff8-71a5-11ee-a363-0383b049fe76;
+
+*/
