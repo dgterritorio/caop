@@ -1,3 +1,13 @@
+-- Script para executar via psql. Se executar via Editor SQL (PgAdmin4 ou dbeaver)
+
+--Criar base de dados
+
+CREATE DATABASE caop WITH ENCODING 'UTF8' LC_COLLATE='pt_PT.UTF-8' LC_CTYPE='pt_PT.UTF-8' TEMPLATE='template0';
+
+-- Connectar à base de dados recém criada
+
+\c caop
+
 -- Instalacao de extensoes
 CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -9,30 +19,47 @@ COMMENT ON SCHEMA dominios IS 'Schema para guardar lista de valores a usar nas t
 
 CREATE TABLE dominios.tipo_fonte (
 	identificador varchar(3) PRIMARY KEY,
+	nome varchar(100),
 	descricao VARCHAR NOT NULL
 );
+
+COMMENT ON TABLE dominios.tipo_fonte IS 'TP. Tipo de fonte utilizada para definir um troço representado na Carta Administrativa Oficial de Portugal.';
 
 CREATE TABLE dominios.significado_linha (
 	identificador varchar(3) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL
 );
 
+COMMENT ON TABLE dominios.significado_linha IS 'MOL. Identificação da linha de acordo com a relação com a fronteira entre terra e água nas áreas adjacentes';
+
 CREATE TABLE dominios.estado_limite_administrativo(
 	identificador varchar(3) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL);
+
+COMMENT ON TABLE dominios.significado_linha IS 'BST. Descrição do estado de aceitação oficial do troço de limite ao qual pertence o troço';
 
 CREATE TABLE dominios.nivel_limite_administrativo (
 	identificador varchar(3) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL);
+
+COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'USE. Níveis de administração segundo a hierarquia administrativa nacional';
 
 CREATE TABLE dominios.tipo_area_administrativa (
 	identificador varchar(3) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL);
+
+COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'TAA. Tipo de área administrativa de acordo com a distribuição administrativa do território nacional';
 
 CREATE TABLE dominios.caracteres_identificadores_pais (
-	identificador varchar(3) PRIMARY KEY,
+	identificador varchar(5) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL);
 
+COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'ICC. Identificação do(s) país(es) responsável(eis) pelo troço de limite através do código de dois caracteres, da mesma forma que foi definido pelo EuroBoundaryMap';
 
 -- Schema com as tabelas de base, editáveis e sob versionamento
 CREATE SCHEMA base;
@@ -62,14 +89,15 @@ CREATE TABLE base.distrito_ilha (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 di varchar(2) UNIQUE NOT NULL,
 nome varchar NOT NULL,
-nuts3_cod varchar(3) REFERENCES base.nuts3(codigo) NOT NULL
+nuts1_cod varchar(3) REFERENCES base.nuts1(codigo) NOT NULL
 );
 
 CREATE TABLE base.municipio (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
 dico varchar(4) UNIQUE NOT NULL,
 nome VARCHAR NOT NULL,
-distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL -- sugestao relacao com os distritos- ilhas
+distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL, -- sugestao relacao com os distritos- ilhas
+nuts3_cod varchar(5) REFERENCES base.nuts3(codigo) NOT NULL
 );
 -- TODO: criar check constraint the obrigue a que o dico bata certo com o di se este tiver preenchido
 
