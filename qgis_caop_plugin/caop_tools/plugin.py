@@ -24,11 +24,20 @@ __copyright__ = "(C) 2023, NaturalGIS"
 
 import os
 
-from qgis.PyQt.QtCore import QCoreApplication, QTranslator
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QTranslator, QStringListModel
+from qgis.PyQt.QtWidgets import QAction, QLineEdit, QCompleter
 from qgis.PyQt.QtGui import QIcon
 
-from qgis.core import QgsApplication, QgsMapLayerType, QgsWkbTypes, Qgis
+from qgis.core import (
+    QgsApplication,
+    QgsMapLayerType,
+    QgsWkbTypes,
+    Qgis,
+    QgsExpressionContextUtils,
+    QgsProject,
+    QgsSettingsTree,
+    QgsSettingsEntryStringList,
+)
 
 from caop_tools.split_line_tool import SplitLineTool
 
@@ -48,6 +57,9 @@ class CaopToolsPlugin:
             QCoreApplication.installTranslator(self.translator)
 
     def initGui(self):
+        self.settings_tree = QgsSettingsTree.createPluginTreeNode("caoptools")
+        self.setting_motives = QgsSettingsEntryStringList("motives", self.settings_tree)
+
         self.toolbar = self.iface.addToolBar(self.tr("CAOP Tools"))
         self.toolbar.setToolTip(self.tr("CAOP Tools"))
         self.toolbar.setObjectName("caopToolsToolBar")
@@ -62,15 +74,35 @@ class CaopToolsPlugin:
 
         self.toolbar.addAction(self.action_split)
 
+        self.edit_comment = QLineEdit()
+        self.motive_model = QStringListModel(self.setting_motives.value())
+        completer = QCompleter(self.motive_model, self.edit_comment)
+        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        self.edit_comment.setCompleter(completer)
+        self.edit_comment.editingFinished.connect(self.update_comment)
+        self.toolbar.addWidget(self.edit_comment)
+
         self.tool_split = SplitLineTool(
             self.iface.mapCanvas(), self.iface.cadDockWidget()
         )
         self.tool_split.setAction(self.action_split)
 
+        self.iface.projectRead.connect(self.update_comment)
+        self.iface.newProjectCreated.connect(self.update_comment)
+
         self.iface.currentLayerChanged.connect(self.enable_actions)
         self.enable_actions(self.iface.activeLayer())
 
     def unload(self):
+        QgsSettingsTree.unregisterPluginTreeNode("caoptools")
+
+        self.iface.projectRead.disconnect(self.update_comment)
+        self.iface.newProjectCreated.disconnect(self.update_comment)
+
+        QgsExpressionContextUtils.removeProjectVariable(
+            QgsProject.instance(), "dgt_motivo_edicao"
+        )
+
         if self.iface.mapCanvas().mapTool() == self.tool_split:
             self.iface.mapCanvas().unsetMapTool(self.tool_split)
 
@@ -79,6 +111,16 @@ class CaopToolsPlugin:
 
     def split_line(self):
         self.iface.mapCanvas().setMapTool(self.tool_split)
+
+    def update_comment(self):
+        QgsExpressionContextUtils.setProjectVariable(
+            QgsProject.instance(), "dgt_motivo_edicao", self.edit_comment.text()
+        )
+        motives = self.setting_motives.value()
+        if self.edit_comment.text() not in motives:
+            motives.insert(0, self.edit_comment.text())
+            self.setting_motives.setValue(motives[:5])
+            self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
         if layer is None or layer.type() != QgsMapLayerType.Vector:
