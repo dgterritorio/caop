@@ -1,0 +1,20 @@
+[general]
+name=CAOP Tools
+description=Set of tools to maintain CAOP model
+about=Set of tools to maintain CAOP model.
+category=Plugins
+version=0.1.0
+qgisMinimumVersion=3.30
+
+icon=
+tags=
+
+author=NaturalGIS
+email=info@naturalgis.pt
+
+homepage=https://github.com/NaturalGIS/caop
+tracker=https://github.com/NaturalGIS/caop/issues
+repository=https://github.com/NaturalGIS/caop
+
+experimental=True
+deprecated=False
