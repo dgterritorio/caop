@@ -113,14 +113,15 @@ class CaopToolsPlugin:
         self.iface.mapCanvas().setMapTool(self.tool_split)
 
     def update_comment(self):
+        comment = self.edit_comment.text()
         QgsExpressionContextUtils.setProjectVariable(
-            QgsProject.instance(), "dgt_motivo_edicao", self.edit_comment.text()
+            QgsProject.instance(), "dgt_motivo_edicao", comment
         )
         motives = self.setting_motives.value()
-        if self.edit_comment.text() not in motives:
-            motives.insert(0, self.edit_comment.text())
-            self.setting_motives.setValue(motives[:5])
-            self.motive_model.setStringList(motives[:5])
+        motives = [v for v in motives if v != comment]
+        motives.insert(0, comment)
+        self.setting_motives.setValue(motives[:5])
+        self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
         if layer is None or layer.type() != QgsMapLayerType.Vector:
