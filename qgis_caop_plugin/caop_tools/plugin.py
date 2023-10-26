@@ -74,13 +74,17 @@ class CaopToolsPlugin:
 
         self.toolbar.addAction(self.action_split)
 
+        motives = self.setting_motives.value()
         self.edit_comment = QLineEdit()
-        self.motive_model = QStringListModel(self.setting_motives.value())
+        self.motive_model = QStringListModel(motives)
         completer = QCompleter(self.motive_model, self.edit_comment)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.edit_comment.setCompleter(completer)
         self.edit_comment.editingFinished.connect(self.update_comment)
         self.toolbar.addWidget(self.edit_comment)
+
+        if motives:
+            self.edit_comment.setText(motives[0])
 
         self.tool_split = SplitLineTool(
             self.iface.mapCanvas(), self.iface.cadDockWidget()
