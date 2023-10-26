@@ -35,8 +35,7 @@ from qgis.core import (
     Qgis,
     QgsExpressionContextUtils,
     QgsProject,
-    QgsSettingsTree,
-    QgsSettingsEntryStringList,
+    QgsSettings
 )
 
 from caop_tools.split_line_tool import SplitLineTool
@@ -57,9 +56,6 @@ class CaopToolsPlugin:
             QCoreApplication.installTranslator(self.translator)
 
     def initGui(self):
-        self.settings_tree = QgsSettingsTree.createPluginTreeNode("caoptools")
-        self.setting_motives = QgsSettingsEntryStringList("motives", self.settings_tree)
-
         self.toolbar = self.iface.addToolBar(self.tr("CAOP Tools"))
         self.toolbar.setToolTip(self.tr("CAOP Tools"))
         self.toolbar.setObjectName("caopToolsToolBar")
@@ -74,7 +70,8 @@ class CaopToolsPlugin:
 
         self.toolbar.addAction(self.action_split)
 
-        motives = self.setting_motives.value()
+        settings = QgsSettings()
+        motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
         self.edit_comment = QLineEdit()
         self.edit_comment.setMaxLength(255)
         self.edit_comment.setClearButtonEnabled(True)
@@ -101,8 +98,6 @@ class CaopToolsPlugin:
         self.enable_actions(self.iface.activeLayer())
 
     def unload(self):
-        QgsSettingsTree.unregisterPluginTreeNode("caoptools")
-
         self.iface.projectRead.disconnect(self.update_comment)
         self.iface.newProjectCreated.disconnect(self.update_comment)
 
@@ -124,10 +119,11 @@ class CaopToolsPlugin:
         QgsExpressionContextUtils.setProjectVariable(
             QgsProject.instance(), "dgt_motivo_edicao", comment
         )
-        motives = self.setting_motives.value()
+        settings = QgsSettings()
+        motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
         motives = [v for v in motives if v != comment]
         motives.insert(0, comment)
-        self.setting_motives.setValue(motives[:5])
+        settings.setValue("caoptools/motives", motives[:5], QgsSettings.Plugins)
         self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
