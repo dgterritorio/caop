@@ -35,7 +35,7 @@ from qgis.core import (
     Qgis,
     QgsExpressionContextUtils,
     QgsProject,
-    QgsSettings
+    QgsSettings,
 )
 
 from caop_tools.split_line_tool import SplitLineTool
