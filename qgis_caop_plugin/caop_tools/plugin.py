@@ -76,6 +76,9 @@ class CaopToolsPlugin:
 
         motives = self.setting_motives.value()
         self.edit_comment = QLineEdit()
+        self.edit_comment.setMaxLength(255)
+        self.edit_comment.setClearButtonEnabled(True)
+        self.edit_comment.setPlaceholderText(self.tr("Editing reason"))
         self.motive_model = QStringListModel(motives)
         completer = QCompleter(self.motive_model, self.edit_comment)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
