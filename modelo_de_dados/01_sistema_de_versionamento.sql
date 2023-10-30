@@ -195,11 +195,10 @@ SELECT vsr_add_versioning_to('"base".distrito_ilha');
 SELECT vsr_add_versioning_to('"base".municipio');
 SELECT vsr_add_versioning_to('"base".freguesia');
 SELECT vsr_add_versioning_to('"base".outras_entidades');
-SELECT vsr_add_versioning_to('"base".trocos');
-SELECT vsr_add_versioning_to('"base".fontes');
+SELECT vsr_add_versioning_to('"base".troco');
+SELECT vsr_add_versioning_to('"base".fonte');
+SELECT vsr_add_versioning_to('"base".lig_troco_fonte');
 SELECT vsr_add_versioning_to('"base".centroide_ea');
-
-
 
 /*
 
