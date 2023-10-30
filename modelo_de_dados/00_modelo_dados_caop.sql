@@ -101,25 +101,21 @@ nuts3_cod varchar(5) REFERENCES base.nuts3(codigo) NOT NULL
 );
 -- TODO: criar check constraint the obrigue a que o dico bata certo com o di se este tiver preenchido
 
--- Tabela das entidades administratvas alimentadas por duas tabelas filhas, freguesias e outras_entidades
+-- Tabela das entidades administratvas serve para guardar dois tipos diferentes de entidades
+-- freguesias e outras entidades (e.g. espanha) sem ligação à tabela municipio
 CREATE TABLE base.entidade_administrativa (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
-cod VARCHAR(8) UNIQUE NOT NULL, -- para as freguesias isto equivale ao dicofre
-nome VARCHAR NOT NULL
+cod VARCHAR(8) UNIQUE NOT NULL, -- para as freguesias equivale ao dicofre
+nome VARCHAR UNIQUE NOT NULL,
+municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) --
 );
 
-CREATE TABLE base.freguesia (
-	municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) NOT NULL
-) INHERITS (base.entidade_administrativa)
-;
+-- contraint para verificar que o campo municipio_dico é preenchido quando a entidade se trata de uma freguesia
+ALTER TABLE base.entidade_administrativa
+ADD CONSTRAINT municipio_preenchido CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico IS NOT NULL end);
 
-ALTER TABLE base.freguesia
-ADD CONSTRAINT freguesia_cod_key UNIQUE (cod);
--- TODO: criar check constraint the obrigue a que o dicofre (cod) bata certo com o dico se este tiver preenchido
-
-CREATE TABLE base.outras_entidades ()
-INHERITS (base.entidade_administrativa)
-;
+ALTER TABLE base.entidade_administrativa
+ADD CONSTRAINT dicofre_dico_compativeis CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico = LEFT(cod, 4) end);
 
 CREATE TABLE base.fontes (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
