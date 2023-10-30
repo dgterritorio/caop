@@ -4,18 +4,18 @@
 <context>
     <name>CaopToolsPlugin</name>
     <message>
-        <location filename="../plugin.py" line="64"/>
+        <location filename="../plugin.py" line="60"/>
         <source>CAOP Tools</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="67"/>
+        <location filename="../plugin.py" line="63"/>
         <source>Split features</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="81"/>
-        <source>Editing reason</source>
+        <location filename="../plugin.py" line="79"/>
+        <source>Editing reason (max. 255 characters)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
