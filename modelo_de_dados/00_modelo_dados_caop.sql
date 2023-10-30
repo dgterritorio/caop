@@ -130,7 +130,7 @@ CREATE TABLE base.trocos (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
 	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
-	pais VARCHAR(3) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
+	pais VARCHAR(5) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
 	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
 	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
 	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
