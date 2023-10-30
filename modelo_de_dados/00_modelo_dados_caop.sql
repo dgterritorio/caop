@@ -117,7 +117,7 @@ ADD CONSTRAINT municipio_preenchido CHECK (CASE WHEN cod IN ('97','98','99') THE
 ALTER TABLE base.entidade_administrativa
 ADD CONSTRAINT dicofre_dico_compativeis CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico = LEFT(cod, 4) end);
 
-CREATE TABLE base.fontes (
+CREATE TABLE base.fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	tipo_fonte varchar(3) REFERENCES dominios.tipo_fonte(identificador),
 	descricao VARCHAR(255) NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE base.fontes (
 	diploma VARCHAR(255)
 );
 
-CREATE TABLE base.trocos (
+CREATE TABLE base.troco (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
 	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
@@ -135,14 +135,20 @@ CREATE TABLE base.trocos (
 	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
 	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
 	comprimento_m numeric(15,3), -- area calculada pela geometria no plano RETIRAR, manter apenas NO export?
-	fonte_id uuid REFERENCES base.fontes(identificador), -- relação com a fonte de dados NOT NULL??
 	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
 	             -- tem de ser criada uma referencia para os trocos apagados
 	             -- vamos precisar de uma ferramenta especifica para fazer o split
 	geometria geometry(LINESTRING, 3763)
 );
 
+CREATE INDEX ON base.troco USING gist(geometria);
 -- TODO CHECK ea_direita != ea_esquerda
+
+CREATE TABLE base.lig_troco_fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	trocos_id uuid REFERENCES base.troco(identificador),
+	fontes_id uuid REFERENCES base.troco(identificador)
+);
 
 CREATE TABLE base.centroide_ea ( 
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
@@ -150,6 +156,8 @@ CREATE TABLE base.centroide_ea (
 	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
 	geometria geometry(POINT, 3763) NOT NULL
 );
+
+CREATE INDEX ON base.centroide_ea USING gist(geometria);
 
 CREATE SCHEMA VERSIONING;
 
