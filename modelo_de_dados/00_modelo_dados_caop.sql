@@ -181,6 +181,33 @@ CREATE ROLE administrador; -- sugiro este papel para aqueles que tenham de alter
 CREATE ROLE editor;
 CREATE ROLE visualizador;
 
+-- Permissões ao nivel dos schemas
+GRANT ALL ON SCHEMA dominios TO administrador;
+GRANT USAGE ON SCHEMA dominios TO editor, visualizador;
+
+GRANT ALL ON SCHEMA base TO administrador;
+GRANT USAGE ON SCHEMA base TO editor, visualizador;
+
+GRANT ALL ON SCHEMA versioning TO administrador;
+GRANT USAGE ON SCHEMA versioning TO editor, visualizador;
+
+-- Permissões ao nivel ddo administrador
+GRANT ALL ON DATABASE caop TO administrador;
+GRANT ALL ON SCHEMA dominios, base, versioning, public TO administrador;
+GRANT ALL ON ALL TABLES IN SCHEMA dominios, base, versioning TO administrador;
+GRANT editor, visualizador TO administrador WITH ADMIN OPTION;
+
+-- Permissões ao nível do editor
+GRANT CONNECT, TEMPORARY ON DATABASE caop TO editor;
+GRANT USAGE ON SCHEMA dominios, base, versioning TO editor;
+GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, versioning TO editor;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE base.centroide_ea, base.fonte, base.troco, base.entidade_administrativa , base.municipio TO editor;
+GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA VERSIONING TO editor;
+
+-- Permissões ao nivel do visualizador
+GRANT CONNECT ON DATABASE caop TO visualizador;
+GRANT USAGE ON SCHEMA dominios, base, versioning TO visualizador;
+GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, versioning TO visualizador;
 
 -- falta criar as funçoes que, dada uma determinada versao da base de dados crie um schema 
 -- e respectivas tabelas de output com as geometria, que incluirão:
