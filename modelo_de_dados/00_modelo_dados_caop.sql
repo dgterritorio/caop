@@ -9,8 +9,8 @@ CREATE DATABASE caop WITH ENCODING 'UTF8' LC_COLLATE='pt_PT.UTF-8' LC_CTYPE='pt_
 \c caop
 
 -- Instalacao de extensoes
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS postgis; -- Adiciona todas as funções espaciais
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- Adiciona objectos DO tipo uuid e repsectivas funções para identificadores
 
 
 -- Schema para guardar lista de valores a usar nas tabelas editáveis
@@ -99,7 +99,9 @@ nome VARCHAR NOT NULL,
 distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL, -- sugestao relacao com os distritos- ilhas
 nuts3_cod varchar(5) REFERENCES base.nuts3(codigo) NOT NULL
 );
--- TODO: criar check constraint the obrigue a que o dico bata certo com o di se este tiver preenchido
+
+ALTER TABLE base.municipio
+ADD CONSTRAINT dico_di_compativeis CHECK (distrito_di = LEFT(dico, 2));
 
 -- Tabela das entidades administratvas serve para guardar dois tipos diferentes de entidades
 -- freguesias e outras entidades (e.g. espanha) sem ligação à tabela municipio
@@ -134,7 +136,6 @@ CREATE TABLE base.troco (
 	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
 	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
 	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
-	comprimento_m numeric(15,3), -- area calculada pela geometria no plano RETIRAR, manter apenas NO export?
 	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
 	             -- tem de ser criada uma referencia para os trocos apagados
 	             -- vamos precisar de uma ferramenta especifica para fazer o split
@@ -142,7 +143,6 @@ CREATE TABLE base.troco (
 );
 
 CREATE INDEX ON base.troco USING gist(geometria);
--- TODO CHECK ea_direita != ea_esquerda
 
 CREATE TABLE base.lig_troco_fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
