@@ -214,6 +214,27 @@ UPDATE base.troco AS t SET
 	             END)
 WHERE ea_esquerda IS NULL;
 
+-- Preparar trocos para output
+
+CREATE MATERIALIZED VIEW master.continente_trocos AS
+	SELECT
+		row_number() OVER () AS id,
+		ea_direita,
+		ea_esquerda,
+		cip.nome AS paises,
+		ela.nome AS estado_limite_admin,
+		sl.nome AS significado_linha,
+		nla.nome AS nivel_limite_admin,
+		t.geometria::geometry(linestring,3763) AS geometria,
+		st_length(t.geometria) / 1000 AS comprimento_km
+	FROM base.troco AS t
+		JOIN dominios.caracteres_identificadores_pais AS cip ON t.pais = cip.identificador
+		JOIN dominios.estado_limite_administrativo AS ela ON t.estado_limite_admin = ela.identificador
+		JOIN dominios.significado_linha AS sl ON t.significado_linha = sl.identificador
+		JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.identificador;
+
+CREATE INDEX ON master.continente_trocos USING gist(geometria);
+
 -- Classificar troço de acordo com os limites administrativos (nivel_limite_administrativo)
 -- Apenas preenche os campos vazios. Temos de perceber se queremos manter isto automático
 -- Nesse caso, sempre que houver uma edição o campo terá de ser tornado NULO
