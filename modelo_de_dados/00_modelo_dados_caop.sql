@@ -112,9 +112,8 @@ nome VARCHAR UNIQUE NOT NULL,
 municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) --
 );
 
--- contraint para verificar que o campo municipio_dico é preenchido quando a entidade se trata de uma freguesia
-ALTER TABLE base.entidade_administrativa
-ADD CONSTRAINT municipio_preenchido CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico IS NOT NULL end);
+-- contraint para verificar que o campo municipio_dico é preenchido quando a entidade se trata de uma freguesia e se é
+-- coerente com o dicofre da freguesia
 
 ALTER TABLE base.entidade_administrativa
 ADD CONSTRAINT dicofre_dico_compativeis CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico = LEFT(cod, 4) end);
@@ -171,6 +170,8 @@ CREATE TABLE VERSIONING.versoes (
 	data_hora timestamp NOT NULL DEFAULT now(),
 	data_publicação timestamp
 );
+
+-- TODO: ATENCAO As permissões têm de correr depois da criaçao das tabelas de versionamento, caso contrário não terão efeito
 
 -- Criar grupos de utilizadores
 CREATE ROLE administrador; -- sugiro este papel para aqueles que tenham de alterar por exemplo a tabela das entidades

@@ -73,7 +73,7 @@ BEGIN
 	EXECUTE 'UPDATE ' || _t || ' SET inicio_objecto = now(), utilizador = user';
 
 	-- Cria schema e tabela para guardar os backups
-	EXECUTE 'CREATE SCHEMA IF NOT EXISTS backup';
+	EXECUTE 'CREATE SCHEMA IF NOT EXISTS versioning';
 
 	bk_table_name := 'versioning.' || quote_ident(_table || '_bk');
 
@@ -193,8 +193,7 @@ SELECT vsr_add_versioning_to('"base".nuts2');
 SELECT vsr_add_versioning_to('"base".nuts3');
 SELECT vsr_add_versioning_to('"base".distrito_ilha');
 SELECT vsr_add_versioning_to('"base".municipio');
-SELECT vsr_add_versioning_to('"base".freguesia');
-SELECT vsr_add_versioning_to('"base".outras_entidades');
+SELECT vsr_add_versioning_to('"base".entidade_administrativa');
 SELECT vsr_add_versioning_to('"base".troco');
 SELECT vsr_add_versioning_to('"base".fonte');
 SELECT vsr_add_versioning_to('"base".lig_troco_fonte');
