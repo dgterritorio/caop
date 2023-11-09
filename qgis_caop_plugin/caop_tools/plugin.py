@@ -128,7 +128,7 @@ class CaopToolsPlugin:
         self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
-        if layer is None or layer.type() != QgsMapLayerType.Vector:
+        if layer is None or layer.type() != Qgis.QgsMapLayerType.VectorLayer:
             self.action_split.setEnabled(False)
             return
 
