@@ -25,7 +25,7 @@ __copyright__ = "(C) 2023, NaturalGIS"
 from qgis.PyQt.QtCore import Qt
 
 from qgis.gui import QgsMapToolCapture
-from qgis.core import Qgis, QgsPointLocator, QgsProject
+from qgis.core import Qgis, QgsWkbTypes, QgsPointLocator, QgsProject
 from qgis.utils import iface
 
 from caop_tools.utils import split_features
@@ -64,7 +64,7 @@ class SplitLineTool(QgsMapToolCapture):
             error = 0
 
             if (
-                layer.geometryType() == Qgis.GeometryType.Line
+                layer.geometryType() == QgsWkbTypes.PolygonGeometry
                 and len(self.pointsZM()) == 0
             ):
                 m = (
@@ -124,7 +124,7 @@ class SplitLineTool(QgsMapToolCapture):
                             and l.isSpatial()
                             and l != layer
                             and l.geometryType()
-                            in (Qgis.GeometryType.Line, Qgis.GeometryType.Polygon)
+                            in (QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry)
                         ):
                             l.beginEditCommand(
                                 self.tr("Topological points from CAOP features split")

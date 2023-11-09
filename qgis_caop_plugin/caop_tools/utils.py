@@ -27,6 +27,7 @@ from qgis.core import (
     Qgis,
     QgsFeatureRequest,
     QgsGeometry,
+    QgsPointXY,
     QgsUnsetAttributeValue,
     QgsVectorLayerUtils,
     qgsDoubleNear,
@@ -79,12 +80,13 @@ def split_features(layer, curve, preserve_circular, topological_editing):
 
         original_geom = feat.geometry()
         feature_geom = QgsGeometry(original_geom)
+        split_points = [QgsPointXY(p) for p in curve.points()]
         (
             split_function_return,
             new_geometries,
             feature_topology_test_points,
         ) = feature_geom.splitGeometry(
-            curve.points(), preserve_circular, topological_editing
+            split_points, preserve_circular, topological_editing
         )
         topology_test_points.append(feature_topology_test_points)
         if split_function_return == Qgis.GeometryOperationResult.Success:
@@ -98,48 +100,8 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                         else:
                             attribute_map[field_idx] = feat.attribute("identificador")
                             continue
-                    if field.splitPolicy() == Qgis.FieldDomainSplitPolicy.DefaultValue:
-                        pass
-                    if field.splitPolicy() == Qgis.FieldDomainSplitPolicy.Duplicate:
+                    else:
                         attribute_map[field_idx] = feat.attribute(field_idx)
-                    elif (
-                        field.splitPolicy() == Qgis.FieldDomainSplitPolicy.GeometryRatio
-                    ):
-                        if not field.isNumeric():
-                            attribute_map[field_idx] = feat.attribute(field_idx)
-                        else:
-                            original_value = feat.attribute(field_idx)
-                            original_size = 0
-                            if original_geom.type() in (
-                                Qgis.GeometryType.Point,
-                                Qgis.GeometryType.Unknown,
-                                Qgis.GeometryType.Null,
-                            ):
-                                original_size = 0
-                            elif original_geom.type() == Qgis.GeometryType.Line:
-                                original_size = original_geom.length()
-                            elif original_geom.type() == Qgis.GeometryType.Polygon:
-                                original_size = original_geom.area()
-
-                            new_size = 0
-                            if geom.type() in (
-                                Qgis.GeometryType.Point,
-                                Qgis.GeometryType.Unknown,
-                                Qgis.GeometryType.Null,
-                            ):
-                                new_size = 0
-                            elif geom.type() == Qgis.GeometryType.Line:
-                                new_size = geom.length()
-                            elif geom.type() == Qgis.GeometryType.Polygon:
-                                new_size = geom.area()
-
-                            attribute_map[field_idx] = (
-                                original_value * new_size / original_size
-                                if original_size > 0
-                                else original_value
-                            )
-                    if field.splitPolicy() == Qgis.FieldDomainSplitPolicy.UnsetField:
-                        attribute_map[field_idx] = QgsUnsetAttributeValue()
 
                 features_data_to_add.append(
                     QgsVectorLayerUtils.QgsFeatureData(geom, attribute_map)

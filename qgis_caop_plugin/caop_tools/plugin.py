@@ -75,7 +75,9 @@ class CaopToolsPlugin:
         self.edit_comment = QLineEdit()
         self.edit_comment.setMaxLength(255)
         self.edit_comment.setClearButtonEnabled(True)
-        self.edit_comment.setPlaceholderText(self.tr("Editing reason (max. 255 characters)"))
+        self.edit_comment.setPlaceholderText(
+            self.tr("Editing reason (max. 255 characters)")
+        )
         self.edit_comment.setToolTip(self.tr("Editing reason (max. 255 characters)"))
         self.motive_model = QStringListModel(motives)
         completer = QCompleter(self.motive_model, self.edit_comment)
@@ -120,19 +122,20 @@ class CaopToolsPlugin:
         QgsExpressionContextUtils.setProjectVariable(
             QgsProject.instance(), "dgt_motivo_edicao", comment
         )
-        settings = QgsSettings()
-        motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
-        motives = [v for v in motives if v != comment]
-        motives.insert(0, comment)
-        settings.setValue("caoptools/motives", motives[:5], QgsSettings.Plugins)
-        self.motive_model.setStringList(motives[:5])
+        if comment:
+            settings = QgsSettings()
+            motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
+            motives = [v for v in motives if v != comment]
+            motives.insert(0, comment)
+            settings.setValue("caoptools/motives", motives[:5], QgsSettings.Plugins)
+            self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
-        if layer is None or layer.type() != Qgis.QgsMapLayerType.VectorLayer:
+        if layer is None or layer.type() != QgsMapLayerType.VectorLayer:
             self.action_split.setEnabled(False)
             return
 
-        if QgsWkbTypes.flatType(layer.wkbType()) != Qgis.WkbType.LineString:
+        if QgsWkbTypes.flatType(layer.wkbType()) != QgsWkbTypes.LineString:
             self.action_split.setEnabled(False)
             return
 
