@@ -28,7 +28,6 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsGeometry,
     QgsPointXY,
-    QgsUnsetAttributeValue,
     QgsVectorLayerUtils,
     qgsDoubleNear,
 )
@@ -95,12 +94,11 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                 for field_idx in range(field_count):
                     field = layer.fields().at(field_idx)
                     if field.name() == "troco_parente":
-                        if feat.attribute("identificador") == "uuid_generate_v1mc()":
-                            attribute_map[field_idx] = feat.attribute("troco_parente")
-                            continue
-                        else:
-                            attribute_map[field_idx] = feat.attribute("identificador")
-                            continue
+                        attribute_map[field_idx] = (
+                            feat.attribute("identificador")
+                            if not feat.attribute("troco_parente")
+                            else feat.attribute("troco_parente")
+                        )
                     else:
                         attribute_map[field_idx] = feat.attribute(field_idx)
 
