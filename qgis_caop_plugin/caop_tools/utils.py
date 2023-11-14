@@ -94,11 +94,14 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                 for field_idx in range(field_count):
                     field = layer.fields().at(field_idx)
                     if field.name() == "troco_parente":
-                        attribute_map[field_idx] = (
-                            feat.attribute("identificador")
-                            if not feat.attribute("troco_parente")
-                            else feat.attribute("troco_parente")
-                        )
+                        if is_new_feature(feat.attribute("identificador"), layer):
+                            attribute_map[field_idx] = None
+                        else:
+                            attribute_map[field_idx] = (
+                                feat.attribute("identificador")
+                                if not feat.attribute("troco_parente")
+                                else feat.attribute("troco_parente")
+                            )
                     else:
                         attribute_map[field_idx] = feat.attribute(field_idx)
 
@@ -190,3 +193,13 @@ def add_topological_points(layer, p):
             points_added = True
 
     return 0 if pointsAdded else 2
+
+
+def is_new_feature(fid, layer):
+    if not layer.isEditable():
+        return False
+    buff = layer.editBuffer()
+    for f in buff.addedFeatures().values():
+        if f["identificador"] == fid:
+            return True
+    return False
