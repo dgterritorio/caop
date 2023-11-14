@@ -25,7 +25,7 @@ CREATE SCHEMA master;
 --DROP MATERIALIZED VIEW master.continente_entidades_administrativas CASCADE;
 CREATE MATERIALIZED VIEW master.continente_entidades_administrativas as
 WITH atributos_freguesias AS (
-	SELECT ROW_NUMBER() OVER () AS id,
+	SELECT
 		ea.cod AS dicofre,
 		ea.nome AS freguesia,
 		m.nome AS municipio,
@@ -40,9 +40,11 @@ WITH atributos_freguesias AS (
 		JOIN base.nuts2 AS n2 ON n3.nuts2_cod = n2.codigo 
 		JOIN base.nuts1 AS n1 ON n2.nuts1_cod = n1.codigo
 )
-SELECT DISTINCT ON (ce.entidade_administrativa, p.geometria)
+SELECT
+	ROW_NUMBER() OVER () AS id,
 	a.dicofre,
 	a.freguesia,
+	taa.nome AS tipo_area_administrativa,
 	a.municipio,
 	a.distrito_ilha,
 	a.nuts3,
@@ -53,7 +55,8 @@ SELECT DISTINCT ON (ce.entidade_administrativa, p.geometria)
 	st_perimeter(p.geometria) / 1000 AS perimetro_km
 FROM TEMP.poligonos AS p 
 	JOIN base.centroide_ea AS ce ON st_intersects(p.geometria, ce.geometria)
-	JOIN atributos_freguesias AS a ON a.dicofre = ce.entidade_administrativa;
+	JOIN atributos_freguesias AS a ON a.dicofre = ce.entidade_administrativa
+	JOIN dominios.tipo_area_administrativa AS taa ON ce.tipo_area_administrativa_id = taa.identificador;
 
 CREATE INDEX ON master.continente_entidades_administrativas USING gist(geometria);
 
@@ -69,7 +72,8 @@ SELECT
 	nuts1, 
 	(st_collect(geometria))::geometry(multipolygon,3763) AS geometria,
 	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	sum(st_perimeter(geometria)) / 1000 AS perimetro_km,
+	REPLACE(freguesia,'União das freguesias de ','') as designacao_simplificada
 FROM master.continente_entidades_administrativas
 GROUP BY dicofre, freguesia, municipio, distrito_ilha, nuts3, nuts2, nuts1;
 
@@ -241,10 +245,15 @@ CREATE INDEX ON master.continente_trocos USING gist(geometria);
 
 UPDATE base.troco SET 
 	nivel_limite_admin = CASE WHEN pais = 'PT#ES' THEN '1'
-							WHEN significado_linha = '1' THEN '2' -- Verificar se queremos incluir o limite em água
+							WHEN significado_linha = '1' THEN '2'
 							ELSE NULL
 							END
 WHERE nivel_limite_admin IS NULL;
+
+UPDATE base.troco SET 
+	nivel_limite_admin = NULL
+WHERE significado_linha IN ('1','9');
+
 
 UPDATE base.troco AS t SET 
 	nivel_limite_admin = 3
