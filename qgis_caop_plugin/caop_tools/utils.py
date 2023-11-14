@@ -95,7 +95,7 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                     field = layer.fields().at(field_idx)
                     if field.name() == "troco_parente":
                         if is_new_feature(feat.attribute("identificador"), layer):
-                            attribute_map[field_idx] = None
+                            attribute_map[field_idx] = feat.attribute("troco_parente")
                         else:
                             attribute_map[field_idx] = (
                                 feat.attribute("identificador")
