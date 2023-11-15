@@ -180,21 +180,21 @@ CREATE ROLE visualizador;
 
 -- Permissões ao nivel ddo administrador
 GRANT ALL ON DATABASE caop TO administrador;
-GRANT ALL ON SCHEMA dominios, base, versioning, master, public TO administrador;
-GRANT ALL ON ALL TABLES IN SCHEMA dominios, base, versioning TO administrador;
+GRANT ALL ON SCHEMA dominios, base, versioning, public TO administrador;
+GRANT ALL ON ALL TABLES IN SCHEMA dominios, base, VERSIONING TO administrador;
 GRANT editor, visualizador TO administrador WITH ADMIN OPTION;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.qgis_projects TO administrador WITH GRANT OPTION;
 
 -- Permissões ao nível do editor
 GRANT CONNECT, TEMPORARY ON DATABASE caop TO editor;
 GRANT USAGE ON SCHEMA dominios, base, VERSIONING, master TO editor;
-GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, VERSIONING, master TO editor;
+GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, VERSIONING TO editor;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE base.centroide_ea, base.fonte, base.troco, base.entidade_administrativa , base.municipio TO editor;
 GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA VERSIONING TO editor;
 GRANT SELECT ON TABLE public.qgis_projects TO editor;
 
 -- Permissões ao nivel do visualizador
 GRANT CONNECT ON DATABASE caop TO visualizador;
-GRANT USAGE ON SCHEMA dominios, base, VERSIONING, master TO visualizador;
-GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, VERSIONING, master TO visualizador;
+GRANT USAGE ON SCHEMA dominios, base, VERSIONING TO visualizador;
+GRANT SELECT ON ALL TABLES IN SCHEMA dominios, base, VERSIONING TO visualizador;
 GRANT SELECT ON TABLE public.qgis_projects TO visualizador;

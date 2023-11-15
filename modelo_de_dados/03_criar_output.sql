@@ -19,6 +19,8 @@ FROM base.troco;
 CREATE INDEX ON temp.poligonos USING gist(geometria);
 
 CREATE SCHEMA master;
+GRANT ALL ON SCHEMA master TO administrador;
+GRANT USAGE ON SCHEMA master TO editor, visualizador;
 
 -- A cada poligono, tentar atribuir os restantes atributos relacionados com o centroide que nele contido
 -- actualmente a query ignora centroides duplicados (com o mesmo dicofre), mas futuramente não o deverá fazer
@@ -238,6 +240,9 @@ CREATE MATERIALIZED VIEW master.continente_trocos AS
 		JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.identificador;
 
 CREATE INDEX ON master.continente_trocos USING gist(geometria);
+
+GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
+GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
 
 -- Classificar troço de acordo com os limites administrativos (nivel_limite_administrativo)
 -- Apenas preenche os campos vazios. Temos de perceber se queremos manter isto automático
