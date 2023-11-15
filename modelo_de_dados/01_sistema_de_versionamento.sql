@@ -199,6 +199,13 @@ SELECT vsr_add_versioning_to('"base".fonte');
 SELECT vsr_add_versioning_to('"base".lig_troco_fonte');
 SELECT vsr_add_versioning_to('"base".centroide_ea');
 
+-- Aplicar versionamento às tabelas dos dominios
+SELECT vsr_add_versioning_to('"dominios".caracteres_identificadores_pais');
+SELECT vsr_add_versioning_to('"dominios".estado_limite_administrativo');
+SELECT vsr_add_versioning_to('"dominios".nivel_limite_administrativo');
+SELECT vsr_add_versioning_to('"dominios".significado_linha');
+SELECT vsr_add_versioning_to('"dominios".tipo_area_administrativa');
+SELECT vsr_add_versioning_to('"dominios".tipo_fonte');
 /*
 
 EXEMPLOS DE USO
