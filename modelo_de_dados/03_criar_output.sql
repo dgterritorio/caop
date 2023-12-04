@@ -25,7 +25,7 @@ GRANT USAGE ON SCHEMA master TO editor, visualizador;
 -- A cada poligono, tentar atribuir os restantes atributos relacionados com o centroide que nele contido
 -- actualmente a query ignora centroides duplicados (com o mesmo dicofre), mas futuramente não o deverá fazer
 --DROP MATERIALIZED VIEW master.continente_entidades_administrativas CASCADE;
-CREATE MATERIALIZED VIEW master.continente_entidades_administrativas as
+CREATE MATERIALIZED VIEW master.continente_areas_administrativas as
 WITH atributos_freguesias AS (
 	SELECT
 		ea.cod AS dicofre,
@@ -60,7 +60,7 @@ FROM TEMP.poligonos AS p
 	JOIN atributos_freguesias AS a ON a.dicofre = ce.entidade_administrativa
 	JOIN dominios.tipo_area_administrativa AS taa ON ce.tipo_area_administrativa_id = taa.identificador;
 
-CREATE INDEX ON master.continente_entidades_administrativas USING gist(geometria);
+CREATE INDEX ON master.continente_areas_administrativas USING gist(geometria);
 
 -- agrega as entidades administrativas por dicofre
 CREATE MATERIALIZED VIEW master.continente_freguesias AS
@@ -73,10 +73,10 @@ SELECT
 	nuts2,
 	nuts1, 
 	(st_collect(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km,
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(sum(st_perimeter(geometria)) / 1000)::integer AS perimetro_km,
 	REPLACE(freguesia,'União das freguesias de ','') as designacao_simplificada
-FROM master.continente_entidades_administrativas
+FROM master.continente_areas_administrativas
 GROUP BY dicofre, freguesia, municipio, distrito_ilha, nuts3, nuts2, nuts1;
 
 CREATE INDEX ON master.continente_freguesias USING gist(geometria);
@@ -91,8 +91,9 @@ SELECT
 	nuts2,
 	nuts1, 
 	(st_union(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
+	count(*) AS n_freguesias
 FROM master.continente_freguesias
 GROUP BY dico, municipio, distrito_ilha, nuts3, nuts2, nuts1;
 
@@ -105,8 +106,9 @@ SELECT
 	distrito_ilha AS distrito, 
 	nuts1, 
 	(st_union(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
+	sum(n_freguesias) AS n_freguesias
 FROM master.continente_municipios
 GROUP BY di, distrito, nuts1;
 
@@ -121,8 +123,9 @@ SELECT
 	nuts2,
 	nuts1, 
 	(st_union(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
+	sum(n_freguesias) AS n_freguesias
 FROM master.continente_municipios AS m
 	JOIN base.nuts3 AS n3 ON m.nuts3 = n3.nome
 GROUP BY codigo, nuts3, nuts2, nuts1;
@@ -136,8 +139,9 @@ SELECT
 	nuts2,
 	nuts1, 
 	(st_union(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
+	sum(n_freguesias) AS n_freguesias
 FROM master.continente_nuts3 AS m
 	JOIN base.nuts2 AS n2 ON m.nuts2 = n2.nome
 GROUP BY n2.codigo, nuts2, nuts1;
@@ -150,8 +154,9 @@ SELECT
 	n1.codigo,
 	nuts1, 
 	(st_union(geometria))::geometry(multipolygon,3763) AS geometria,
-	sum(st_area(geometria)) / 10000 AS area_ha,
-	sum(st_perimeter(geometria)) / 1000 AS perimetro_km
+	(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
+	(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
+	sum(n_freguesias) AS n_freguesias
 FROM master.continente_nuts2 AS m
 	JOIN base.nuts1 AS n1 ON m.nuts1 = n1.nome
 GROUP BY n1.codigo, nuts1;
@@ -166,7 +171,7 @@ CREATE INDEX ON master.continente_nuts1 USING gist(geometria);
 
 CREATE MATERIALIZED VIEW TEMP.ea_boundaries AS -- obter AS fronteiras de todas AS ea
 SELECT cea.dicofre, ((st_dump(st_boundary(cea.geometria))).geom)::geometry(linestring,3763) AS geometria
-FROM master.continente_entidades_administrativas AS cea;
+FROM master.continente_areas_administrativas AS cea;
 
 CREATE INDEX ON temp.ea_boundaries USING gist(geometria);
 
