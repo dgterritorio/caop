@@ -87,36 +87,39 @@ nuts2_cod varchar(4) REFERENCES base.nuts2(codigo) NOT NULL
 
 CREATE TABLE base.distrito_ilha (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
-di varchar(2) UNIQUE NOT NULL,
+codigo varchar(2) UNIQUE NOT NULL, -- equivalente ao dt ou di
 nome varchar NOT NULL,
 nuts1_cod varchar(3) REFERENCES base.nuts1(codigo) NOT NULL
 );
 
 CREATE TABLE base.municipio (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
-dico varchar(4) UNIQUE NOT NULL,
+codigo varchar(4) UNIQUE NOT NULL, -- equivalente ao dtmn ou dico
 nome VARCHAR NOT NULL,
-distrito_di varchar(2) REFERENCES base.distrito_ilha(di) NOT NULL, -- sugestao relacao com os distritos- ilhas
+distrito_cod varchar(2) REFERENCES base.distrito_ilha(codigo) NOT NULL,
 nuts3_cod varchar(5) REFERENCES base.nuts3(codigo) NOT NULL
 );
 
+
 ALTER TABLE base.municipio
-ADD CONSTRAINT dico_di_compativeis CHECK (distrito_di = LEFT(dico, 2));
+ADD CONSTRAINT dtmn_dt_compativeis CHECK (distrito_cod = LEFT(codigo, 2));
 
 -- Tabela das entidades administratvas serve para guardar dois tipos diferentes de entidades
 -- freguesias e outras entidades (e.g. espanha) sem ligação à tabela municipio
 CREATE TABLE base.entidade_administrativa (
 identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(), 
-cod VARCHAR(8) UNIQUE NOT NULL, -- para as freguesias equivale ao dicofre
+codigo VARCHAR(8) UNIQUE NOT NULL, -- para as freguesias equivale ao dicofre ou dtmnfr
 nome VARCHAR UNIQUE NOT NULL,
-municipio_dico VARCHAR(4) REFERENCES base.municipio(dico) --
+municipio_cod VARCHAR(4) REFERENCES base.municipio(codigo)
 );
 
 -- contraint para verificar que o campo municipio_dico é preenchido quando a entidade se trata de uma freguesia e se é
 -- coerente com o dicofre da freguesia
 
 ALTER TABLE base.entidade_administrativa
-ADD CONSTRAINT dicofre_dico_compativeis CHECK (CASE WHEN cod IN ('97','98','99') THEN TRUE ELSE municipio_dico = LEFT(cod, 4) end);
+ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99') THEN TRUE ELSE municipio_cod = LEFT(codigo, 4) end);
+
+-----------------------------------------------------------------------------
 
 CREATE TABLE base.fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
@@ -129,8 +132,8 @@ CREATE TABLE base.fonte (
 
 CREATE TABLE base.troco (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
-	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(cod), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
 	pais VARCHAR(5) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
 	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
 	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
@@ -155,6 +158,7 @@ CREATE TABLE base.centroide_ea (
 	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
 	geometria geometry(POINT, 3763) NOT NULL
 );
+
 
 CREATE INDEX ON base.centroide_ea USING gist(geometria);
 

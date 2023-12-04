@@ -28,7 +28,7 @@ GRANT USAGE ON SCHEMA master TO editor, visualizador;
 CREATE MATERIALIZED VIEW master.continente_areas_administrativas as
 WITH atributos_freguesias AS (
 	SELECT
-		ea.cod AS dicofre,
+		ea.codigo AS dicofre,
 		ea.nome AS freguesia,
 		m.nome AS municipio,
 		di.nome AS distrito_ilha,
@@ -36,8 +36,8 @@ WITH atributos_freguesias AS (
 		n2.nome AS nuts2,
 		n1.nome AS nuts1
 	FROM base.entidade_administrativa AS ea 
-		JOIN base.municipio AS m ON ea.municipio_dico = m.dico 
-		JOIN base.distrito_ilha AS di ON m.distrito_di = di.di
+		JOIN base.municipio AS m ON ea.municipio_cod = m.codigo
+		JOIN base.distrito_ilha AS di ON m.distrito_cod = di.codigo
 		JOIN base.nuts3 AS n3 ON m.nuts3_cod = n3.codigo
 		JOIN base.nuts2 AS n2 ON n3.nuts2_cod = n2.codigo 
 		JOIN base.nuts1 AS n1 ON n2.nuts1_cod = n1.codigo
@@ -286,6 +286,7 @@ WHERE nivel_limite_admin IS NULL
 ORDER BY t.identificador
 LIMIT 1;
 
+-- Outputs para EuroBoundaries
 
 
 
