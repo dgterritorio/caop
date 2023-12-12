@@ -46,9 +46,9 @@ INSERT INTO dominios.significado_linha (identificador,descricao,nome) VALUES
 	 ('7','Linha que define um limite que se localiza em terra','Limite em Terra'),
 	 ('9','Linha que define um limite que se localiza apenas em massa de água','Limite na Água');
 
-INSERT INTO dominios.tipo_area_administrativa (identificador,descricao,nome) VALUES
-	 ('1','Área principal da entidade administrativa, e que coincidirá com a localização da sede de freguesia','Área Principal'),
-	 ('3','Área geometricamente separada de uma área principal','Área Secundária'),
-	 ('4','Área que tem uma competência específica','Área Especial'),
-	 ('5','Área, que engloba uma massa de água, e que se encontra fora de terra','Área Costeira'),
-	 ('7','Área que se encontra longe de limites de costa, mas que engloba uma massa de água de grandes dimensões','Área de “Águas Interiores”');
+INSERT INTO dominios.tipo_area_administrativa (identificador,descricao,nome, ebm_name) VALUES
+	 ('1','Área principal da entidade administrativa, e que coincidirá com a localização da sede de freguesia','Área Principal', 'Main area'),
+	 ('3','Área geometricamente separada de uma área principal','Área Secundária','Branch area'),
+	 ('4','Área que tem uma competência específica','Área Especial','Special area'),
+	 ('5','Área, que engloba uma massa de água, e que se encontra fora de terra','Área Costeira','Coastal water'),
+	 ('7','Área que se encontra longe de limites de costa, mas que engloba uma massa de água de grandes dimensões','Área de “Águas Interiores”','Inland water');

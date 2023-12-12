@@ -50,7 +50,8 @@ COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'USE. Níveis de admini
 CREATE TABLE dominios.tipo_area_administrativa (
 	identificador varchar(3) PRIMARY KEY,
 	nome VARCHAR(100) NOT NULL,
-	descricao VARCHAR NOT NULL);
+	descricao VARCHAR NOT NULL),
+	ebm_name VARCHAR(100) NOT NULL;
 
 COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'TAA. Tipo de área administrativa de acordo com a distribuição administrativa do território nacional';
 

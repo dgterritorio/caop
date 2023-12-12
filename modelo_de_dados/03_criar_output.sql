@@ -7,6 +7,7 @@
 
 -- query para transformar os trocos em poligonos
 -- e guardar numa tabela temporária
+DROP TABLE IF EXISTS temp.poligonos;
 CREATE TABLE temp.poligonos (
 	id serial PRIMARY KEY,
 	geometria geometry(polygon, 3763)
@@ -287,6 +288,127 @@ ORDER BY t.identificador
 LIMIT 1;
 
 -- Outputs para EuroBoundaries
+-- simplificar os trocos
+-- criar os poligonos
+-- 
 
+-- query para transformar os trocos em poligonos
+-- e guardar numa tabela temporária
+DROP TABLE IF EXISTS temp.ebm_trocos;
+CREATE TABLE TEMP.ebm_trocos AS
+SELECT identificador, st_simplifyvw(geometria,100)::geometry(linestring,3763) AS geometria
+FROM base.troco;
 
+CREATE INDEX ON TEMP.ebm_trocos USING gist(geometria);
 
+DROP TABLE IF EXISTS temp.ebm_poligonos;
+CREATE TABLE temp.ebm_poligonos (
+	id serial PRIMARY KEY,
+	geometria geometry(polygon, 3763)
+);
+
+INSERT INTO temp.ebm_poligonos (geometria)
+SELECT (st_dump(st_polygonize(geometria))).geom AS geom
+FROM temp.ebm_trocos;
+
+CREATE INDEX ON temp.ebm_poligonos USING gist(geometria);
+
+DELETE FROM temp.ebm_poligonos
+WHERE st_area(geometria) < 2500;
+
+CREATE MATERIALIZED VIEW master.ebm_a as
+SELECT
+	concat('_EG.EBM:AA.','PT', ce.entidade_administrativa) AS "InspireId",
+	NULL AS "beginLifeSpanVersion",
+	'PT' AS "ICC",
+	concat('PT', ce.entidade_administrativa) AS "SHN", -- falta separar se OR continente ou ilhas PT1, PT2 ou PT3
+	ce.tipo_area_administrativa_id AS "TAA",
+	st_transform(p.geometria,4258)::geometry(multipolygon, 4258) AS geometria
+FROM TEMP.ebm_poligonos AS p 
+	JOIN base.centroide_ea AS ce ON st_intersects(p.geometria, ce.geometria);
+
+CREATE INDEX ON master.ebm_a USING gist(geometria);
+
+CREATE MATERIALIZED VIEW master.ebm_nam as
+SELECT -- Portugal
+	'PT' AS "ICC",
+	'PT0000000'AS "SHN",
+	2 AS "USE", -- continente
+	2512 AS "ISN", -- continente
+	'Portugal'  AS "NAMN",
+	'Portugal' AS NAMA,
+	'por' AS "NLN",
+	'UNK' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(sum(area_ha)/100)::numeric(15,2) AS "ARA", -- Aqui vamos ter de adicionar a area das ilhas com uma subquery
+	NULL AS "effectiveDate"
+FROM master.continente_distritos
+UNION ALL
+SELECT -- Continente
+	'PT' AS "ICC",
+	'PT1000000'AS "SHN",
+	2 AS "USE", -- continente
+	2512 AS "ISN", -- continente
+	'Continente'  AS "NAMN",
+	'Continente' AS NAMA,
+	'por' AS "NLN",
+	'PT0000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM master.continente_distritos
+UNION ALL
+SELECT -- Distritos continente
+	'PT' AS "ICC",
+	concat('PT1', di, '0000') AS "SHN",
+	3 AS "USE", -- distritos
+	2514 AS "ISN", -- distritos
+	distrito  AS "NAMN",
+	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	'PT1000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.continente_distritos AS cd
+UNION ALL
+SELECT -- Municipios Continente
+	'PT1' AS "ICC",
+	concat('PT1', dico, '00') AS "SHN",
+	4 AS "USE", -- municipios
+	2516 AS "ISN", -- municipios
+	municipio  AS "NAMN",
+	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT1', LEFT(dico,2),'0000') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.continente_municipios AS cf
+UNION ALL
+SELECT -- Freguesias continente
+	'PT1' AS "ICC",
+	concat('PT1', dicofre) AS "SHN",
+	5 AS "USE", -- freguesias
+	2517 AS "ISN", -- freguesia
+	designacao_simplificada AS "NAMN",
+	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT', LEFT(dicofre,4),'00') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.continente_freguesias AS cf;
+    
+FROM base.troco;
+
+GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
+GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
