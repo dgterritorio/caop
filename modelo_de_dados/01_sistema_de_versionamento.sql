@@ -2,19 +2,20 @@
 CREATE OR REPLACE FUNCTION "vrs_table_update"()
 RETURNS trigger AS
 $$
+DECLARE
+    current_timestamp TIMESTAMP := NOW();
 BEGIN
-
     -- actualiza campos de versionamento da tabela original
     IF TG_OP IN ('UPDATE','INSERT') THEN
-        NEW."inicio_objecto" = now();
-        NEW."utilizador" = user;
+        NEW."inicio_objecto" := current_timestamp;
+        NEW."utilizador" := user;
     end IF;
 
     -- copiar linha para a tabela de backup
     IF TG_OP IN ('UPDATE','DELETE') THEN
         EXECUTE 'INSERT INTO versioning.' || quote_ident(TG_TABLE_NAME || '_bk') ||
-                ' SELECT ($1).*;'
-        USING OLD;
+                ' SELECT ($1).*, $2, $3, $4;'
+        USING OLD, current_timestamp, USER, TG_OP;
     end IF;
 
     IF TG_OP IN ('UPDATE','INSERT') THEN
@@ -23,20 +24,6 @@ BEGIN
         RETURN OLD;
     end IF;
 end;
-$$
-LANGUAGE 'plpgsql';
-
--- Cria funcao trigger para registar o utilizador, a hora e a operaçao que levou ao backup
-CREATE OR REPLACE FUNCTION "vsr_bk_table_update"()
-RETURNS trigger AS
-$$
-BEGIN
-    -- actualizar os campos de versioningna tabela de backups
-        NEW.fim_objeto = now();
-        NEW.fim_objecto_utilizador = user;
-		NEW.fim_objecto_operacao = user; -- TODO: Falta implementar
-        RETURN NEW;
-END;
 $$
 LANGUAGE 'plpgsql';
 
@@ -81,11 +68,11 @@ BEGIN
 		' (like ' || _t || ')';
 
 	EXECUTE	'ALTER TABLE ' || bk_table_name ||
-		' ADD COLUMN "bk_id" serial primary key,
-		  ADD COLUMN "fim_objeto" timestamp,
+		' ADD COLUMN "fim_objeto" timestamp,
 		  ADD COLUMN "fim_objecto_utilizador" character varying(40),
-		  ADD COLUMN "fim_objecto_operacao" character varying(40)'
-		  ; -- confirmar se queremos isto, acho que nao fara sentido
+		  ADD COLUMN "fim_objecto_operacao" character varying(40),
+		  ADD COLUMN "bk_id" serial primary key'
+		  ;
 
 	EXECUTE	'CREATE INDEX ' || quote_ident(_table || '_bk_idx') ||
 		' ON ' || bk_table_name || ' (inicio_objecto, fim_objeto)';
@@ -94,9 +81,6 @@ BEGIN
 	EXECUTE 'CREATE TRIGGER ' || quote_ident(_table || '_vrs_trigger') || ' BEFORE INSERT OR DELETE OR UPDATE ON ' || _t ||
 		' FOR EACH ROW EXECUTE PROCEDURE "vrs_table_update"()';
 
-	-- cria trigger para actualizar campos de versionamento na tabela backup
-	EXECUTE 'CREATE TRIGGER ' || quote_ident(_table || '_bk_trigger') || ' BEFORE INSERT ON ' || bk_table_name ||
-		' FOR EACH ROW EXECUTE PROCEDURE "vsr_bk_table_update"()';
 	RETURN true;
 END
 $body$ LANGUAGE plpgsql;
@@ -187,6 +171,32 @@ END
 $$
 LANGUAGE plpgsql;
 
+
+/*
+EXEMPLOS DE USO
+
+-- Adicionar versionamento a uma tabela
+-- Isto irá adicionar os campos necessários, criar tabelas de versionamento e
+-- Activar o triggers
+
+SELECT vsr_add_versioning_to('"base".nuts1');
+
+-- Remove versioning from table
+-- This will remove versioning fields, backup table and related triggers
+
+SELECT vsr_remove_versioning_from('"base".nuts1');
+
+-- See table content at certain time
+SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57');
+
+-- See specific feature at certain time
+SELECT * from vsr_table_at_time (NULL::"base".nuts3, '2023-12-10 18:26:57')
+WHERE identificador = 298b0ff8-71a5-11ee-a363-0383b049fe76;
+
+*/
+
+
+
 -- Aplicar versionamento em todas a tabelas do schema base
 SELECT vsr_add_versioning_to('"base".nuts1');
 SELECT vsr_add_versioning_to('"base".nuts2');
@@ -206,26 +216,27 @@ SELECT vsr_add_versioning_to('"dominios".nivel_limite_administrativo');
 SELECT vsr_add_versioning_to('"dominios".significado_linha');
 SELECT vsr_add_versioning_to('"dominios".tipo_area_administrativa');
 SELECT vsr_add_versioning_to('"dominios".tipo_fonte');
+
 /*
 
-EXEMPLOS DE USO
-
--- Adicionar versionamento a uma tabela
--- Isto irá adicionar os campos necessários, criar tabelas de versionamento e
--- Activar o triggers
-
-SELECT vsr_add_versioning_to('"base".nuts1');
-
--- Remove versioning from table
--- This will remove versioning fields, backup table and related triggers
-
+-- Remover versionamento em todas a tabelas do schema base
 SELECT vsr_remove_versioning_from('"base".nuts1');
+SELECT vsr_remove_versioning_from('"base".nuts2');
+SELECT vsr_remove_versioning_from('"base".nuts3');
+SELECT vsr_remove_versioning_from('"base".distrito_ilha');
+SELECT vsr_remove_versioning_from('"base".municipio');
+SELECT vsr_remove_versioning_from('"base".entidade_administrativa');
+SELECT vsr_remove_versioning_from('"base".troco');
+SELECT vsr_remove_versioning_from('"base".fonte');
+SELECT vsr_remove_versioning_from('"base".lig_troco_fonte');
+SELECT vsr_remove_versioning_from('"base".centroide_ea');
 
--- See table content at certain time
-SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57');
+-- Remover versionamento às tabelas dos dominios
+SELECT vsr_remove_versioning_from('"dominios".caracteres_identificadores_pais');
+SELECT vsr_remove_versioning_from('"dominios".estado_limite_administrativo');
+SELECT vsr_remove_versioning_from('"dominios".nivel_limite_administrativo');
+SELECT vsr_remove_versioning_from('"dominios".significado_linha');
+SELECT vsr_remove_versioning_from('"dominios".tipo_area_administrativa');
+SELECT vsr_remove_versioning_from('"dominios".tipo_fonte');
 
--- See specific feature at certain time
-SELECT * from vsr_table_at_time (NULL::"base".nuts1, '2014-04-19 18:26:57')
-WHERE identificador = 298b0ff8-71a5-11ee-a363-0383b049fe76;
-
-*/
+ */
