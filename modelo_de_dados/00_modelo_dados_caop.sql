@@ -120,18 +120,11 @@ municipio_cod VARCHAR(4) REFERENCES base.municipio(codigo)
 ALTER TABLE base.entidade_administrativa
 ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99') THEN TRUE ELSE municipio_cod = LEFT(codigo, 4) end);
 
------------------------------------------------------------------------------
+-- TABELAS GEOMÉTRICA
+-- Continente 
+-- EPSG:3763
 
-CREATE TABLE base.fonte (
-	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	tipo_fonte varchar(3) REFERENCES dominios.tipo_fonte(identificador),
-	descricao VARCHAR(255) NOT NULL,
-	data date NOT NULL DEFAULT now(),
-	observacoes VARCHAR,
-	diploma VARCHAR(255)
-);
-
-CREATE TABLE base.troco (
+CREATE TABLE base.cont_troco (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
 	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
@@ -145,23 +138,136 @@ CREATE TABLE base.troco (
 	geometria geometry(LINESTRING, 3763)
 );
 
-CREATE INDEX ON base.troco USING gist(geometria);
+CREATE INDEX ON base.cont_troco USING gist(geometria);
 
-CREATE TABLE base.lig_troco_fonte (
+CREATE TABLE base.cont_centroide_ea ( 
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	trocos_id uuid REFERENCES base.troco(identificador),
-	fontes_id uuid REFERENCES base.troco(identificador)
-);
-
-CREATE TABLE base.centroide_ea ( 
-	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(cod),
+	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(codigo),
 	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
 	geometria geometry(POINT, 3763) NOT NULL
 );
 
+CREATE INDEX ON base.cont_centroide_ea USING gist(geometria);
 
-CREATE INDEX ON base.centroide_ea USING gist(geometria);
+-- Região Autónoma da Madeira
+-- EPSG:5016
+
+CREATE TABLE base.ram_troco (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	pais VARCHAR(5) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
+	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
+	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
+	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
+	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
+	             -- tem de ser criada uma referencia para os trocos apagados
+	             -- vamos precisar de uma ferramenta especifica para fazer o split
+	geometria geometry(LINESTRING, 5016)
+);
+
+CREATE INDEX ON base.ram_troco USING gist(geometria);
+
+CREATE TABLE base.ram_centroide_ea ( 
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(codigo),
+	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
+	geometria geometry(POINT, 5016) NOT NULL
+);
+
+CREATE INDEX ON base.ram_centroide_ea USING gist(geometria);
+
+
+-- Região Autónoma dos Açores
+-- Grupo Ocidental EPSG:5014
+
+CREATE TABLE base.raa_oci_troco (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	pais VARCHAR(5) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
+	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
+	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
+	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
+	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
+	             -- tem de ser criada uma referencia para os trocos apagados
+	             -- vamos precisar de uma ferramenta especifica para fazer o split
+	geometria geometry(LINESTRING, 5014)
+);
+
+CREATE INDEX ON base.raa_oci_troco USING gist(geometria);
+
+CREATE TABLE base.raa_oci_centroide_ea ( 
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(codigo),
+	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
+	geometria geometry(POINT, 5014) NOT NULL
+);
+
+CREATE INDEX ON base.raa_oci_centroide_ea USING gist(geometria);
+
+-- Região Autónoma dos Açores
+-- Grupo Central e Oriental EPSG:5015
+
+CREATE TABLE base.raa_cen_ori_troco (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	ea_direita VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	ea_esquerda VARCHAR(8) REFERENCES base.entidade_administrativa(codigo), -- será que é necessário ou podemos preencher à posteriori na tabela de exportação?
+	pais VARCHAR(5) REFERENCES dominios.caracteres_identificadores_pais(identificador), -- ICC
+	estado_limite_admin VARCHAR(3) REFERENCES dominios.estado_limite_administrativo(identificador), --BST
+	significado_linha VARCHAR(3) REFERENCES dominios.significado_linha(identificador), --MOL
+	nivel_limite_admin VARCHAR(3) REFERENCES dominios.nivel_limite_administrativo(identificador), --USE
+	troco_parente uuid, -- para guardar relacao com troco original em caso de cortes 
+	             -- tem de ser criada uma referencia para os trocos apagados
+	             -- vamos precisar de uma ferramenta especifica para fazer o split
+	geometria geometry(LINESTRING, 5015)
+);
+
+CREATE INDEX ON base.raa_cen_ori_troco USING gist(geometria);
+
+CREATE TABLE base.raa_cen_ori_centroide_ea ( 
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	entidade_administrativa VARCHAR(8) REFERENCES base.entidade_administrativa(codigo),
+	tipo_area_administrativa_id VARCHAR(3) REFERENCES dominios.tipo_area_administrativa(identificador),
+	geometria geometry(POINT, 5015) NOT NULL
+);
+
+CREATE INDEX ON base.raa_cen_ori_centroide_ea USING gist(geometria);
+
+-- FONTES
+
+CREATE TABLE base.fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	tipo_fonte varchar(3) REFERENCES dominios.tipo_fonte(identificador),
+	descricao VARCHAR(255) NOT NULL,
+	data date NOT NULL DEFAULT now(),
+	observacoes VARCHAR,
+	diploma VARCHAR(255)
+);
+
+CREATE TABLE base.lig_cont_troco_fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	troco_id uuid REFERENCES base.cont_troco(identificador),
+	fonte_id uuid REFERENCES base.fonte(identificador)
+);
+
+CREATE TABLE base.lig_ram_troco_fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	troco_id uuid REFERENCES base.ram_troco(identificador),
+	fonte_id uuid REFERENCES base.fonte(identificador)
+);
+
+CREATE TABLE base.lig_raa_oci_troco_fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	troco_id uuid REFERENCES base.raa_oci_troco(identificador),
+	fonte_id uuid REFERENCES base.fonte(identificador)
+);
+
+CREATE TABLE base.lig_raa_cen_ori_troco_fonte (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	troco_id uuid REFERENCES base.raa_cen_ori_troco(identificador),
+	fonte_id uuid REFERENCES base.fonte(identificador)
+);
 
 CREATE SCHEMA VERSIONING;
 
