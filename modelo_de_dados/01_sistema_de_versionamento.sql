@@ -1,7 +1,7 @@
 -- Criar função trigger para actualizar os campos de versionamento e efectuar backup de linhas alteradas ou removidas
 CREATE OR REPLACE FUNCTION "vrs_table_update"()
 RETURNS trigger AS
-$$
+$body$
 DECLARE
     current_timestamp TIMESTAMP := NOW();
 BEGIN
@@ -23,9 +23,8 @@ BEGIN
     ELSE
         RETURN OLD;
     end IF;
-end;
-$$
-LANGUAGE 'plpgsql';
+END;
+$body$ LANGUAGE 'plpgsql';
 
 -- Cria função para adicionar os campos de versionamento, criar tabela de backup e activa triggers
 CREATE OR REPLACE FUNCTION "vsr_add_versioning_to"(_t regclass)
@@ -79,7 +78,7 @@ BEGIN
 
 	-- cria trigger para actualizar campos de versionamento na tabela original
 	EXECUTE 'CREATE TRIGGER ' || quote_ident(_table || '_vrs_trigger') || ' BEFORE INSERT OR DELETE OR UPDATE ON ' || _t ||
-		' FOR EACH ROW EXECUTE PROCEDURE "vrs_table_update"()';
+		' FOR EACH ROW WHEN ((pg_trigger_depth() < 1)) EXECUTE PROCEDURE "vrs_table_update"()';
 
 	RETURN true;
 END
@@ -126,7 +125,7 @@ $body$ LANGUAGE plpgsql;
 -- Function to visualize tables in prior state in time
 CREATE OR REPLACE FUNCTION "vsr_table_at_time"(_t anyelement, _d timestamp)
 RETURNS SETOF anyelement AS
-$$
+$body$
 DECLARE
 	_tfn text;
 	_schema text;
@@ -168,8 +167,7 @@ BEGIN
 	  ORDER BY identificador, inicio_objecto DESC', pg_typeof(_t), _col, _table_bk)
 	  USING _d;
 END
-$$
-LANGUAGE plpgsql;
+$body$ LANGUAGE plpgsql;
 
 
 /*
@@ -204,10 +202,10 @@ SELECT vsr_add_versioning_to('"base".nuts3');
 SELECT vsr_add_versioning_to('"base".distrito_ilha');
 SELECT vsr_add_versioning_to('"base".municipio');
 SELECT vsr_add_versioning_to('"base".entidade_administrativa');
-SELECT vsr_add_versioning_to('"base".troco');
 SELECT vsr_add_versioning_to('"base".fonte');
 SELECT vsr_add_versioning_to('"base".lig_troco_fonte');
-SELECT vsr_add_versioning_to('"base".centroide_ea');
+SELECT vsr_add_versioning_to('"base".cont_centroide_ea');
+SELECT vsr_add_versioning_to('"base".cont_troco');
 
 -- Aplicar versionamento às tabelas dos dominios
 SELECT vsr_add_versioning_to('"dominios".caracteres_identificadores_pais');
@@ -216,6 +214,10 @@ SELECT vsr_add_versioning_to('"dominios".nivel_limite_administrativo');
 SELECT vsr_add_versioning_to('"dominios".significado_linha');
 SELECT vsr_add_versioning_to('"dominios".tipo_area_administrativa');
 SELECT vsr_add_versioning_to('"dominios".tipo_fonte');
+
+GRANT USAGE ON SCHEMA versioning TO administrador, editor, visualizador;
+GRANT SELECT ON ALL TABLES IN SCHEMA versioning TO editor, visualizador;
+GRANT UPDATE, DELETE, INSERT ON ALL TABLES IN SCHEMA versioning TO administrador;
 
 /*
 
@@ -226,10 +228,10 @@ SELECT vsr_remove_versioning_from('"base".nuts3');
 SELECT vsr_remove_versioning_from('"base".distrito_ilha');
 SELECT vsr_remove_versioning_from('"base".municipio');
 SELECT vsr_remove_versioning_from('"base".entidade_administrativa');
-SELECT vsr_remove_versioning_from('"base".troco');
 SELECT vsr_remove_versioning_from('"base".fonte');
 SELECT vsr_remove_versioning_from('"base".lig_troco_fonte');
-SELECT vsr_remove_versioning_from('"base".centroide_ea');
+SELECT vsr_remove_versioning_from('"base".cont_troco');
+SELECT vsr_remove_versioning_from('"base".cont_centroide_ea');
 
 -- Remover versionamento às tabelas dos dominios
 SELECT vsr_remove_versioning_from('"dominios".caracteres_identificadores_pais');
