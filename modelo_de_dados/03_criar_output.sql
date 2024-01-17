@@ -44,7 +44,7 @@ BEGIN
 			id serial PRIMARY KEY,
 			geometria geometry(polygon, %3$s)
 			);
-		DROP INDEX IF EXISTS cont_poligonos_temp_geometria_idx;
+		DROP INDEX IF EXISTS %2$s_poligonos_temp_geometria_idx;
 		TRUNCATE TABLE %1$I.%2$s_poligonos_temp RESTART IDENTITY;'
 		, output_schema, prefixo, epsg);
 
@@ -53,7 +53,7 @@ BEGIN
 		SELECT (st_dump(st_polygonize(geometria))).geom AS geom
 		FROM vsr_table_at_time (NULL::base.%2$s_troco, %3$L::timestamp);
 
-		CREATE INDEX IF NOT EXISTS cont_poligonos_temp_geometria_idx ON %1$I.%2$s_poligonos_temp USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_poligonos_temp_geometria_idx ON %1$I.%2$s_poligonos_temp USING gist(geometria);'
 		, output_schema, prefixo, data_hora);
 
 	-- Spatial Join entre os poligonos gerados temporariamente e os centroides para criar as
@@ -97,7 +97,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_areas_administrativas;
 
-		CREATE INDEX IF NOT EXISTS cont_areas_administrativas_geometria_idx ON %1$I.%2$s_areas_administrativas USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_areas_administrativas_geometria_idx ON %1$I.%2$s_areas_administrativas USING gist(geometria);'
 		, output_schema, prefixo, epsg);
 
 	-- Agrega das areas administrativas por entidade administrativa (dicofre)
@@ -122,7 +122,7 @@ BEGIN
 		
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_freguesias;
 
-		CREATE INDEX IF NOT EXISTS cont_freguesias_geometria_idx ON %1$I.%2$s_freguesias USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_freguesias_geometria_idx ON %1$I.%2$s_freguesias USING gist(geometria);'
 		, output_schema, prefixo, epsg);
 
 	-- Agrega as freguesias em municípios pelo (dico) futuro dtmn
@@ -145,7 +145,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_municipios;
 
-		CREATE INDEX IF NOT EXISTS cont_municipios_geometria_idx ON %1$I.%2$s_municipios USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_municipios_geometria_idx ON %1$I.%2$s_municipios USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
 	-- agrega os concelhos em distritos
@@ -166,7 +166,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_distritos;
 
-		CREATE INDEX IF NOT EXISTS cont_distritos_geometria_idx ON %1$I.%2$s_distritos USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_distritos_geometria_idx ON %1$I.%2$s_distritos USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
 	-- agrega os municípios em nuts3
@@ -190,7 +190,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts3;
 
-		CREATE INDEX IF NOT EXISTS	cont_nuts3_geometria_idx ON %1$I.%2$s_nuts3 USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS	%2$s_nuts3_geometria_idx ON %1$I.%2$s_nuts3 USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
 	-- agreda as nuts3 em nuts2
@@ -212,7 +212,7 @@ BEGIN
 		
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts2;
 
-		CREATE INDEX IF NOT EXISTS	cont_nuts2_geometria_idx ON %1$I.%2$s_nuts2 USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS	%2$s_nuts2_geometria_idx ON %1$I.%2$s_nuts2 USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
 	-- agreda as nuts2 em nuts1
@@ -233,7 +233,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts1;
 
-		CREATE INDEX IF NOT EXISTS	cont_nuts1_geometria_idx ON %1$I.%2$s_nuts1 USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS	%2$s_nuts1_geometria_idx ON %1$I.%2$s_nuts1 USING gist(geometria);'
 		, output_schema, prefixo, epsg);
 
 	-- actualiza permissões do schema
@@ -503,7 +503,7 @@ GRANT EXECUTE ON FUNCTION public.gerar_trocos_caop(text, text, timestamp) TO adm
 REVOKE ALL ON FUNCTION public.actualizar_trocos(text) FROM public;
 GRANT EXECUTE ON FUNCTION public.actualizar_trocos(text) TO administrador, editor;
 
--- TRIGGERS
+-- TRIGGERS PARA AUTOMATICAMENTE GERAR OS POLIGONOS, PREENCHER TROCOS e ACTUALIZAR VIEWS DE VALIDACAO
 
 CREATE OR REPLACE FUNCTION public.tr_gerar_outputs()
  RETURNS trigger
@@ -511,16 +511,16 @@ CREATE OR REPLACE FUNCTION public.tr_gerar_outputs()
 AS $body$
 BEGIN
 	BEGIN
-		PERFORM actualizar_poligonos_caop('master','cont');
+		PERFORM actualizar_poligonos_caop('master',TG_ARGV[0]);
 	END;
 	BEGIN
-		PERFORM actualizar_trocos('cont');
+		PERFORM actualizar_trocos(TG_ARGV[0]);
 	END;
 	BEGIN
-		PERFORM gerar_trocos_caop('master','cont');
+		PERFORM gerar_trocos_caop('master',TG_ARGV[0]);
 	END;
 	BEGIN
-		PERFORM	tr_actualizar_validacao(); -- Apenas funciona para o continente
+		PERFORM	tr_actualizar_validacao(TG_ARGV[0]); 
 	END;
 	RETURN NULL;
 END;
@@ -531,14 +531,51 @@ CREATE OR REPLACE TRIGGER tr_base_cont_trocos_ai AFTER
 DELETE OR INSERT OR UPDATE ON base.cont_troco
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
-EXECUTE FUNCTION tr_gerar_outputs();
+EXECUTE FUNCTION tr_gerar_outputs('cont');
 
 CREATE OR REPLACE TRIGGER tr_base_cont_centroides_ai AFTER
 DELETE OR INSERT OR UPDATE ON base.cont_centroide_ea
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
-EXECUTE FUNCTION tr_gerar_outputs();
+EXECUTE FUNCTION tr_gerar_outputs('cont');
 
+CREATE OR REPLACE TRIGGER tr_base_ram_trocos_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.ram_troco
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('ram');
+
+CREATE OR REPLACE TRIGGER tr_base_ram_centroides_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.ram_centroide_ea
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('ram');
+
+CREATE OR REPLACE TRIGGER tr_base_raa_oci_trocos_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.raa_oci_troco
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('raa_oci');
+
+CREATE OR REPLACE TRIGGER tr_base_raa_oci_centroides_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.raa_oci_centroide_ea
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('raa_oci');
+
+CREATE OR REPLACE TRIGGER tr_base_raa_cen_ori_trocos_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.raa_cen_ori_troco
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('raa_cen_ori');
+
+CREATE OR REPLACE TRIGGER tr_base_raa_cen_ori_centroides_ai AFTER
+DELETE OR INSERT OR UPDATE ON base.raa_cen_ori_centroide_ea
+FOR EACH STATEMENT
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION tr_gerar_outputs('raa_cen_ori');
+
+-- TRIGGER PARA LIMPAR CAMPOS QUE NECESSITAM DE SER ACTAULIZADOS APOS EDICAO DOS TROCOS
 -- Função para Limpar os campos que devem ser preenchidos automaticamente
 -- Pela função actualizar actualizar_trocos()
 
@@ -562,6 +599,28 @@ INSERT OR UPDATE ON base.cont_troco
 FOR EACH ROW
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION public.tr_limpar_campos_trocos();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_trocos_bi BEFORE
+INSERT OR UPDATE ON base.ram_troco
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_trocos();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_trocos_bi BEFORE
+INSERT OR UPDATE ON base.raa_oci_troco
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_trocos();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_trocos_bi BEFORE
+INSERT OR UPDATE ON base.raa_cen_ori_troco
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_trocos();
+
+-- TRIGGER PARA LIMPAR CAMPOS QUE NECESSITAM DE SER ACTAULIZADOS APOS EDICAO DOS CENTROIDES
+-- Função para Limpar os campos que devem ser preenchidos automaticamente
+-- Pela função actualizar actualizar_trocos()
 
 CREATE OR REPLACE FUNCTION public.tr_limpar_campos_centroides()
  RETURNS trigger
@@ -600,6 +659,28 @@ DELETE OR UPDATE ON base.cont_centroide_ea
 FOR EACH ROW
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION public.tr_limpar_campos_centroides();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_centroides_bi BEFORE
+DELETE OR UPDATE ON base.ram_centroide_ea
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_centroides();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_centroides_bi BEFORE
+DELETE OR UPDATE ON base.raa_oci_centroide_ea
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_centroides();
+
+CREATE OR REPLACE TRIGGER tr_limpar_campos_centroides_bi BEFORE
+DELETE OR UPDATE ON base.raa_cen_ori_centroide_ea
+FOR EACH ROW
+WHEN ((pg_trigger_depth() < 1))
+EXECUTE FUNCTION public.tr_limpar_campos_centroides();
+
+
+--- FIM DO SCRIPT ARQUIVO
+
 
 -- query para transformar os trocos em poligonos
 -- e guardar numa tabela temporária

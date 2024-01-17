@@ -206,6 +206,12 @@ SELECT vsr_add_versioning_to('"base".fonte');
 SELECT vsr_add_versioning_to('"base".lig_troco_fonte');
 SELECT vsr_add_versioning_to('"base".cont_centroide_ea');
 SELECT vsr_add_versioning_to('"base".cont_troco');
+SELECT vsr_add_versioning_to('"base".ram_centroide_ea');
+SELECT vsr_add_versioning_to('"base".ram_troco');
+SELECT vsr_add_versioning_to('"base".raa_oci_centroide_ea');
+SELECT vsr_add_versioning_to('"base".raa_oci_troco');
+SELECT vsr_add_versioning_to('"base".raa_cen_ori_centroide_ea');
+SELECT vsr_add_versioning_to('"base".raa_cen_ori_troco');
 
 -- Aplicar versionamento às tabelas dos dominios
 SELECT vsr_add_versioning_to('"dominios".caracteres_identificadores_pais');
