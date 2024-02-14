@@ -38,7 +38,10 @@ from qgis.core import (
     QgsSettings,
 )
 
+from processing import execAlgorithmDialog
+
 from caop_tools.split_line_tool import SplitLineTool
+from caop_tools.processing.provider import CaopToolsProvider
 
 plugin_path = os.path.dirname(__file__)
 
@@ -55,7 +58,14 @@ class CaopToolsPlugin:
             self.translator.load(qmPath)
             QCoreApplication.installTranslator(self.translator)
 
+        self.provider = CaopToolsProvider()
+
+    def initProcessing(self):
+        QgsApplication.processingRegistry().addProvider(self.provider)
+
     def initGui(self):
+        self.initProcessing()
+
         self.toolbar = self.iface.addToolBar(self.tr("CAOP Tools"))
         self.toolbar.setToolTip(self.tr("CAOP Tools"))
         self.toolbar.setObjectName("caopToolsToolBar")
@@ -67,7 +77,6 @@ class CaopToolsPlugin:
         self.action_split.setObjectName("caopSplitLineAction")
         self.action_split.setCheckable(True)
         self.action_split.triggered.connect(self.split_line)
-
         self.toolbar.addAction(self.action_split)
 
         settings = QgsSettings()
@@ -85,6 +94,43 @@ class CaopToolsPlugin:
         self.edit_comment.setCompleter(completer)
         self.edit_comment.editingFinished.connect(self.update_comment)
         self.toolbar.addWidget(self.edit_comment)
+
+        self.toolbar.addSeparator()
+        self.action_update_master = QAction(
+            self.tr("Update master outputs"), self.iface.mainWindow()
+        )
+        self.action_update_master.setIcon(
+            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+        )
+        self.action_update_master.setObjectName("caopSplitLineAction")
+        self.action_update_master.triggered.connect(
+            lambda: execAlgorithmDialog("caoptools:updatemasteroutputs")
+        )
+        self.toolbar.addAction(self.action_update_master)
+
+        self.action_update_validation = QAction(
+            self.tr("Update validation layers"), self.iface.mainWindow()
+        )
+        self.action_update_validation.setIcon(
+            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+        )
+        self.action_update_validation.setObjectName("caopSplitLineAction")
+        self.action_update_validation.triggered.connect(
+            lambda: execAlgorithmDialog("caoptools:updatevalidationlayers")
+        )
+        self.toolbar.addAction(self.action_update_validation)
+
+        self.action_generate_version = QAction(
+            self.tr("Generate CAOP version"), self.iface.mainWindow()
+        )
+        self.action_generate_version.setIcon(
+            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+        )
+        self.action_generate_version.setObjectName("caopSplitLineAction")
+        self.action_generate_version.triggered.connect(
+            lambda: execAlgorithmDialog("caoptools:generatecaopversion")
+        )
+        self.toolbar.addAction(self.action_generate_version)
 
         if motives:
             self.edit_comment.setText(motives[0])
@@ -113,6 +159,8 @@ class CaopToolsPlugin:
 
         del self.tool_split
         del self.toolbar
+
+        QgsApplication.processingRegistry().removeProvider(self.provider)
 
     def split_line(self):
         self.iface.mapCanvas().setMapTool(self.tool_split)
