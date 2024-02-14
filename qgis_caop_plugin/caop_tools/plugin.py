@@ -102,7 +102,7 @@ class CaopToolsPlugin:
         self.action_update_master.setIcon(
             QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
         )
-        self.action_update_master.setObjectName("caopSplitLineAction")
+        self.action_update_master.setObjectName("caopUpdateMasterAction")
         self.action_update_master.triggered.connect(
             lambda: execAlgorithmDialog("caoptools:updatemasteroutputs")
         )
@@ -114,7 +114,7 @@ class CaopToolsPlugin:
         self.action_update_validation.setIcon(
             QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
         )
-        self.action_update_validation.setObjectName("caopSplitLineAction")
+        self.action_update_validation.setObjectName("caopUpdateValidationAction")
         self.action_update_validation.triggered.connect(
             lambda: execAlgorithmDialog("caoptools:updatevalidationlayers")
         )
@@ -126,7 +126,7 @@ class CaopToolsPlugin:
         self.action_generate_version.setIcon(
             QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
         )
-        self.action_generate_version.setObjectName("caopSplitLineAction")
+        self.action_generate_version.setObjectName("caopGenerateVersionAction")
         self.action_generate_version.triggered.connect(
             lambda: execAlgorithmDialog("caoptools:generatecaopversion")
         )

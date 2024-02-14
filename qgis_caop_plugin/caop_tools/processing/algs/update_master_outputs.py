@@ -100,18 +100,18 @@ class UpdateMasterOutputs(QgsProcessingAlgorithm):
         multi_feedback = QgsProcessingMultiStepFeedback(3, feedback)
 
         try:
-            multi_feedback.setCurrentStep(1)
             conn.executeSql(
                 f"SELECT public.actualizar_poligonos_caop('master', '{region}')", multi_feedback
             )
-            multi_feedback.setCurrentStep(2)
+            multi_feedback.setCurrentStep(1)
             conn.executeSql(
                 f"SELECT public.actualizar_trocos('{region}')", multi_feedback
             )
-            multi_feedback.setCurrentStep(3)
+            multi_feedback.setCurrentStep(2)
             conn.executeSql(
                 f"SELECT public.gerar_trocos_caop('master', '{region}')", multi_feedback
             )
+            multi_feedback.setCurrentStep(3)
         except QgsProviderConnectionException as e:
             raise QgsProcessingException(
                 self.tr("Error executing database function: {}".format(e))
