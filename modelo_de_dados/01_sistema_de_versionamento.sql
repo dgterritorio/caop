@@ -6,7 +6,8 @@ DECLARE
     current_timestamp TIMESTAMP := NOW();
 BEGIN
     -- actualiza campos de versionamento da tabela original
-    IF TG_OP IN ('UPDATE','INSERT') THEN
+	-- em caso de update, só se houver alteração nos campos
+    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW != OLD) THEN
         NEW."inicio_objecto" := current_timestamp;
         NEW."utilizador" := user;
     end IF;
