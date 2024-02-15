@@ -221,7 +221,7 @@ WITH inter AS (
 	GROUP BY cpt.id)
 SELECT 
 	id,
-	geometria::geometry(polygon, 3763),
+	geometria::geometry(polygon, 5016),
 	CASE WHEN n_centroides = 0 THEN 'Falta de centroide'
 	ELSE 'Excesso de centroides'
 	END AS Erro,
@@ -344,7 +344,7 @@ WITH inter AS (
 	GROUP BY cpt.id)
 SELECT 
 	id,
-	geometria::geometry(polygon, 3763),
+	geometria::geometry(polygon, 5014),
 	CASE WHEN n_centroides = 0 THEN 'Falta de centroide'
 	ELSE 'Excesso de centroides'
 	END AS Erro,
