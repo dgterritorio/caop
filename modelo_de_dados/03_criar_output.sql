@@ -327,7 +327,7 @@ BEGIN
 	EXECUTE format('
 		CREATE MATERIALIZED VIEW IF NOT EXISTS %1$I.%2$s_trocos AS
 			SELECT
-				row_number() OVER () AS id,
+				t.identificador,
 				ea_direita,
 				ea_esquerda,
 				cip.nome AS paises,
@@ -345,7 +345,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_trocos;
 
-		CREATE INDEX ON %1$I.%2$s_trocos USING gist(geometria);'
+		CREATE INDEX IF NOT EXISTS %2$s_trocos_geometria_idx ON %1$I.%2$s_trocos USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
 	RETURN TRUE;
@@ -353,12 +353,7 @@ END;
 $body$
 LANGUAGE 'plpgsql';
 
-SELECT gerar_poligonos_caop('master3','cont','2023-12-19 18:26:57');
-SELECT gerar_poligonos_caop('master','cont');
-SELECT gerar_poligonos_caop('master3');
-SELECT gerar_trocos_caop('master','cont');
-SELECT gerar_trocos_caop('master3','cont','2023-12-19 18:26:57');
-SELECT gerar_trocos_caop('master3','cont');
+
 
 -- Criar função que actualiza os campos ea_esquerda e ea_direita da camada troços com base
 -- nos polígonos criados pelas últimas alterações
@@ -390,6 +385,7 @@ BEGIN
 
 	-- obter as fronteiras de todas as entidades administrativas
 	EXECUTE format('
+		DROP TABLE IF EXISTS %1$s_ea_boundaries;
 		CREATE TEMPORARY TABLE %1$s_ea_boundaries ON COMMIT DROP AS
 		SELECT cea.dicofre, ((st_dump(st_boundary(cea.geometria))).geom)::geometry(linestring,%2$s) AS geometria
 		FROM master.%1$s_areas_administrativas AS cea;
@@ -399,6 +395,7 @@ BEGIN
 
 	-- para cada linha com ea_direita ou ea_esquerda vazia, obter os dicofre correspondentes
 	EXECUTE format('
+		DROP TABLE IF EXISTS %1$s_lados_em_falta;
 		CREATE TEMPORARY TABLE %1$s_lados_em_falta ON COMMIT DROP AS
 			WITH linhas AS (
 			SELECT t.identificador,
@@ -412,7 +409,7 @@ BEGIN
 				JOIN %1$s_ea_boundaries AS cf
 				    ON st_contains(cf.geometria, t.geometria)
 					--ON t.geometria && cf.geometria AND st_relate(t.geometria, cf.geometria,''1*F**F***'')
-			WHERE t.ea_esquerda IS NULL OR t.ea_direita IS NULL
+			--WHERE t.ea_esquerda IS NULL OR t.ea_direita IS NULL
 			)
 			SELECT
 			    identificador,
@@ -468,7 +465,6 @@ BEGIN
 			nivel_limite_admin = NULL
 		WHERE significado_linha IN (''1'',''9'');
 
-
 		UPDATE base.%1$s_troco AS t SET
 			nivel_limite_admin = 3
 		FROM master.%1$s_distritos AS d
@@ -490,6 +486,34 @@ END;
 $body$
 LANGUAGE 'plpgsql';
 
+CREATE VIEW master.inf_fonte_troco AS 
+WITH all_fontes AS (
+SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte, f.descricao, f.DATA, f.observacoes, f.diploma
+FROM base.cont_troco AS ct 
+	JOIN base.lig_cont_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
+	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
+	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
+UNION ALL
+SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
+FROM base.ram_troco AS ct 
+	JOIN base.lig_ram_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
+	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
+	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
+UNION ALL
+SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
+FROM base.raa_oci_troco AS ct 
+	JOIN base.lig_raa_oci_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
+	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
+	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
+UNION ALL
+SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
+FROM base.raa_cen_ori_troco AS ct 
+	JOIN base.lig_raa_cen_ori_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
+	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
+	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte)
+SELECT ROW_NUMBER() OVER() AS id, a.*
+FROM all_fontes AS a;
+
 -- Por definição todas as funções têm permissão de execute
 -- Por isso retiramos todas as permissões e apenas damos a editores e administradores
 REVOKE ALL ON FUNCTION public.gerar_poligonos_caop(text, text, timestamp) FROM public;
@@ -503,8 +527,19 @@ GRANT EXECUTE ON FUNCTION public.gerar_trocos_caop(text, text, timestamp) TO adm
 REVOKE ALL ON FUNCTION public.actualizar_trocos(text) FROM public;
 GRANT EXECUTE ON FUNCTION public.actualizar_trocos(text) TO administrador, editor;
 
--- TRIGGERS PARA AUTOMATICAMENTE GERAR OS POLIGONOS, PREENCHER TROCOS e ACTUALIZAR VIEWS DE VALIDACAO
+-- TESTES
 
+SELECT gerar_poligonos_caop('master3','cont','2023-12-19 18:26:57');
+SELECT gerar_poligonos_caop('master','cont');
+SELECT gerar_poligonos_caop('master3');
+SELECT public.actualizar_trocos('cont');
+SELECT gerar_trocos_caop('master','cont');
+SELECT gerar_trocos_caop('master3','cont','2023-12-19 18:26:57');
+SELECT gerar_trocos_caop('master3','cont');
+
+
+-- TRIGGERS PARA AUTOMATICAMENTE GERAR OS POLIGONOS, PREENCHER TROCOS e ACTUALIZAR VIEWS DE VALIDACAO
+-- NAO ESTÃO ACTIVOS POIS ERAM DEMASIADO LENTOS
 CREATE OR REPLACE FUNCTION public.tr_gerar_outputs()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -527,8 +562,15 @@ END;
 $body$
 ;
 
+
+SELECT actualizar_poligonos_caop('master','cont'); --35 seg
+SELECT actualizar_trocos('cont'); -- 35 seg
+SELECT gerar_trocos_caop('master','cont'); -- imediato
+SELECT tr_actualizar_validacao('cont'); --20 segundos
+
+
 CREATE OR REPLACE TRIGGER tr_base_cont_trocos_ai AFTER
-DELETE OR INSERT OR UPDATE ON base.cont_troco
+DELETE OR INSERT OR UPDATE OF pais, estado_limite_admin, significado_linha, geometria  ON base.cont_troco
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('cont');
@@ -540,7 +582,7 @@ WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('cont');
 
 CREATE OR REPLACE TRIGGER tr_base_ram_trocos_ai AFTER
-DELETE OR INSERT OR UPDATE ON base.ram_troco
+DELETE OR INSERT OR UPDATE OF pais, estado_limite_admin, significado_linha, geometria ON base.ram_troco
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('ram');
@@ -552,7 +594,7 @@ WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('ram');
 
 CREATE OR REPLACE TRIGGER tr_base_raa_oci_trocos_ai AFTER
-DELETE OR INSERT OR UPDATE ON base.raa_oci_troco
+DELETE OR INSERT OR UPDATE OF pais, estado_limite_admin, significado_linha, geometria ON base.raa_oci_troco
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('raa_oci');
@@ -564,7 +606,7 @@ WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('raa_oci');
 
 CREATE OR REPLACE TRIGGER tr_base_raa_cen_ori_trocos_ai AFTER
-DELETE OR INSERT OR UPDATE ON base.raa_cen_ori_troco
+DELETE OR INSERT OR UPDATE OF pais, estado_limite_admin, significado_linha, geometria ON base.raa_cen_ori_troco
 FOR EACH STATEMENT
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION tr_gerar_outputs('raa_cen_ori');
@@ -678,6 +720,9 @@ FOR EACH ROW
 WHEN ((pg_trigger_depth() < 1))
 EXECUTE FUNCTION public.tr_limpar_campos_centroides();
 
+
+SELECT actualizar_poligonos_caop('master','cont');
+SELECT gerar_trocos_caop('master','cont')
 
 --- FIM DO SCRIPT ARQUIVO
 
@@ -979,42 +1024,128 @@ LIMIT 1;
 
 -- query para transformar os trocos em poligonos
 -- e guardar numa tabela temporária
-DROP TABLE IF EXISTS temp.ebm_trocos;
-CREATE TABLE TEMP.ebm_trocos AS
-SELECT identificador, st_simplifyvw(geometria,100)::geometry(linestring,3763) AS geometria
-FROM base.troco;
+DROP TABLE IF EXISTS temp.ebm_cont_trocos;
+CREATE TABLE TEMP.ebm_cont_trocos AS
+SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
+FROM base.cont_troco;
 
-CREATE INDEX ON TEMP.ebm_trocos USING gist(geometria);
+DROP TABLE IF EXISTS temp.ebm_ram_trocos;
+CREATE TABLE TEMP.ebm_ram_trocos AS
+SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
+FROM base.ram_troco;
 
-DROP TABLE IF EXISTS temp.ebm_poligonos;
+DROP TABLE IF EXISTS temp.ebm_raa_oci_trocos;
+CREATE TABLE TEMP.ebm_raa_oci_trocos AS
+SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
+FROM base.raa_oci_troco;
+
+DROP TABLE IF EXISTS temp.ebm_raa_cen_ori_trocos;
+CREATE TABLE TEMP.ebm_raa_cen_ori_trocos AS
+SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
+FROM base.raa_cen_ori_troco;
+
+CREATE INDEX ON TEMP.ebm_cont_trocos USING gist(geometria);
+CREATE INDEX ON TEMP.ebm_ram_trocos USING gist(geometria);
+CREATE INDEX ON TEMP.ebm_raa_oci_trocos USING gist(geometria);
+CREATE INDEX ON TEMP.ebm_raa_cen_ori_trocos USING gist(geometria);
+
+DROP TABLE IF EXISTS temp.ebm_poligonos CASCADE;
 CREATE TABLE temp.ebm_poligonos (
 	id serial PRIMARY KEY,
-	geometria geometry(polygon, 3763)
+	geometria geometry(polygon, 4258)
 );
 
 INSERT INTO temp.ebm_poligonos (geometria)
-SELECT (st_dump(st_polygonize(geometria))).geom AS geom
-FROM temp.ebm_trocos;
+WITH poly AS (
+	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
+	FROM temp.ebm_cont_trocos
+)
+SELECT st_transform(geom, 4258)
+FROM poly 
+WHERE st_area(geom) >= 2500;
+
+INSERT INTO temp.ebm_poligonos (geometria)
+WITH poly AS (
+	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
+	FROM temp.ebm_ram_trocos
+)
+SELECT st_transform(geom, 4258)
+FROM poly 
+WHERE st_area(geom) >= 2500;
+
+INSERT INTO temp.ebm_poligonos (geometria)
+WITH poly AS (
+	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
+	FROM temp.ebm_raa_oci_trocos
+)
+SELECT st_transform(geom, 4258)
+FROM poly 
+WHERE st_area(geom) >= 2500;
+
+INSERT INTO temp.ebm_poligonos (geometria)
+WITH poly AS (
+	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
+	FROM temp.ebm_raa_cen_ori_trocos
+)
+SELECT st_transform(geom, 4258)
+FROM poly 
+WHERE st_area(geom) >= 2500;
 
 CREATE INDEX ON temp.ebm_poligonos USING gist(geometria);
 
-DELETE FROM temp.ebm_poligonos
-WHERE st_area(geometria) < 2500;
+DROP TABLE IF EXISTS temp.ebm_centroides CASCADE;
+CREATE TABLE temp.ebm_centroides AS
+SELECT 
+	entidade_administrativa,
+	tipo_area_administrativa_id,
+	'1' AS shn_prefix,
+	st_transform(geometria,4258)::geometry(point,4258) AS geometria
+FROM base.cont_centroide_ea AS ce 
+UNION ALL
+SELECT 
+	entidade_administrativa,
+	tipo_area_administrativa_id,
+	'3' AS shn_prefix,
+	st_transform(geometria,4258)::geometry(point,4258) AS geometria
+FROM base.ram_centroide_ea AS ce
+UNION ALL
+SELECT 
+	entidade_administrativa,
+	tipo_area_administrativa_id,
+	'2' AS shn_prefix,
+	st_transform(geometria,4258)::geometry(point,4258) AS geometria
+FROM base.raa_oci_centroide_ea AS ce
+UNION ALL
+SELECT 
+	entidade_administrativa,
+	tipo_area_administrativa_id,
+	'3' AS shn_prefix,
+	st_transform(geometria,4258)::geometry(point,4258) AS geometria
+FROM base.raa_cen_ori_centroide_ea AS ce;
 
+DROP MATERIALIZED VIEW master.ebm_a CASCADE;
 CREATE MATERIALIZED VIEW master.ebm_a as
 SELECT
-	concat('_EG.EBM:AA.','PT', ce.entidade_administrativa) AS "InspireId",
+	concat('_EG.EBM:AA.','PT', ce.shn_prefix, ce.entidade_administrativa) AS "InspireId",
 	NULL AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
-	concat('PT', ce.entidade_administrativa) AS "SHN", -- falta separar se OR continente ou ilhas PT1, PT2 ou PT3
+	concat('PT',ce.shn_prefix, ce.entidade_administrativa) AS "SHN", -- falta separar se OR continente ou ilhas PT1, PT2 ou PT3
 	ce.tipo_area_administrativa_id AS "TAA",
-	st_transform(p.geometria,4258)::geometry(multipolygon, 4258) AS geometria
+	p.geometria::geometry(multipolygon, 4258) AS geometria
 FROM TEMP.ebm_poligonos AS p
-	JOIN base.centroide_ea AS ce ON st_intersects(p.geometria, ce.geometria);
+	JOIN temp.ebm_centroides AS ce ON st_intersects(p.geometria, ce.geometria);
 
 CREATE INDEX ON master.ebm_a USING gist(geometria);
 
 CREATE MATERIALIZED VIEW master.ebm_nam as
+WITH all_areas AS (
+SELECT sum(area_ha) AS area_ha FROM master.cont_distritos
+UNION ALL
+SELECT sum(area_ha) AS area_ha FROM master.ram_distritos
+UNION ALL
+SELECT sum(area_ha) AS area_ha FROM master.raa_oci_distritos
+UNION ALL
+SELECT sum(area_ha) AS area_ha FROM master.raa_cen_ori_distritos)
 SELECT -- Portugal
 	'PT' AS "ICC",
 	'PT0000000'AS "SHN",
@@ -1028,7 +1159,7 @@ SELECT -- Portugal
 	NULL AS "PPL",
 	(sum(area_ha)/100)::numeric(15,2) AS "ARA", -- Aqui vamos ter de adicionar a area das ilhas com uma subquery
 	NULL AS "effectiveDate"
-FROM master.continente_distritos
+FROM all_areas
 UNION ALL
 SELECT -- Continente
 	'PT' AS "ICC",
@@ -1043,7 +1174,7 @@ SELECT -- Continente
 	NULL AS "PPL",
 	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 	NULL AS "effectiveDate"
-FROM master.continente_distritos
+FROM master.cont_distritos
 UNION ALL
 SELECT -- Distritos continente
 	'PT' AS "ICC",
@@ -1059,7 +1190,7 @@ SELECT -- Distritos continente
 	(area_ha / 100)::numeric(15,2) AS "ARA",
 	NULL AS "effectiveDate"
 FROM
-	master.continente_distritos AS cd
+	master.cont_distritos AS cd
 UNION ALL
 SELECT -- Municipios Continente
 	'PT1' AS "ICC",
@@ -1075,7 +1206,7 @@ SELECT -- Municipios Continente
 	(area_ha / 100)::numeric(15,2) AS "ARA",
 	NULL AS "effectiveDate"
 FROM
-	master.continente_municipios AS cf
+	master.cont_municipios AS cf
 UNION ALL
 SELECT -- Freguesias continente
 	'PT1' AS "ICC",
@@ -1085,13 +1216,76 @@ SELECT -- Freguesias continente
 	designacao_simplificada AS "NAMN",
 	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 	'por' AS "NLN",
-	concat('PT', LEFT(dicofre,4),'00') AS "SHNupper",
+	concat('PT1', LEFT(dicofre,4),'00') AS "SHNupper",
 	NULL AS "ROA",
 	NULL AS "PPL",
 	(area_ha / 100)::numeric(15,2) AS "ARA",
 	NULL AS "effectiveDate"
 FROM
-	master.continente_freguesias AS cf;
+	master.cont_freguesias AS cf
+UNION ALL
+SELECT -- MADEIRA
+	'PT' AS "ICC",
+	'PT3000000'AS "SHN",
+	2 AS "USE", -- regiao autonoma da madeira
+	2513 AS "ISN", -- Ilhas
+	'Região Autónoma da Madeira'  AS "NAMN",
+	'Regiao Autonoma da Madeira' AS NAMA,
+	'por' AS "NLN",
+	'PT0000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM master.ram_distritos
+UNION ALL
+SELECT -- Ilhas
+	'PT' AS "ICC",
+	concat('PT3', di, '0000') AS "SHN",
+	3 AS "USE", -- distritos ou ilhas
+	2515 AS "ISN", -- distritos
+	distrito  AS "NAMN",
+	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	'PT3000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.ram_distritos AS cd
+UNION ALL
+SELECT -- Municipios Madeira
+	'PT3' AS "ICC",
+	concat('PT3', dico, '00') AS "SHN",
+	4 AS "USE", -- municipios
+	2516 AS "ISN", -- municipios
+	municipio  AS "NAMN",
+	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT3', LEFT(dico,2),'0000') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.ram_municipios AS cf
+UNION ALL
+SELECT -- Freguesias Madeira
+	'PT3' AS "ICC",
+	concat('PT3', dicofre) AS "SHN",
+	5 AS "USE", -- freguesias
+	2517 AS "ISN", -- freguesia
+	designacao_simplificada AS "NAMN",
+	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT3', LEFT(dicofre,4),'00') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.ram_freguesias AS cf;
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;

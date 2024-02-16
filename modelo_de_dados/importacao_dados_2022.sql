@@ -64,6 +64,8 @@ ALTER TABLE base.fonte ALTER COLUMN "descricao" DROP NOT NULL;
 
 SET datestyle = 'ISO, DMY';
 
+ALTER TABLE 
+
 INSERT INTO base.fonte (tipo_fonte, descricao, DATA, observacoes, diploma)
 SELECT tf.identificador AS tipo_fonte, des_fonte AS descricao, DATA::date, observacoes, "diploma oficial" AS diploma
 FROM TEMP.fontes_2022_xlsx AS f
@@ -76,7 +78,7 @@ RESET datestyle;
 
 -- Importacao do inf_troco_caop2022 e correccao dos campos para conseguir fazer join com a tabela das fontes
 
-
+SELECT * FROM TEMP.inf_fonte_troco_caop2022
 
 UPDATE TEMP.inf_fonte_troco_caop2022 SET 
 DATA = '01-01-'|| DATA
