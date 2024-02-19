@@ -115,16 +115,16 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
         dt = date_time.toString("yyyy-MM-dd hh:mm:ss")
 
         try:
-            multi_feedback.setCurrentStep(1)
             conn.executeSql(
                 f"SELECT public.gerar_poligonos_caop('{schema_name}', '{region}', '{dt}' )",
                 multi_feedback,
             )
-            multi_feedback.setCurrentStep(2)
+            multi_feedback.setCurrentStep(1)
             conn.executeSql(
                 f"SELECT gerar_trocos_caop('{schema_name}', '{region}', '{dt}')",
                 multi_feedback,
             )
+            multi_feedback.setCurrentStep(2)
         except QgsProviderConnectionException as e:
             raise QgsProcessingException(
                 self.tr("Error executing database function: {}".format(e))
