@@ -6,7 +6,7 @@ category=Plugins
 version=0.1.1
 qgisMinimumVersion=3.28
 
-icon=
+icon=icons/caop.svg
 tags=
 
 author=NaturalGIS

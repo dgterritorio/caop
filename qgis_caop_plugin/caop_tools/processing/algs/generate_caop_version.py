@@ -22,7 +22,10 @@ __date__ = "February 2024"
 __copyright__ = "(C) 2024, NaturalGIS"
 
 
+import os
+
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QIcon
 
 from qgis.core import (
     QgsProviderRegistry,
@@ -35,6 +38,8 @@ from qgis.core import (
     QgsProcessingParameterString,
     QgsProcessingParameterDateTime,
 )
+
+plugin_path = os.path.split(os.path.dirname(__file__))[0]
 
 
 class GenerateCaopVersion(QgsProcessingAlgorithm):
@@ -55,6 +60,9 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
 
     def groupId(self):
         return "layermanagement"
+
+    def icon(self):
+        return QIcon(os.path.join(plugin_path, "..", "icons", "generate-caop.svg"))
 
     def tr(self, text):
         return QCoreApplication.translate("caoptools", text)

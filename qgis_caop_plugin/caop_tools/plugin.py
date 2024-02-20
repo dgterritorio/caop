@@ -72,7 +72,7 @@ class CaopToolsPlugin:
 
         self.action_split = QAction(self.tr("Split features"), self.iface.mainWindow())
         self.action_split.setIcon(
-            QIcon(os.path.join(plugin_path, "icons", "split_line.svg"))
+            QIcon(os.path.join(plugin_path, "icons", "split-line.svg"))
         )
         self.action_split.setObjectName("caopSplitLineAction")
         self.action_split.setCheckable(True)
@@ -100,7 +100,7 @@ class CaopToolsPlugin:
             self.tr("Update master outputs"), self.iface.mainWindow()
         )
         self.action_update_master.setIcon(
-            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+            QIcon(os.path.join(plugin_path, "icons", "update-master.svg"))
         )
         self.action_update_master.setObjectName("caopUpdateMasterAction")
         self.action_update_master.triggered.connect(
@@ -112,7 +112,7 @@ class CaopToolsPlugin:
             self.tr("Update validation layers"), self.iface.mainWindow()
         )
         self.action_update_validation.setIcon(
-            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+            QIcon(os.path.join(plugin_path, "icons", "update-validation.svg"))
         )
         self.action_update_validation.setObjectName("caopUpdateValidationAction")
         self.action_update_validation.triggered.connect(
@@ -124,7 +124,7 @@ class CaopToolsPlugin:
             self.tr("Generate CAOP version"), self.iface.mainWindow()
         )
         self.action_generate_version.setIcon(
-            QIcon(os.path.join(plugin_path, "icons", "caop.svg"))
+            QIcon(os.path.join(plugin_path, "icons", "generate-caop.svg"))
         )
         self.action_generate_version.setObjectName("caopGenerateVersionAction")
         self.action_generate_version.triggered.connect(

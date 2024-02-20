@@ -22,7 +22,10 @@ __date__ = "February 2024"
 __copyright__ = "(C) 2024, NaturalGIS"
 
 
+import os
+
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtGui import QIcon
 
 from qgis.core import (
     QgsProviderRegistry,
@@ -33,6 +36,8 @@ from qgis.core import (
     QgsProcessingParameterProviderConnection,
     QgsProcessingParameterEnum,
 )
+
+plugin_path = os.path.split(os.path.dirname(__file__))[0]
 
 
 class UpdateMasterOutputs(QgsProcessingAlgorithm):
@@ -51,6 +56,9 @@ class UpdateMasterOutputs(QgsProcessingAlgorithm):
 
     def groupId(self):
         return "layermanagement"
+
+    def icon(self):
+        return QIcon(os.path.join(plugin_path, "..", "icons", "update-master.svg"))
 
     def tr(self, text):
         return QCoreApplication.translate("caoptools", text)
