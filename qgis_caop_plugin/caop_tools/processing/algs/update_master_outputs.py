@@ -101,7 +101,8 @@ class UpdateMasterOutputs(QgsProcessingAlgorithm):
 
         try:
             conn.executeSql(
-                f"SELECT public.actualizar_poligonos_caop('master', '{region}')", multi_feedback
+                f"SELECT public.actualizar_poligonos_caop('master', '{region}')",
+                multi_feedback,
             )
             multi_feedback.setCurrentStep(1)
             conn.executeSql(

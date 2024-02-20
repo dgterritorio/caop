@@ -31,6 +31,7 @@ from qgis.core import (
     QgsProcessingException,
     QgsProcessingParameterProviderConnection,
     QgsProcessingParameterEnum,
+    QgsDataSourceUri,
 )
 
 
@@ -56,6 +57,7 @@ class UpdateValidationLayers(QgsProcessingAlgorithm):
 
     def __init__(self):
         super().__init__()
+        self.region = None
 
     def createInstance(self):
         return type(self)()
@@ -84,7 +86,9 @@ class UpdateValidationLayers(QgsProcessingAlgorithm):
 
     def processAlgorithm(self, parameters, context, feedback):
         conn_name = self.parameterAsConnectionName(parameters, self.CONNECTION, context)
-        region = self.regions[self.parameterAsEnum(parameters, self.REGION, context)][1]
+        self.region = self.regions[
+            self.parameterAsEnum(parameters, self.REGION, context)
+        ][1]
 
         try:
             md = QgsProviderRegistry.instance().providerMetadata("postgres")
@@ -97,10 +101,39 @@ class UpdateValidationLayers(QgsProcessingAlgorithm):
             )
 
         try:
-            conn.executeSql(f"SELECT public.actualizar_validacao('{region}')", feedback)
+            conn.executeSql(
+                f"SELECT public.actualizar_validacao('{self.region}')", feedback
+            )
         except QgsProviderConnectionException as e:
             raise QgsProcessingException(
                 self.tr("Error executing database function: {}".format(e))
             )
+
+        return {}
+
+    def postProcessAlgorithm(self, context, feedback):
+        if self.region is None:
+            return
+
+        tables = [
+            "_centroides_duplicados",
+            "_diferencas_geom_gerado_publicado",
+            "_poligonos_temp_erros",
+            "_trocos_cruzados_linhas",
+            "_trocos_cruzados_pontos",
+            "_trocos_dangles",
+            "_trocos_duplicados",
+            "_trocos_geometria_invalida_linhas",
+            "_trocos_geometria_invalida_pontos",
+        ]
+
+        if context.project():
+            for l in context.project().mapLayers().values():
+                ds = QgsDataSourceUri(l.source())
+                for t in tables:
+                    if ds.table() == f"{self.region}{t}":
+                        l.setCustomProperty("showFeatureCount", True)
+                        l.dataProvider().reloadData()
+                        l.triggerRepaint()
 
         return {}
