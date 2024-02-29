@@ -21,17 +21,17 @@
     <message>
         <location filename="../plugin.py" line="99"/>
         <source>Update master outputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar outputs master</translation>
     </message>
     <message>
         <location filename="../plugin.py" line="111"/>
         <source>Update validation layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar camadas de validação</translation>
     </message>
     <message>
         <location filename="../plugin.py" line="123"/>
         <source>Generate CAOP version</source>
-        <translation type="unfinished"></translation>
+        <translation>Gerar versão CAOP</translation>
     </message>
 </context>
 <context>
@@ -39,62 +39,62 @@
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="51"/>
         <source>Generate CAOP version</source>
-        <translation type="unfinished"></translation>
+        <translation>Gerar versão CAOP</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="54"/>
         <source>Layer management</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestão de camadas</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="69"/>
         <source>Database connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligação à base de dados</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="74"/>
         <source>Output schema name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nome do schema de output</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="80"/>
         <source>Continental</source>
-        <translation type="unfinished"></translation>
+        <translation>Continente</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="80"/>
         <source>Madeira Autonomous Region</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma da Madeira</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="80"/>
         <source>Autonomous Region of the Azores - Western Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupo Ocidental</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="80"/>
         <source>Autonomous Region of the Azores - Central and Eastern Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupos Central e Oriental</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="89"/>
         <source>Region to process</source>
-        <translation type="unfinished"></translation>
+        <translation>Região a processar</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="94"/>
         <source>Timestamp</source>
-        <translation type="unfinished"></translation>
+        <translation>Data e hora</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="108"/>
         <source>Could not retrieve connection details for {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Não foi possível obter os detalhes da ligação {}</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="129"/>
         <source>Error executing database function: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Erro a executar função da base de dados: {}</translation>
     </message>
 </context>
 <context>
@@ -155,52 +155,52 @@
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="47"/>
         <source>Update master outputs</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar outputs master</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="50"/>
         <source>Layer management</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestão de camadas</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="65"/>
         <source>Database connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligação à base de dados</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="71"/>
         <source>Continental</source>
-        <translation type="unfinished"></translation>
+        <translation>Continente</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="71"/>
         <source>Madeira Autonomous Region</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma da Madeira</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="71"/>
         <source>Autonomous Region of the Azores - Western Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupo Ocidental</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="71"/>
         <source>Autonomous Region of the Azores - Central and Eastern Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupos Central e Oriental</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="80"/>
         <source>Region to process</source>
-        <translation type="unfinished"></translation>
+        <translation>Região a processar</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="94"/>
         <source>Could not retrieve connection details for {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Não foi possível obter os detalhes da ligação {}</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_master_outputs.py" line="116"/>
         <source>Error executing database function: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Erro a executar função da base de dados: {}</translation>
     </message>
 </context>
 <context>
@@ -208,52 +208,52 @@
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="46"/>
         <source>Update validation layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar camadas de validação</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="49"/>
         <source>Layer management</source>
-        <translation type="unfinished"></translation>
+        <translation>Gestão de camadas</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="64"/>
         <source>Database connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Ligação à base de dados</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="70"/>
         <source>Continental</source>
-        <translation type="unfinished"></translation>
+        <translation>Continente</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="70"/>
         <source>Madeira Autonomous Region</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma da Madeira</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="70"/>
         <source>Autonomous Region of the Azores - Western Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupo Ocidental</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="70"/>
         <source>Autonomous Region of the Azores - Central and Eastern Group</source>
-        <translation type="unfinished"></translation>
+        <translation>Região Autónoma dos Açores - Grupos Central e Oriental</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="79"/>
         <source>Region to process</source>
-        <translation type="unfinished"></translation>
+        <translation>Região a processar</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="93"/>
         <source>Could not retrieve connection details for {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Não foi possível obter os detalhes da ligação {}</translation>
     </message>
     <message>
         <location filename="../processing/algs/update_validation_layers.py" line="102"/>
         <source>Error executing database function: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Erro a executar função da base de dados: {}</translation>
     </message>
 </context>
 </TS>
