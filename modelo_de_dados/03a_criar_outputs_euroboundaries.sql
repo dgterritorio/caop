@@ -320,8 +320,8 @@ SELECT sum(area_ha) AS area_ha FROM master.raa_cen_ori_distritos)
 SELECT -- Portugal
 	'PT' AS "ICC",
 	'PT0000000'AS "SHN",
-	2 AS "USE", -- continente
-	2512 AS "ISN", -- continente
+	1 AS "USE", -- continente
+	2511 AS "ISN", -- Republica
 	'Portugal'  AS "NAMN",
 	'Portugal' AS NAMA,
 	'por' AS "NLN",
@@ -364,7 +364,7 @@ FROM
 	master.cont_distritos AS cd
 UNION ALL
 SELECT -- Municipios Continente
-	'PT1' AS "ICC",
+	'PT' AS "ICC",
 	concat('PT1', dico, '00') AS "SHN",
 	4 AS "USE", -- municipios
 	2516 AS "ISN", -- municipios
@@ -380,7 +380,7 @@ FROM
 	master.cont_municipios AS cf
 UNION ALL
 SELECT -- Freguesias continente
-	'PT1' AS "ICC",
+	'PT' AS "ICC",
 	concat('PT1', dicofre) AS "SHN",
 	5 AS "USE", -- freguesias
 	2517 AS "ISN", -- freguesia
@@ -399,7 +399,7 @@ SELECT -- MADEIRA
 	'PT' AS "ICC",
 	'PT3000000'AS "SHN",
 	2 AS "USE", -- regiao autonoma da madeira
-	2513 AS "ISN", -- Ilhas
+	2513 AS "ISN", -- regiao autonoma
 	'Região Autónoma da Madeira'  AS "NAMN",
 	'Regiao Autonoma da Madeira' AS NAMA,
 	'por' AS "NLN",
@@ -414,7 +414,7 @@ SELECT -- Ilhas
 	'PT' AS "ICC",
 	concat('PT3', di, '0000') AS "SHN",
 	3 AS "USE", -- distritos ou ilhas
-	2515 AS "ISN", -- distritos
+	2515 AS "ISN", -- ilhas
 	distrito  AS "NAMN",
 	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 	'por' AS "NLN",
@@ -427,7 +427,7 @@ FROM
 	master.ram_distritos AS cd
 UNION ALL
 SELECT -- Municipios Madeira
-	'PT3' AS "ICC",
+	'PT' AS "ICC",
 	concat('PT3', dico, '00') AS "SHN",
 	4 AS "USE", -- municipios
 	2516 AS "ISN", -- municipios
@@ -443,7 +443,7 @@ FROM
 	master.ram_municipios AS cf
 UNION ALL
 SELECT -- Freguesias Madeira
-	'PT3' AS "ICC",
+	'PT' AS "ICC",
 	concat('PT3', dicofre) AS "SHN",
 	5 AS "USE", -- freguesias
 	2517 AS "ISN", -- freguesia
@@ -456,7 +456,118 @@ SELECT -- Freguesias Madeira
 	(area_ha / 100)::numeric(15,2) AS "ARA",
 	NULL AS "effectiveDate"
 FROM
-	master.ram_freguesias AS cf;
+	master.ram_freguesias AS cf
+UNION ALL
+SELECT -- ACORES
+	'PT' AS "ICC",
+	'PT2000000'AS "SHN",
+	2 AS "USE", -- regiao autonoma dos acores
+	2513 AS "ISN", -- regiao autonoma
+	'Região Autónoma dos Açores'  AS "NAMN",
+	'Regiao Autonoma dos Acores' AS NAMA,
+	'por' AS "NLN",
+	'PT0000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM (SELECT * FROM master.raa_oci_distritos UNION ALL SELECT * FROM master.raa_cen_ori_distritos) AS a
+UNION ALL -- ACORES OCIDENTAL
+SELECT -- Ilhas
+	'PT' AS "ICC",
+	concat('PT2', di, '0000') AS "SHN",
+	3 AS "USE", -- distritos ou ilhas
+	2515 AS "ISN", -- ilha
+	distrito  AS "NAMN",
+	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	'PT2000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_oci_distritos AS cd
+UNION ALL
+SELECT -- Municipios acores ocidental
+	'PT' AS "ICC",
+	concat('PT2', dico, '00') AS "SHN",
+	4 AS "USE", -- municipios
+	2516 AS "ISN", -- municipios
+	municipio  AS "NAMN",
+	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_oci_municipios AS cf
+UNION ALL
+SELECT -- Freguesias Acores Ocidental
+	'PT' AS "ICC",
+	concat('PT2', dicofre) AS "SHN",
+	5 AS "USE", -- freguesias
+	2517 AS "ISN", -- freguesia
+	designacao_simplificada AS "NAMN",
+	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_oci_freguesias AS cf
+UNION ALL
+SELECT -- Ilhas -- Acores central e oriental
+	'PT' AS "ICC",
+	concat('PT2', di, '0000') AS "SHN",
+	3 AS "USE", -- distritos ou ilhas
+	2515 AS "ISN", -- ilhas
+	distrito  AS "NAMN",
+	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	'PT2000000' AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_cen_ori_distritos AS cd
+UNION ALL
+SELECT -- Municipios acores central e oriental
+	'PT' AS "ICC",
+	concat('PT2', dico, '00') AS "SHN",
+	4 AS "USE", -- municipios
+	2516 AS "ISN", -- municipios
+	municipio  AS "NAMN",
+	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_cen_ori_municipios AS cf
+UNION ALL
+SELECT -- Freguesias Acores central e oriental
+	'PT' AS "ICC",
+	concat('PT2', dicofre) AS "SHN",
+	5 AS "USE", -- freguesias
+	2517 AS "ISN", -- freguesia
+	designacao_simplificada AS "NAMN",
+	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+	'por' AS "NLN",
+	concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
+	NULL AS "ROA",
+	NULL AS "PPL",
+	(area_ha / 100)::numeric(15,2) AS "ARA",
+	NULL AS "effectiveDate"
+FROM
+	master.raa_cen_ori_freguesias AS cf;
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
