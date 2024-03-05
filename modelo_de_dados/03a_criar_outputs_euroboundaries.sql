@@ -285,7 +285,7 @@ DROP TABLE IF EXISTS master.ebm_a CASCADE;
 CREATE TABLE master.ebm_a as
 SELECT
 	concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) AS "InspireId",
-	NULL AS "beginLifeSpanVersion",
+	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
 	concat('PT',caa.shn_prefix, caa.entidade_administrativa) AS "SHN",
 	ce.tipo_area_administrativa_id AS "TAA",
@@ -307,8 +307,8 @@ WHERE "TAA" IS NULL;
 -- Criar tabela ebm_nam com base da CAOP
 -- De notar que a área descrita nesta tabela è a área real tirada da CAOP
 -- E não a area dos polígonos gerados para o Euroboundaries
-DROP MATERIALIZED VIEW master.ebm_nam CASCADE;
-CREATE MATERIALIZED VIEW master.ebm_nam as
+DROP MATERIALIZED VIEW euroboundaries.ebm_nam_temp CASCADE;
+CREATE MATERIALIZED VIEW euroboundaries.ebm_nam_temp as
 WITH all_areas AS (
 SELECT sum(area_ha) AS area_ha FROM master.cont_distritos
 UNION ALL
@@ -323,7 +323,7 @@ SELECT -- Portugal
 	1 AS "USE", -- continente
 	2511 AS "ISN", -- Republica
 	'Portugal'  AS "NAMN",
-	'Portugal' AS NAMA,
+	'Portugal' AS "NAMA",
 	'por' AS "NLN",
 	'UNK' AS "SHNupper",
 	NULL AS "ROA",
@@ -568,6 +568,26 @@ SELECT -- Freguesias Acores central e oriental
 	NULL AS "effectiveDate"
 FROM
 	master.raa_cen_ori_freguesias AS cf;
+
+DROP MATERIALIZED VIEW IF EXISTS master.ebm_nam CASCADE;
+CREATE MATERIALIZED VIEW master.ebm_nam as
+SELECT 
+	ROW_NUMBER() OVER () AS id,
+	"ICC",
+	"SHN",
+	"USE",
+	"ISN",
+	"NAMN",
+	"NLN",
+	"SHNupper",
+	"ROA",
+	nlpc.pop_res AS "PPL",
+	"ARA",
+	"effectiveDate"
+FROM euroboundaries.ebm_nam_temp AS ent
+	LEFT JOIN euroboundaries.nuts_lau_pt_2023_censos2021 AS nlpc ON ent."SHN" = nlpc.shn;
+
+SELECT * FROM euroboundaries.ebm_nam_temp
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
