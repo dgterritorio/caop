@@ -283,7 +283,7 @@ FROM base.raa_cen_ori_centroide_ea AS ce;
 
 DROP TABLE IF EXISTS master.ebm_a CASCADE;
 CREATE TABLE master.ebm_a as
-SELECT DISTINCT ON ("InspireId")
+SELECT DISTINCT ON ("InspireId", geometria)
 	concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) AS "InspireId",
 	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
@@ -293,7 +293,7 @@ SELECT DISTINCT ON ("InspireId")
 FROM euroboundaries.ebm_poligonos_finais AS p
 	LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria))
 	LEFT JOIN euroboundaries.ebm_centroides AS ce ON st_intersects(p.geometria, ce.geometria)
-ORDER BY "InspireId","TAA";
+ORDER BY "InspireId",geometria, "TAA";
 
 CREATE INDEX ON master.ebm_a USING gist(geometria);
 
