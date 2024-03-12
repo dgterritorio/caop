@@ -305,6 +305,47 @@ UPDATE master.ebm_a SET
 WHERE "TAA" IS NULL;
 
 
+-- Isolar os troços necessários para gerar as COASTAL WATER, usando as boundaries on water e as coastal lines
+-- Correr o ST_nodes para quebrar as linhas nas intersecções
+DROP TABLE IF EXISTS TEMP.ebm_trocos_finais_para_coastal_water;
+CREATE TABLE TEMP.ebm_trocos_finais_para_coastal_water AS
+SELECT (st_dump(st_node(st_collect(geom)))).geom AS geom 
+FROM euroboundaries.ebm_boundaries_2024
+WHERE  mol in ('1','2','9');
+
+-- Criação de uma tabela de poligonos para guardar o resultado de um processo de polygonização
+-- Apenas são considerados polígonos cujo centroide fique FORA dos limites em terra do euroboundaries
+DROP TABLE IF EXISTS temp.ebm_poligonos_finais_coastal_water;
+CREATE TABLE temp.ebm_poligonos_finais_coastal_water (
+	id serial PRIMARY KEY,
+	geometria geometry(polygon, 4258)
+);
+
+INSERT INTO temp.ebm_poligonos_finais_coastal_water (geometria)
+WITH poly AS (
+	SELECT (st_dump(st_polygonize(geom))).geom AS geom
+	FROM TEMP.ebm_trocos_finais_para_coastal_water
+)
+SELECT p.geom
+FROM poly AS p, euroboundaries.ebm_temp_poligono_clip AS c
+WHERE st_disjoint(st_pointonsurface(p.geom), c.geom);
+
+CREATE INDEX ON temp.ebm_poligonos_finais_coastal_water USING gist(geometria);
+
+-- Inserir os polígonos gerados na tabela já existente com os polígonos em terra
+INSERT INTO master.ebm_a
+SELECT DISTINCT ON ("InspireId", geometria)
+	CASE WHEN caa.entidade_administrativa IS NULL THEN '_EG.EBM:AA.PT0000000'
+		ELSE concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) END AS "InspireId",
+	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
+	'PT' AS "ICC",
+	CASE WHEN caa.entidade_administrativa IS NULL THEN 'PT0000000'
+		ELSE concat('PT',caa.shn_prefix, caa.entidade_administrativa) END AS "SHN",
+	'5' AS "TAA",
+	p.geometria::geometry(multipolygon, 4258) AS geometria
+FROM temp.ebm_poligonos_finais_coastal_water AS p
+LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria))
+
 -- Criar tabela ebm_nam com base da CAOP
 -- De notar que a área descrita nesta tabela è a área real tirada da CAOP
 -- E não a area dos polígonos gerados para o Euroboundaries
