@@ -307,19 +307,19 @@ FROM base.raa_cen_ori_centroide_ea AS ce;
 
 DROP TABLE IF EXISTS master.ebm_a CASCADE;
 CREATE TABLE master.ebm_a as
-SELECT DISTINCT ON ("InspireId", geometria)
+SELECT DISTINCT ON ("InspireId", geometry)
 	concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) AS "InspireId",
 	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
 	concat('PT',caa.shn_prefix, caa.entidade_administrativa) AS "SHN",
 	ce.tipo_area_administrativa_id AS "TAA",
-	p.geometria::geometry(multipolygon, 4258) AS geometria
+	st_multi(p.geometria)::geometry(multipolygon, 4258) AS geometry
 FROM euroboundaries.ebm_poligonos_finais AS p
 	LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria))
 	LEFT JOIN euroboundaries.ebm_centroides AS ce ON st_intersects(p.geometria, ce.geometria)
-ORDER BY "InspireId",geometria, "TAA";
+ORDER BY "InspireId",geometry, "TAA";
 
-CREATE INDEX ON master.ebm_a USING gist(geometria);
+CREATE INDEX ON master.ebm_a USING gist(geometry);
 
 -- Algumas ilhas criadas no EBM não obtêm TAA pois na CAOP estão agregadas à area administrativa
 -- Preencher como area secundaria
@@ -358,7 +358,7 @@ CREATE INDEX ON temp.ebm_poligonos_finais_coastal_water USING gist(geometria);
 
 -- Inserir os polígonos gerados na tabela já existente com os polígonos em terra
 INSERT INTO master.ebm_a
-SELECT DISTINCT ON ("InspireId", geometria)
+SELECT DISTINCT ON ("InspireId", geometry)
 	CASE WHEN caa.entidade_administrativa IS NULL THEN '_EG.EBM:AA.PT0000000'
 		ELSE concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) END AS "InspireId",
 	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
@@ -369,6 +369,24 @@ SELECT DISTINCT ON ("InspireId", geometria)
 	st_multi(p.geometria)::geometry(multipolygon, 4258) AS geometry
 FROM temp.ebm_poligonos_finais_coastal_water AS p
 LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria))
+
+-- ADICIONAR SUFIXOS PARA OS CASOS DAS Entidades Administrativas com compostas por várias partes
+
+WITH get_suffix AS (
+	SELECT 
+	    "InspireId",
+	    "TAA",
+	    geometry,
+	    '.' || (CASE WHEN COUNT(*) OVER (PARTITION BY "InspireId") > 1 THEN
+	    	ROW_NUMBER() OVER (PARTITION BY "InspireId" ORDER BY "TAA")
+	    ELSE NULL END)::text AS suffix
+	FROM 
+	    master.ebm_a
+)
+UPDATE master.ebm_a
+SET "InspireId" = concat(master.ebm_a."InspireId", suffix)
+FROM get_suffix AS gf 
+WHERE master.ebm_a."InspireId" = gf."InspireId" AND master.ebm_a.geometry = gf.geometry;
 
 -- Criar tabela ebm_nam com base da CAOP
 -- De notar que a área descrita nesta tabela è a área real tirada da CAOP
