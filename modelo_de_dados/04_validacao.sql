@@ -137,7 +137,7 @@ SELECT
 	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 3763) AS geom
 FROM master.cont_areas_administrativas AS caa 
 	JOIN TEMP.cont_aad_caop2022_publicada as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom);
+WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
 
 CREATE INDEX ON validacao.cont_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -276,7 +276,7 @@ SELECT
 	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5016) AS geom
 FROM master.ram_areas_administrativas AS caa 
 	JOIN "temp".arqmadeira_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom);
+WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
 
 CREATE INDEX ON validacao.ram_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -414,7 +414,7 @@ SELECT
 	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5014) AS geom
 FROM master.raa_oci_areas_administrativas AS caa 
 	JOIN "temp".arqmadeira_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom);
+WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
 
 CREATE INDEX ON validacao.raa_oci_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -555,7 +555,7 @@ SELECT
 	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5015) AS geom
 FROM master.raa_cen_ori_areas_administrativas AS caa 
 	JOIN central_oriental_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom);
+WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
 
 CREATE INDEX ON validacao.raa_ori_diferencas_geom_gerado_publicado USING gist(geom);
 
