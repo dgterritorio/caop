@@ -219,6 +219,25 @@ WHERE st_intersects(st_pointonsurface(p.geom), c.geom);
 
 CREATE INDEX ON euroboundaries.ebm_poligonos_finais USING gist(geometria);
 
+-- Encontrar polígonos com àrea inferiores a 2500 m2 para os dissolver no polígono adjacente 
+-- com maior fronteira partilhada
+
+WITH to_merge AS (
+	SELECT DISTINCT ON (pf1.id) pf1.id AS merge_id, pf2.id AS target_id, pf1.geometria AS merge_geom, st_length(st_intersection(pf1.geometria, pf2.geometria)) AS share_boundary
+	FROM euroboundaries.ebm_poligonos_finais AS pf1 
+		JOIN euroboundaries.ebm_poligonos_finais AS pf2 ON st_intersects(pf1.geometria, pf2.geometria)
+	WHERE st_area(pf1.geometria::geography) < 2500 AND st_area(pf2.geometria::geography) >= 2500 AND pf2.id != pf1.id
+	ORDER BY pf1.id, st_length(st_intersection(pf1.geometria, pf2.geometria))
+)
+UPDATE euroboundaries.ebm_poligonos_finais
+SET geometria = st_union(geometria, cm.merge_geom)
+FROM to_merge AS cm
+WHERE id = cm.target_id;
+
+DELETE FROM euroboundaries.ebm_poligonos_finais
+WHERE st_area(geometria::geography) < 2500;
+
+
 -- Obter atributos para os polígonos EBM gerados
 -- Colocar numa unica tabela todos os poligonos da CAOP nos sistema de coordenadas da EBM
 -- E com os atributos adaptados ao Euroboundaries
