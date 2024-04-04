@@ -657,7 +657,36 @@ UNION ALL
 
 
 DROP MATERIALIZED VIEW IF EXISTS master.ebm_nam CASCADE;
-CREATE MATERIALIZED VIEW master.ebm_nam as
+CREATE MATERIALIZED VIEW master.ebm_nam AS
+WITH effective_dates AS (
+	(SELECT DISTINCT ON (ce.entidade_administrativa) ce.entidade_administrativa, f.data AS fonte_data
+	FROM base.cont_centroide_ea AS ce  
+	 JOIN base.cont_troco AS t ON (ce.entidade_administrativa = t.ea_direita OR ce.entidade_administrativa = t.ea_esquerda) 
+	 JOIN base.lig_cont_troco_fonte AS ltf ON t.identificador = LTF.troco_id
+	 JOIN base.fonte AS f ON f.identificador = ltf.fonte_id
+	ORDER BY ce.entidade_administrativa, fonte_data DESC NULLS LAST)
+	UNION ALL
+	(SELECT DISTINCT ON (ce.entidade_administrativa) ce.entidade_administrativa, f.data AS fonte_data
+	FROM base.ram_centroide_ea AS ce  
+	 JOIN base.ram_troco AS t ON (ce.entidade_administrativa = t.ea_direita OR ce.entidade_administrativa = t.ea_esquerda) 
+	 JOIN base.lig_ram_troco_fonte AS ltf ON t.identificador = LTF.troco_id
+	 JOIN base.fonte AS f ON f.identificador = ltf.fonte_id
+	ORDER BY ce.entidade_administrativa, fonte_data DESC NULLS LAST)
+	UNION ALL
+	(SELECT DISTINCT ON (ce.entidade_administrativa) ce.entidade_administrativa, f.data AS fonte_data
+	FROM base.raa_oci_centroide_ea AS ce  
+	 JOIN base.raa_oci_troco AS t ON (ce.entidade_administrativa = t.ea_direita OR ce.entidade_administrativa = t.ea_esquerda) 
+	 JOIN base.lig_raa_oci_troco_fonte AS ltf ON t.identificador = LTF.troco_id
+	 JOIN base.fonte AS f ON f.identificador = ltf.fonte_id
+	ORDER BY ce.entidade_administrativa, fonte_data DESC NULLS LAST)
+	UNION ALL
+	(SELECT DISTINCT ON (ce.entidade_administrativa) ce.entidade_administrativa, f.data AS fonte_data
+	FROM base.raa_cen_ori_centroide_ea AS ce  
+	 JOIN base.raa_cen_ori_troco AS t ON (ce.entidade_administrativa = t.ea_direita OR ce.entidade_administrativa = t.ea_esquerda) 
+	 JOIN base.lig_raa_cen_ori_troco_fonte AS ltf ON t.identificador = LTF.troco_id
+	 JOIN base.fonte AS f ON f.identificador = ltf.fonte_id
+	ORDER BY ce.entidade_administrativa, fonte_data DESC NULLS LAST)
+)
 SELECT 
 	ROW_NUMBER() OVER () AS id,
 	"ICC",
@@ -672,7 +701,8 @@ SELECT
 	"ARA",
 	"effectiveDate"
 FROM euroboundaries.ebm_nam_temp AS ent
-	LEFT JOIN euroboundaries.nuts_lau_pt_2023_censos2021 AS nlpc ON ent."SHN" = nlpc.shn;
+	LEFT JOIN euroboundaries.nuts_lau_pt_2023_censos2021 AS nlpc ON ent."SHN" = nlpc.shn
+	LEFT JOIN effective_dates AS ed ON RIGHT(ent."SHN",6) = ed.entidade_administrativa;
 
 SELECT * FROM euroboundaries.ebm_nam_temp
 
