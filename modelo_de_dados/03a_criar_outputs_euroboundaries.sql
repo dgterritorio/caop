@@ -704,7 +704,24 @@ FROM euroboundaries.ebm_nam_temp AS ent
 	LEFT JOIN euroboundaries.nuts_lau_pt_2023_censos2021 AS nlpc ON ent."SHN" = nlpc.shn
 	LEFT JOIN effective_dates AS ed ON RIGHT(ent."SHN",6) = ed.entidade_administrativa;
 
-SELECT * FROM euroboundaries.ebm_nam_temp
+DROP MATERIALIZED VIEW IF EXISTS master.ebm_nuts;
+CREATE MATERIALIZED VIEW master.ebm_nuts AS
+SELECT
+	ROW_NUMBER() OVER () AS id,
+	'PT' AS "ICC",
+	'PT' || CASE WHEN LEFT(ea.codigo,1) = '4' THEN '2'
+			WHEN LEFT(ea.codigo,1) = '3' THEN '3'
+			ELSE '1' END || ea.codigo AS "SHN",
+	ea.codigo AS "LAU",
+	n3.codigo AS "NUTS3",
+	n2.codigo AS "NUTS2",
+	n1.codigo AS "NUTS1"
+FROM
+	base.entidade_administrativa AS ea
+	JOIN base.municipio AS m ON m.codigo = ea.municipio_cod
+	JOIN base.nuts3 AS n3 ON n3.codigo = m.nuts3_cod
+	JOIN base.nuts2 AS n2 ON n2.codigo = n3.nuts2_cod
+	JOIN base.nuts1 AS n1 ON n1.codigo = n2.nuts1_cod;
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
