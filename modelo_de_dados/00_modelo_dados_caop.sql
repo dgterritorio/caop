@@ -247,25 +247,25 @@ CREATE TABLE base.fonte (
 
 CREATE TABLE base.lig_cont_troco_fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	troco_id uuid REFERENCES base.cont_troco(identificador),
+	troco_id uuid REFERENCES base.cont_troco(identificador) ON DELETE CASCADE,
 	fonte_id uuid REFERENCES base.fonte(identificador)
 );
 
 CREATE TABLE base.lig_ram_troco_fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	troco_id uuid REFERENCES base.ram_troco(identificador),
+	troco_id uuid REFERENCES base.ram_troco(identificador) ON DELETE CASCADE,
 	fonte_id uuid REFERENCES base.fonte(identificador)
 );
 
 CREATE TABLE base.lig_raa_oci_troco_fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	troco_id uuid REFERENCES base.raa_oci_troco(identificador),
+	troco_id uuid REFERENCES base.raa_oci_troco(identificador) ON DELETE CASCADE,
 	fonte_id uuid REFERENCES base.fonte(identificador)
 );
 
 CREATE TABLE base.lig_raa_cen_ori_troco_fonte (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	troco_id uuid REFERENCES base.raa_cen_ori_troco(identificador),
+	troco_id uuid REFERENCES base.raa_cen_ori_troco(identificador) ON DELETE CASCADE,
 	fonte_id uuid REFERENCES base.fonte(identificador)
 );
 
