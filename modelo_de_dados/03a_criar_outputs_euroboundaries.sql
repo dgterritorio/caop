@@ -145,10 +145,36 @@ SELECT DISTINCT ON (geom) ROW_NUMBER() OVER () AS id, geom::geometry(point, 4258
 
 CREATE INDEX ON euroboundaries.ebm_pontos_referencia USING gist(geom);
 
--- Criar tabela com pontos dos limites interiores que não toquem em nenhuma outra geometria
--- Primeiro recolhetos todos os startpoints e end points, depois tiramos aqueles que não estão
--- desconectados de outros troços.
+-- Criar tabela com pontos dos limites interiores que não toquem em nenhuma outra geometria ou
+-- nem nos limites externos
+-- Primeiro recolhemos todos os startpoints e end points, depois tiramos aqueles que não estão
+-- desconectados de outros troços e não tocam nos limites exteriores.
 -- São excluidos deste processo geometrias fechadas.
+
+DROP TABLE IF EXISTS euroboundaries.ebm_temp_limites_exteriores;
+
+CREATE TABLE euroboundaries.ebm_temp_limites_exteriores AS
+SELECT
+	st_TRANSFORM(st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200),4258) AS geom
+FROM base.cont_troco as t
+WHERE NOT (pais = 'PT' AND significado_linha in ('7','9'))
+UNION ALL
+SELECT
+	st_TRANSFORM(st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200),4258) AS geom
+FROM base.raa_oci_troco as t
+WHERE NOT (pais = 'PT' AND significado_linha in ('7','9'))
+UNION ALL
+SELECT
+	st_TRANSFORM(st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200),4258) AS geom
+FROM base.raa_cen_ori_troco as t
+WHERE NOT (pais = 'PT' AND significado_linha in ('7','9'))
+UNION ALL
+SELECT
+	st_TRANSFORM(st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200),4258) AS geom
+FROM base.ram_troco as t
+WHERE NOT (pais = 'PT' AND significado_linha in ('7','9'));
+
+CREATE INDEX ON euroboundaries.ebm_temp_limites_exteriores USING gist(geom);
 
 DROP TABLE IF EXISTS euroboundaries.ebm_limites_interiores_dangles;
 CREATE TABLE euroboundaries.ebm_limites_interiores_dangles AS
@@ -159,14 +185,21 @@ WITH endpoints AS (
     SELECT id, 'end' AS edge, ST_EndPoint(geom) AS geom FROM euroboundaries.ebm_trocos_caop_generalizados
     WHERE NOT st_isclosed(geom)
 )
-SELECT DISTINCT ON (geom) id, edge, geom::geometry(point, 4258) FROM endpoints;
+SELECT DISTINCT ON (ep.id, ep.geom) ep.id, ep.edge, ep.geom::geometry(point, 4258) 
+FROM endpoints AS ep ;
+ 
 
 CREATE INDEX ON euroboundaries.ebm_limites_interiores_dangles USING gist(geom);
 
-DELETE FROM euroboundaries.ebm_limites_interiores_dangles
-WHERE EXISTS (
-	SELECT 1 FROM euroboundaries.ebm_trocos_caop_generalizados AS e
-	WHERE ebm_limites_interiores_dangles.id <> e.id AND ST_intersects(ebm_limites_interiores_dangles.geom, e.geom)
+DELETE 
+--SELECT * 
+FROM euroboundaries.ebm_limites_interiores_dangles
+	WHERE 
+	NOT EXISTS (SELECT 1 FROM euroboundaries.ebm_temp_limites_exteriores AS le
+	            WHERE st_intersects(ebm_limites_interiores_dangles.geom, le.geom)) AND 
+    EXISTS (
+		SELECT 1 FROM euroboundaries.ebm_trocos_caop_generalizados AS e
+		WHERE ebm_limites_interiores_dangles.id <> e.id AND ST_intersects(ebm_limites_interiores_dangles.geom, e.geom)
 	);
 
 -- Para cada dangle, identificar o no de referencia mais proximo e usá-lo para
@@ -378,7 +411,7 @@ WITH get_suffix AS (
 	    "TAA",
 	    geometry,
 	    '.' || (CASE WHEN COUNT(*) OVER (PARTITION BY "InspireId") > 1 THEN
-	    	ROW_NUMBER() OVER (PARTITION BY "InspireId" ORDER BY "TAA")
+	    	ROW_NUMBER() OVER (PARTITION BY "InspireId" ORDER BY "TAA", st_area(geometry) DESC)
 	    ELSE NULL END)::text AS suffix
 	FROM 
 	    master.ebm_a
@@ -655,7 +688,6 @@ UNION ALL
 		master.raa_cen_ori_freguesias AS cf
 ;
 
-
 DROP MATERIALIZED VIEW IF EXISTS master.ebm_nam CASCADE;
 CREATE MATERIALIZED VIEW master.ebm_nam AS
 WITH effective_dates AS (
@@ -725,4 +757,3 @@ FROM
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
-
