@@ -565,7 +565,9 @@ GRANT USAGE ON SCHEMA validacao TO editor, visualizador;
 GRANT USAGE, CREATE ON SCHEMA validacao TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA validacao TO editor, visualizador, administrador;
 
-CREATE OR REPLACE FUNCTION public.tr_actualizar_validacao(prefixo TEXT DEFAULT 'cont')
+
+
+CREATE OR REPLACE FUNCTION public.actualizar_validacao(prefixo TEXT DEFAULT 'cont')
  RETURNS boolean SECURITY DEFINER
  LANGUAGE plpgsql
 AS $body$
