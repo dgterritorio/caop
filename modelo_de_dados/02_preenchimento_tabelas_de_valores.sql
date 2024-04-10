@@ -31,14 +31,14 @@ INSERT INTO dominios.estado_limite_administrativo (identificador,descricao,nome)
 	 ('4','Troço de limite cuja aceitação pelas partes ainda não foi comunicada oficialmente','Não Confirmado'),
 	 ('998','Linha que define exclusivamente parte de um limite, e que se encontra localizado na água','Não Aplicável');
 
-INSERT INTO dominios.nivel_limites_administrativo (identificador,descricao,nome) VALUES
-	 ('1','Nível superior da hierarquia administrativa nacional','1ª Ordem'),
-	 ('2','Segundo nível na hierarquia administrativa nacional','2ª Ordem'),
-	 ('3','Terceiro nível na hierarquia administrativa nacional','3ª Ordem'),
-	 ('4','Quarto nível na hierarquia administrativa nacional','4ª Ordem'),
-	 ('5','Quinto nível na hierarquia administrativa nacional','5ª Ordem'),
-	 ('6','Sexto nível na hierarquia administrativa nacional','6ª Ordem'),
-	 ('998','Nível desconhecido ou indefinido','Não Aplicável');
+INSERT INTO dominios.nivel_limites_administrativo (identificador,descricao,nome, nome_en) VALUES
+	 ('1','Nível superior da hierarquia administrativa nacional','1ª Ordem','1stOrder '),
+	 ('2','Segundo nível na hierarquia administrativa nacional','2ª Ordem','2ndOrder'),
+	 ('3','Terceiro nível na hierarquia administrativa nacional','3ª Ordem','3rdOrder'),
+	 ('4','Quarto nível na hierarquia administrativa nacional','4ª Ordem','4thOrder'),
+	 ('5','Quinto nível na hierarquia administrativa nacional','5ª Ordem','5thOrder'),
+	 ('6','Sexto nível na hierarquia administrativa nacional','6ª Ordem','6thOrder'),
+	 ('998','Nível desconhecido ou indefinido','Não Aplicável','Non Aplicable');
 
 INSERT INTO dominios.significado_linha (identificador,descricao,nome) VALUES
 	 ('1','Linha que define, simultaneamente, parte de um limite e de linha de costa','Limite e Linha de Costa'),
