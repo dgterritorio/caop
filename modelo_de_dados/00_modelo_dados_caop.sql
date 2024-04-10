@@ -63,6 +63,14 @@ CREATE TABLE dominios.caracteres_identificadores_pais (
 
 COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'ICC. Identificação do(s) país(es) responsável(eis) pelo troço de limite através do código de dois caracteres, da mesma forma que foi definido pelo EuroBoundaryMap';
 
+CREATE TABLE dominios.tipo_sede_autoridade (
+	identificador varchar(1) PRIMARY KEY,
+	nome VARCHAR(100) NOT NULL,
+	descricao VARCHAR NOT NULL);
+
+COMMENT ON TABLE dominios.tipo_sede_autoridade IS 'ROA. Tipo para o Residence of Autorithy. Sedes de Distrito, Sede de Concelho, Sede de Freguesia';
+
+
 -- Schema com as tabelas de base, editáveis e sob versionamento
 CREATE SCHEMA base;
 COMMENT ON SCHEMA base IS 'Schema com as tabelas de base, editáveis e sob versionamento';
@@ -120,6 +128,21 @@ municipio_cod VARCHAR(4) REFERENCES base.municipio(codigo)
 
 ALTER TABLE base.entidade_administrativa
 ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99') THEN TRUE ELSE municipio_cod = LEFT(codigo, 4) end);
+
+-- TABELAS GEOMÉTRICA
+-- Globais
+-- EPSG:4258
+
+-- Tabela para guardar centroides das sedes de autoridade (Sedes de Distrito, Sedes de Concelho, Sedes de Freguesia)
+-- A tabela foi desenhada para ser importada "facilmente" da tabela Toponimia da RECAR
+-- No entanto a coluna "valor_local_nomeado" tem de ser renomeada para tipo_sede_autoridade
+CREATE TABLE base.sede_autoridade (
+	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
+	tipo_sede_autoridade varchar(1) NOT NULL REFERENCES dominios.tipo_sede_autoridade(identificador),
+	geometria geometry(POINT, 4258) NOT NULL
+);
+
+CREATE INDEX ON base.sede_autoridade USING gist(geometria);
 
 -- TABELAS GEOMÉTRICA
 -- Continente 
