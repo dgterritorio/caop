@@ -43,7 +43,8 @@ COMMENT ON TABLE dominios.significado_linha IS 'BST. Descrição do estado de ac
 CREATE TABLE dominios.nivel_limite_administrativo (
 	identificador varchar(3) PRIMARY KEY,
 	nome VARCHAR(100) NOT NULL,
-	descricao VARCHAR NOT NULL);
+	descricao VARCHAR NOT NULL
+	nome_en VARCHAR(100) NOT NULL);
 
 COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'USE. Níveis de administração segundo a hierarquia administrativa nacional';
 
