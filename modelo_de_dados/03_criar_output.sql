@@ -6,7 +6,6 @@
    -- Escolher o schema de output,
    -- Escolher a data ou versão a usar (usando o versioning)
 
-
 CREATE OR REPLACE FUNCTION public.gerar_poligonos_caop(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', data_hora timestamp DEFAULT now()::timestamp )
 -- Função para gerar os poligonos de output da CAOP com base nos trocos e centroides existentes no schema base
 -- ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
@@ -235,8 +234,8 @@ BEGIN
 
 		CREATE INDEX IF NOT EXISTS	%2$s_nuts1_geometria_idx ON %1$I.%2$s_nuts1 USING gist(geometria);'
 		, output_schema, prefixo, epsg);
-
-	-- actualiza permissões do schema
+	
+-- actualiza permissões do schema
 
 	EXECUTE format('
 		GRANT ALL ON ALL TABLES IN SCHEMA %1$I TO administrador;
@@ -244,6 +243,33 @@ BEGIN
 		, output_schema);
 
 	RETURN TRUE;
+END;
+$body$
+LANGUAGE 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION public.gerar_poligonos_caop(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', output_versao TEXT DEFAULT '')
+-- Função alternativa, baseada na anterior mas tem como input o numero de versão, em vez de um data e hora
+-- ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
+-- parametros:
+-- - output_schema (TEXT) - nome do schema onde guardar os resultados, default 'master'
+-- - prefixo (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+-- - output_versao (TIMESTAMP) , número de uma versão existente na tabela versioning.versao
+RETURNS Boolean AS
+$body$
+DECLARE 
+	data_hora timestamp;
+BEGIN
+	data_hora := (SELECT v.data_hora FROM "versioning".versoes AS v WHERE v.versao ILIKE output_versao );
+
+	CASE WHEN data_hora IS NULL THEN
+		RAISE EXCEPTION 'Versão (%) não foi encontrada.', output_versao;
+		RETURN FALSE;
+	ELSE
+		EXECUTE format('select public.gerar_poligonos_caop(%L, %L, %L::timestamp);',output_schema, prefixo, data_hora);	
+		RETURN TRUE;
+	END CASE;
+
 END;
 $body$
 LANGUAGE 'plpgsql';
@@ -301,7 +327,6 @@ END;
 $body$
 LANGUAGE 'plpgsql';
 
-
 CREATE OR REPLACE FUNCTION public.gerar_trocos_caop(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', data_hora timestamp DEFAULT now()::timestamp )
 -- Função para exportar os trocos de output da CAOP com base nos trocos no schema base
 -- parametros:
@@ -334,26 +359,79 @@ BEGIN
 				ela.nome AS estado_limite_admin,
 				sl.nome AS significado_linha,
 				nla.nome AS nivel_limite_admin,
-				t.geometria::geometry(linestring, %3$s) AS geometria,
+				t.geometria::geometry(linestring, %4$s) AS geometria,
 				st_length(t.geometria) / 1000 AS comprimento_km
-			FROM base.%2$s_troco AS t
-				LEFT JOIN dominios.caracteres_identificadores_pais AS cip ON t.pais = cip.identificador
-				LEFT JOIN dominios.estado_limite_administrativo AS ela ON t.estado_limite_admin = ela.identificador
-				LEFT JOIN dominios.significado_linha AS sl ON t.significado_linha = sl.identificador
-				LEFT JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.identificador
+			FROM vsr_table_at_time (NULL::base.%2$s_troco, %3$L::timestamp) AS t
+				LEFT JOIN vsr_table_at_time (NULL::dominios.caracteres_identificadores_pais, %3$L::timestamp) AS cip ON t.pais = cip.identificador
+				LEFT JOIN vsr_table_at_time (NULL::dominios.estado_limite_administrativo, %3$L::timestamp) AS ela ON t.estado_limite_admin = ela.identificador
+				LEFT JOIN vsr_table_at_time (NULL::dominios.significado_linha, %3$L::timestamp)  AS sl ON t.significado_linha = sl.identificador
+				LEFT JOIN vsr_table_at_time (NULL::dominios.nivel_limite_administrativo, %3$L::timestamp)  AS nla ON t.nivel_limite_admin = nla.identificador
 		WITH NO DATA;
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_trocos;
 
 		CREATE INDEX IF NOT EXISTS %2$s_trocos_geometria_idx ON %1$I.%2$s_trocos USING gist(geometria);'
-	, output_schema, prefixo, epsg);
+	, output_schema, prefixo, data_hora, epsg);
+
+	-- cria vista inf_fonte_troco
+	EXECUTE format('
+		CREATE OR REPLACE VIEW %1$I.inf_fonte_troco AS
+		WITH all_lig_fontes AS (
+			SELECT * FROM vsr_table_at_time (NULL::"base".lig_cont_troco_fonte, %2$L::timestamp)
+			UNION ALL SELECT * FROM vsr_table_at_time (NULL::"base".lig_ram_troco_fonte, %2$L::timestamp)
+			UNION ALL SELECT * FROM vsr_table_at_time (NULL::"base".lig_raa_cen_ori_troco_fonte, %2$L::timestamp)
+			UNION ALL SELECT * FROM vsr_table_at_time (NULL::"base".lig_raa_oci_troco_fonte, %2$L::timestamp)
+		)
+		SELECT 
+			row_number() OVER () AS id,
+			lctf.identificador AS identificador_troco,
+		    tf.nome AS tipo_fonte,
+		    f.descricao,
+		    f.data,
+		    f.observacoes,
+		    f.diploma
+		   FROM all_lig_fontes as lctf
+		     JOIN vsr_table_at_time (NULL::"base".fonte, %2$L::timestamp) f ON f.identificador = lctf.fonte_id
+		     JOIN vsr_table_at_time (NULL::"dominios".tipo_fonte, %2$L::timestamp) tf ON tf.identificador::text = f.tipo_fonte::TEXT;'
+	, output_schema, data_hora);
+
+	-- actualiza permissões do schema
+
+	EXECUTE format('
+		GRANT ALL ON ALL TABLES IN SCHEMA %1$I TO administrador;
+		GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador;'
+		, output_schema);
 
 	RETURN TRUE;
 END;
 $body$
 LANGUAGE 'plpgsql';
 
+CREATE OR REPLACE FUNCTION public.gerar_trocos_caop(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', output_versao TEXT DEFAULT '')
+-- Função alternativa, baseada na anterior mas tem como input o numero de versão, em vez de um data e hora
+-- ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
+-- parametros:
+-- - output_schema (TEXT) - nome do schema onde guardar os resultados, default 'master'
+-- - prefixo (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+-- - output_versao (TIMESTAMP) , número de uma versão existente na tabela versioning.versao
+RETURNS Boolean AS
+$body$
+DECLARE 
+	data_hora timestamp;
+BEGIN
+	data_hora := (SELECT v.data_hora FROM "versioning".versoes AS v WHERE v.versao ILIKE output_versao );
 
+	CASE WHEN data_hora IS NULL THEN
+		RAISE EXCEPTION 'Versão (%) não foi encontrada.', output_versao;
+		RETURN FALSE;
+	ELSE
+		EXECUTE format('select public.gerar_trocos_caop(%L, %L, %L::timestamp);',output_schema, prefixo, data_hora);	
+		RETURN TRUE;
+	END CASE;
+
+END;
+$body$
+LANGUAGE 'plpgsql';
 
 -- Criar função que actualiza os campos ea_esquerda e ea_direita da camada troços com base
 -- nos polígonos criados pelas últimas alterações
@@ -529,14 +607,21 @@ GRANT EXECUTE ON FUNCTION public.actualizar_trocos(text) TO administrador, edito
 
 -- TESTES
 
-SELECT gerar_poligonos_caop('master3','cont','2023-12-19 18:26:57');
+SELECT gerar_poligonos_caop('master3','cont','2024-02-14 15:42:26');
 SELECT gerar_poligonos_caop('master','cont');
 SELECT gerar_poligonos_caop('master3');
 SELECT public.actualizar_trocos('cont');
-SELECT gerar_trocos_caop('master','cont');
+SELECT gerar_trocos_caop('master','cont'),now()::timestamp);
 SELECT gerar_trocos_caop('master3','cont','2023-12-19 18:26:57');
-SELECT gerar_trocos_caop('master3','cont');
+SELECT public.gerar_trocos_caop();
 
+SELECT gerar_poligonos_caop('master','ram');
+SELECT public.actualizar_trocos('ram');
+SELECT public.gerar_trocos_caop('master','ram');
+
+-- TESTES com numeros de versoes
+SELECT public.gerar_poligonos_caop('master3','cont','v2024.0');
+SELECT public.gerar_trocos_caop('master3','cont','v2024.0');
 
 -- TRIGGERS PARA AUTOMATICAMENTE GERAR OS POLIGONOS, PREENCHER TROCOS e ACTUALIZAR VIEWS DE VALIDACAO
 -- NAO ESTÃO ACTIVOS POIS ERAM DEMASIADO LENTOS
