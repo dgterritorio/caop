@@ -69,11 +69,11 @@ BEGIN
 					n2.nome AS nuts2,
 					n1.nome AS nuts1
 				FROM base.entidade_administrativa AS ea
-					JOIN base.municipio AS m ON ea.municipio_cod = m.codigo
-					JOIN base.distrito_ilha AS di ON m.distrito_cod = di.codigo
-					JOIN base.nuts3 AS n3 ON m.nuts3_cod = n3.codigo
-					JOIN base.nuts2 AS n2 ON n3.nuts2_cod = n2.codigo
-					JOIN base.nuts1 AS n1 ON n2.nuts1_cod = n1.codigo
+					JOIN vsr_table_at_time (NULL::base.municipio, %3$L::timestamp) AS m ON ea.municipio_cod = m.codigo
+					JOIN vsr_table_at_time (NULL::base.distrito_ilha, %3$L::timestamp) AS di ON m.distrito_cod = di.codigo
+					JOIN vsr_table_at_time (NULL::base.nuts3, %3$L::timestamp) AS n3 ON m.nuts3_cod = n3.codigo
+					JOIN vsr_table_at_time (NULL::base.nuts2, %3$L::timestamp) AS n2 ON n3.nuts2_cod = n2.codigo
+					JOIN vsr_table_at_time (NULL::base.nuts1, %3$L::timestamp) AS n1 ON n2.nuts1_cod = n1.codigo
 			)
 			SELECT
 				ROW_NUMBER() OVER () AS id,
@@ -85,19 +85,19 @@ BEGIN
 				a.nuts3,
 				a.nuts2,
 				a.nuts1,
-				p.geometria::geometry(polygon, %3$s) AS geometria,
+				p.geometria::geometry(polygon, %4$s) AS geometria,
 				(st_area(p.geometria) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter(p.geometria) / 1000)::integer AS perimetro_km
 			FROM %1$I.%2$s_poligonos_temp AS p
-				JOIN base.%2$s_centroide_ea AS ce ON st_intersects(p.geometria, ce.geometria) -- FALTA COLOCAR O PREFIXO
+				JOIN vsr_table_at_time (NULL::base.%2$s_centroide_ea, %3$L::timestamp) AS ce ON st_intersects(p.geometria, ce.geometria) -- FALTA COLOCAR O PREFIXO
 				JOIN atributos_freguesias AS a ON a.dicofre = ce.entidade_administrativa
-				JOIN dominios.tipo_area_administrativa AS taa ON ce.tipo_area_administrativa_id = taa.identificador
+				JOIN vsr_table_at_time (NULL::dominios.tipo_area_administrativa, %3$L::timestamp) AS taa ON ce.tipo_area_administrativa_id = taa.identificador
 		WITH NO DATA;
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_areas_administrativas;
 
 		CREATE INDEX IF NOT EXISTS %2$s_areas_administrativas_geometria_idx ON %1$I.%2$s_areas_administrativas USING gist(geometria);'
-		, output_schema, prefixo, epsg);
+		, output_schema, prefixo, data_hora, epsg);
 
 	-- Agrega das areas administrativas por entidade administrativa (dicofre)
 	-- Para obtenção da tabela das freguesias
@@ -134,7 +134,7 @@ BEGIN
 				nuts3,
 				nuts2,
 				nuts1,
-				(st_union(geometria))::geometry(multipolygon, %3$s) AS geometria,
+				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				count(*) AS n_freguesias
@@ -154,7 +154,7 @@ BEGIN
 				LEFT(dico,2) AS di,
 				distrito_ilha AS distrito,
 				nuts1,
-				(st_union(geometria))::geometry(multipolygon, %3$s) AS geometria,
+				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				count(*) AS n_municipios,
@@ -177,7 +177,7 @@ BEGIN
 				nuts3,
 				nuts2,
 				nuts1,
-				(st_union(geometria))::geometry(multipolygon, %3$s) AS geometria,
+				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				count(*) AS n_municipios,
@@ -199,7 +199,7 @@ BEGIN
 				n2.codigo,
 				nuts2,
 				nuts1,
-				(st_union(geometria))::geometry(multipolygon, %3$s) AS geometria,
+				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				sum(n_municipios) AS n_municipios,
@@ -220,7 +220,7 @@ BEGIN
 			SELECT
 				n1.codigo,
 				nuts1,
-				(st_union(geometria))::geometry(multipolygon, %3$s) AS geometria,
+				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				sum(n_municipios) AS n_municipios,
@@ -564,33 +564,6 @@ END;
 $body$
 LANGUAGE 'plpgsql';
 
-CREATE VIEW master.inf_fonte_troco AS 
-WITH all_fontes AS (
-SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte, f.descricao, f.DATA, f.observacoes, f.diploma
-FROM base.cont_troco AS ct 
-	JOIN base.lig_cont_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
-	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
-	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
-UNION ALL
-SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
-FROM base.ram_troco AS ct 
-	JOIN base.lig_ram_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
-	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
-	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
-UNION ALL
-SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
-FROM base.raa_oci_troco AS ct 
-	JOIN base.lig_raa_oci_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
-	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
-	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte
-UNION ALL
-SELECT lctf.identificador AS identificador_troco, tf.nome AS tipo_fonte , f.descricao, f.DATA, f.observacoes, f.diploma
-FROM base.raa_cen_ori_troco AS ct 
-	JOIN base.lig_raa_cen_ori_troco_fonte AS lctf ON ct.identificador = lctf.troco_id 
-	JOIN base.fonte as f ON f.identificador = lctf.fonte_id
-	JOIN dominios.tipo_fonte AS tf ON tf.identificador =  f.tipo_fonte)
-SELECT ROW_NUMBER() OVER() AS id, a.*
-FROM all_fontes AS a;
 
 -- Por definição todas as funções têm permissão de execute
 -- Por isso retiramos todas as permissões e apenas damos a editores e administradores
