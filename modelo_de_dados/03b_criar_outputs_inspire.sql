@@ -35,11 +35,12 @@ freguesia AS name,
 'PT1' || dicofre AS "nationalCode",
 '5thOrder' AS "nationalLevel",
 'Freguesia' AS "nationalLevelName",
-'' AS "residenceOfAutorithy",
+sa.nome AS "residenceOfAutorithy",
 'PT1' || LEFT(dicofre,4) AS "upperLevelUnit",
 f.geometria::geometry(multipolygon,3763) AS geometry
 FROM master.cont_freguesias AS f
-	JOIN base.cont_troco AS t ON f.dicofre IN (t.ea_direita, t.ea_esquerda)
+	LEFT JOIN base.cont_troco AS t ON f.dicofre IN (t.ea_direita, t.ea_esquerda)
+	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(f.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '5'
 ORDER BY dicofre, t.inicio_objecto DESC;
 
 CREATE INDEX ON master.inspire_admin_units_5thorder_cont USING gist(geometry);
@@ -56,11 +57,12 @@ municipio AS name,
 'PT1' || dico AS "nationalCode",
 '4thOrder' AS "nationalLevel",
 'Município' AS "nationalLevelName",
-dico AS "residenceOfAutorithy",
+sa.nome AS "residenceOfAutorithy",
 'PT1' || LEFT(dico,2) AS "upperLevelUnit",
 m.geometria::geometry(multipolygon, 3763) AS geometry
 FROM master.cont_municipios AS m
-	JOIN base.cont_troco AS t ON m.dico IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
+	LEFT JOIN base.cont_troco AS t ON m.dico IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
+	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(m.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '4'
 ORDER BY dico, t.inicio_objecto DESC; 
 
 CREATE INDEX ON master.inspire_admin_units_4thorder_cont USING gist(geometry)
@@ -77,11 +79,12 @@ distrito AS name,
 'PT1' || di AS "nationalCode",
 '3thOrder' AS "nationalLevel",
 'Distrito' AS "nationalLevelName",
-di AS "residenceOfAutorithy",
+sa.nome AS "residenceOfAutorithy",
 'PT1' AS "upperLevelUnit",
 d.geometria AS geometry
 FROM master.cont_distritos AS d
-	JOIN base.cont_troco AS t ON d.di IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
+	LEFT JOIN base.cont_troco AS t ON d.di IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
+	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(d.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '3'
 ORDER BY di, t.inicio_objecto DESC;
 
 CREATE INDEX ON master.inspire_admin_units_3rdorder_cont USING gist(geometry);

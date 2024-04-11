@@ -139,6 +139,7 @@ ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99
 CREATE TABLE base.sede_autoridade (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	tipo_sede_autoridade varchar(1) NOT NULL REFERENCES dominios.tipo_sede_autoridade(identificador),
+	nome varchar(255) NOT NULL,
 	geometria geometry(POINT, 4258) NOT NULL
 );
 

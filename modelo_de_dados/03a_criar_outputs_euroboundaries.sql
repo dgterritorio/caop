@@ -192,7 +192,6 @@ FROM endpoints AS ep ;
 CREATE INDEX ON euroboundaries.ebm_limites_interiores_dangles USING gist(geom);
 
 DELETE 
---SELECT * 
 FROM euroboundaries.ebm_limites_interiores_dangles
 	WHERE 
 	NOT EXISTS (SELECT 1 FROM euroboundaries.ebm_temp_limites_exteriores AS le
@@ -444,7 +443,7 @@ WITH all_areas AS (
 		'Portugal' AS "NAMA",
 		'por' AS "NLN",
 		'UNK' AS "SHNupper",
-		NULL AS "ROA",
+		'Lisboa' AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -459,7 +458,7 @@ UNION ALL
 		'Continente' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		NULL AS "ROA",
+		'Lisboa' AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -474,12 +473,13 @@ UNION ALL
 		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		'PT1000000' AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.cont_distritos AS cd
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '3'
 UNION ALL
 	SELECT -- Municipios Continente
 		'PT' AS "ICC",
@@ -490,12 +490,13 @@ UNION ALL
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT1', LEFT(dico,2),'0000') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
-		master.cont_municipios AS cf
+		master.cont_municipios AS cm
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '4'
 UNION ALL
 	SELECT -- Freguesias continente
 		'PT' AS "ICC",
@@ -506,12 +507,13 @@ UNION ALL
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT1', LEFT(dicofre,4),'00') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.cont_freguesias AS cf
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '5'
 UNION ALL
 	SELECT -- MADEIRA
 		'PT' AS "ICC",
@@ -522,7 +524,7 @@ UNION ALL
 		'Regiao Autonoma da Madeira' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		NULL AS "ROA",
+		'Funchal' AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -537,12 +539,13 @@ UNION ALL
 		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		'PT3000000' AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.ram_distritos AS cd
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '3'
 UNION ALL
 	SELECT -- Municipios Madeira
 		'PT' AS "ICC",
@@ -553,12 +556,13 @@ UNION ALL
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT3', LEFT(dico,2),'0000') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
-		master.ram_municipios AS cf
+		master.ram_municipios AS cm
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '4'
 UNION ALL
 	SELECT -- Freguesias Madeira
 		'PT' AS "ICC",
@@ -575,6 +579,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.ram_freguesias AS cf
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '5'
 UNION ALL
 	SELECT -- ACORES
 		'PT' AS "ICC",
@@ -585,7 +590,7 @@ UNION ALL
 		'Regiao Autonoma dos Acores' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		NULL AS "ROA",
+		'Ponta Delgada' AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -600,12 +605,13 @@ UNION ALL -- ACORES OCIDENTAL
 		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		'PT2000000' AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_oci_distritos AS cd
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '3'
 UNION ALL
 	SELECT -- Municipios acores ocidental
 		'PT' AS "ICC",
@@ -616,12 +622,13 @@ UNION ALL
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
-		master.raa_oci_municipios AS cf
+		master.raa_oci_municipios AS cm
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '4'
 UNION ALL
 	SELECT -- Freguesias Acores Ocidental
 		'PT' AS "ICC",
@@ -632,12 +639,13 @@ UNION ALL
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_oci_freguesias AS cf
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '5'
 UNION ALL
 	SELECT -- Ilhas -- Acores central e oriental
 		'PT' AS "ICC",
@@ -648,12 +656,13 @@ UNION ALL
 		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		'PT2000000' AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_cen_ori_distritos AS cd
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '3'
 UNION ALL
 	SELECT -- Municipios acores central e oriental
 		'PT' AS "ICC",
@@ -664,12 +673,13 @@ UNION ALL
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
-		master.raa_cen_ori_municipios AS cf
+		master.raa_cen_ori_municipios AS cm
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '4'
 UNION ALL
 	SELECT -- Freguesias Acores central e oriental
 		'PT' AS "ICC",
@@ -680,12 +690,13 @@ UNION ALL
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
-		NULL AS "ROA",
+		sa.nome AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_cen_ori_freguesias AS cf
+		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '5'
 ;
 
 DROP MATERIALIZED VIEW IF EXISTS master.ebm_nam CASCADE;
