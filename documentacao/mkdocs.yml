@@ -1,0 +1,5 @@
+site_name: My docs
+
+theme:
+  name: material
+
