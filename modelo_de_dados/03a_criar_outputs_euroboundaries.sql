@@ -443,11 +443,12 @@ WITH all_areas AS (
 		'Portugal' AS "NAMA",
 		'por' AS "NLN",
 		'UNK' AS "SHNupper",
-		'Lisboa' AS "ROA",
+		min(sa.ebm_roa) AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
-	FROM all_areas	
+	FROM all_areas, base.sede_autoridade AS sa 
+	WHERE tipo_sede_autoridade = '1'
 UNION ALL
 	SELECT -- Continente
 		'PT' AS "ICC",
@@ -458,11 +459,12 @@ UNION ALL
 		'Continente' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		'Lisboa' AS "ROA",
+		min(sa.ebm_roa) AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM master.cont_distritos
+	LEFT JOIN base.sede_autoridade AS sa ON tipo_sede_autoridade = '1'
 UNION ALL
 	SELECT -- Distritos continente
 		'PT' AS "ICC",
@@ -470,10 +472,10 @@ UNION ALL
 		3 AS "USE", -- distritos
 		2514 AS "ISN", -- distritos
 		distrito  AS "NAMN",
-		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		'PT1000000' AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -487,10 +489,10 @@ UNION ALL
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
-		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT1', LEFT(dico,2),'0000') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -504,10 +506,10 @@ UNION ALL
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
-		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT1', LEFT(dicofre,4),'00') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -524,11 +526,13 @@ UNION ALL
 		'Regiao Autonoma da Madeira' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		'Funchal' AS "ROA",
+		min(sa.ebm_roa) AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
-	FROM master.ram_distritos
+	FROM master.ram_distritos AS d
+	LEFT JOIN base.sede_autoridade AS sa
+		ON tipo_sede_autoridade = '2' AND st_intersects(d.geometria, st_transform(sa.geometria, 5016))
 UNION ALL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
@@ -536,10 +540,10 @@ UNION ALL
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilhas
 		distrito  AS "NAMN",
-		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		'PT3000000' AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -553,10 +557,10 @@ UNION ALL
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
-		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT3', LEFT(dico,2),'0000') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -570,10 +574,10 @@ UNION ALL
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
-		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT3', LEFT(dicofre,4),'00') AS "SHNupper",
-		NULL AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -590,11 +594,13 @@ UNION ALL
 		'Regiao Autonoma dos Acores' AS NAMA,
 		'por' AS "NLN",
 		'PT0000000' AS "SHNupper",
-		'Ponta Delgada' AS "ROA",
+		min(sa.ebm_roa) AS "ROA",
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM (SELECT * FROM master.raa_oci_distritos UNION ALL SELECT * FROM master.raa_cen_ori_distritos) AS a
+	LEFT JOIN base.sede_autoridade AS sa
+		ON tipo_sede_autoridade = '2' AND st_intersects(st_transform(a.geometria,4258), sa.geometria) 
 UNION ALL -- ACORES OCIDENTAL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
@@ -602,10 +608,10 @@ UNION ALL -- ACORES OCIDENTAL
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilha
 		distrito  AS "NAMN",
-		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		'PT2000000' AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -619,10 +625,10 @@ UNION ALL
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
-		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -636,10 +642,10 @@ UNION ALL
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
-		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -653,10 +659,10 @@ UNION ALL
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilhas
 		distrito  AS "NAMN",
-		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(distrito ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		'PT2000000' AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -670,10 +676,10 @@ UNION ALL
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
-		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -687,10 +693,10 @@ UNION ALL
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
-		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
+		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
 		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
-		sa.nome AS "ROA",
+		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
@@ -737,12 +743,13 @@ SELECT
 	"USE",
 	"ISN",
 	"NAMN",
+	"NAMA",
 	"NLN",
 	"SHNupper",
 	"ROA",
 	nlpc.pop_res AS "PPL",
 	"ARA",
-	"effectiveDate"
+	fonte_data AS "effectiveDate"
 FROM euroboundaries.ebm_nam_temp AS ent
 	LEFT JOIN euroboundaries.nuts_lau_pt_2023_censos2021 AS nlpc ON ent."SHN" = nlpc.shn
 	LEFT JOIN effective_dates AS ed ON RIGHT(ent."SHN",6) = ed.entidade_administrativa;
@@ -756,9 +763,9 @@ SELECT
 			WHEN LEFT(ea.codigo,1) = '3' THEN '3'
 			ELSE '1' END || ea.codigo AS "SHN",
 	ea.codigo AS "LAU",
-	n3.codigo AS "NUTS3",
-	n2.codigo AS "NUTS2",
-	n1.codigo AS "NUTS1"
+	'PT' || n3.codigo AS "NUTS3",
+	'PT' || n2.codigo AS "NUTS2",
+	'PT' || n1.codigo AS "NUTS1"
 FROM
 	base.entidade_administrativa AS ea
 	JOIN base.municipio AS m ON m.codigo = ea.municipio_cod

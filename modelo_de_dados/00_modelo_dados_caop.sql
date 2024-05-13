@@ -134,12 +134,17 @@ ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99
 -- EPSG:4258
 
 -- Tabela para guardar centroides das sedes de autoridade (Sedes de Distrito, Sedes de Concelho, Sedes de Freguesia)
--- A tabela foi desenhada para ser importada "facilmente" da tabela Toponimia da RECAR
--- No entanto a coluna "valor_local_nomeado" tem de ser renomeada para tipo_sede_autoridade
+-- A tabela foi desenhada para ser importada "facilmente" da tabela Toponimia da CartTop\RECART
+-- No entanto, a coluna "valor_local_nomeado" tem de ser renomeada para "tipo_sede_autoridade"
+-- Foi ainda adicionado um campo ebm_roa, para guardar os identificadores roa do euroboundaires
+-- Actualmente, apenas existem dados até ao nível do concelho. Se se entender adicionar as sedes de freguesia
+-- terá de ser solicitar a geração de códigos ROA ao euroBoundaries
+
 CREATE TABLE base.sede_autoridade (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
 	tipo_sede_autoridade varchar(1) NOT NULL REFERENCES dominios.tipo_sede_autoridade(identificador),
 	nome varchar(255) NOT NULL,
+	ebm_roa VARCHAR(100),
 	geometria geometry(POINT, 4258) NOT NULL
 );
 
