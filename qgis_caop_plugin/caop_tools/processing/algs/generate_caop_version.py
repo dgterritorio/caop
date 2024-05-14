@@ -36,6 +36,7 @@ from qgis.core import (
     QgsProcessingParameterProviderConnection,
     QgsProcessingParameterEnum,
     QgsProcessingParameterString,
+    QgsProcessingParameterNumber,
     QgsProcessingParameterDateTime,
 )
 
@@ -48,6 +49,7 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
     SCHEMA_NAME = "SCHEMA_NAME"
     REGION = "REGION"
     DATE = "DATE"
+    VERSION = "VERSION"
 
     def name(self):
         return "generatecaopversion"
@@ -100,13 +102,30 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             )
         )
         self.addParameter(
-            QgsProcessingParameterDateTime(self.DATE, self.tr("Timestamp"))
+            QgsProcessingParameterDateTime(self.DATE, self.tr("Timestamp"), optional=True)
+        )
+        self.addParameter(
+            QgsProcessingParameterNumber(self.VERSION, self.tr("Version"), optional=True)
         )
 
     def processAlgorithm(self, parameters, context, feedback):
         conn_name = self.parameterAsConnectionName(parameters, self.CONNECTION, context)
         schema_name = self.parameterAsString(parameters, self.SCHEMA_NAME, context)
-        date_time = self.parameterAsDateTime(parameters, self.DATE, context)
+
+        date_time = None
+        if self.DATE in parameters and parameters[self.DATE] is not None:
+            date_time = self.parameterAsDateTime(parameters, self.DATE, context)
+
+        version = None
+        if self.VERSION in parameters and parameters[self.VERSION] is not None:
+            version = self.parameterAsInt(parameters, self.VERSION, context)
+
+        if date_time is None and version is None:
+            raise QgsProcessingException(self.tr("Please specify either timestamp or version you want to use."))
+
+        if date_time is not None and version is not None:
+            raise QgsProcessingException(self.tr("Please specify either timestamp or version you want to use."))
+
         region = self.regions[self.parameterAsEnum(parameters, self.REGION, context)][1]
 
         try:
@@ -120,7 +139,11 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             )
 
         multi_feedback = QgsProcessingMultiStepFeedback(2, feedback)
-        dt = date_time.toString("yyyy-MM-dd hh:mm:ss")
+
+        if date_time is not None:
+            dt = date_time.toString("yyyy-MM-dd hh:mm:ss")
+        else:
+            dt = str(version)
 
         try:
             conn.executeSql(
