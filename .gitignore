@@ -5,3 +5,5 @@
 *.log*
 *.qm
 __pycache__/
+db_docs/
+mkdocs_venv/
