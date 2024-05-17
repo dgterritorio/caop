@@ -1,4 +1,4 @@
-site_name: My docs
+site_name: Estudo e definição de um novo modelo conceptual para a CAOP adaptado ao PostgreSQL/PostGIS, adaptação ao modelo de dados INSPIRE e desenvolvimento de scripts
 
 theme:
   name: material

@@ -8,7 +8,7 @@ Tivemos com objectivo manter, tanto quanto possível, a estrutura dos dados fina
 
 Finalmente, foi tida em conta a necessidade de transposição da CAOP para outros modelos de dados, nomeadamente a EuroBoundaries, e o tema Administrative Boundaries do INSPIRE.
 
-## Modelo conceptual
+## Modelo relacional conceptual
 
 ```mermaid
 ---
@@ -37,23 +37,68 @@ erDiagram
 ```
 
 ### Entidade `Entidade administrativa`
+
+Os objecto desta entidade representam as unidades administrativas de nível 5, as freguesias ou uniões de freguesias. As entidades administrativas
+(EA) são identificadas inequivocamente através de um código único (DICOFRE ou
+DIMNFR). São ainda incluído o *Oceano Atlânctico* e *Espanha*. Esta entidade estabelece uma relação de 1:n com a a unidade administrativa de nível superior a que pertence (município).
+Esta entidade é alfanumérica, não tendo atributos geométricos.
+
 ### Entidade `Municipio`
+
+Os objectos desta entidade representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados inequivocamente através de um código único (DICO ou DIMN). Esta entidade estabelece uma relação de 1:n com a a unidade administrativa superior (distrito ou ilha) e uma relação 1:n com a unidade estatística (NUTS3) a que pertence.
+Esta entidade é alfanumérica, não tendo atributos geométricos.
+
 ### Entidade `Distrito ou Ilha`
-### Entidade `Centroide EA`
+
+Os objectos desta entidade representam a unidades administrativas de nível 3, os distritos no continente e as ilhas das regiões autónomas. Os objectos são identificados inequivocamente através de um código único (DI). Esta entidade estabelece uma relação de 1:n com a unidade estatística (NUTS1) a que pertence.
+Esta entidade é alfanumérica, não tendo atributos geométricos.
+
 ### Entidade `Troço`
+
+Cada objecto desta entidade representa um troço (linha) de delimitação entre duas entidades
+administrativas ou o limite de uma entidade administrativa com o oceano Atlantico ou a fronteira com Espanha.
+Esta entidade estabelece uma relação de n:m para com as entidades administrativas, representando a entidade administrativa à esquerda e à direita da linha.
+Esta entidade estabelece uma relação de n:m para com a entidade fonte.
+
+### Entidade `Centroide EA`
+
+Cada objecto desta entidade representa o centro (não necessariamente geométrico)
+de uma área administrativa. Cada área administrativa, que assume posteriormente a
+forma de um polígono pela conjugação de um centroide e dos troços que o rodeiam, representa uma área desconexa de uma entidade administrativa (freguesia ou união de freguesias).
+Esta entidade estabelece uma relação de 1:n para com as entidades administrativas.
+
 ### Entidade `Fonte`
-### Entidade `NUTS I`
-### Entidade `NUTS II`
+
+Os objectos desta tabela representam fontes (Decreto-Lei, Cadastro, etc...) que deram origem à delimitação dos troços.
+
 ### Entidade `NUTS III`
+
+Os objectos desta entidade representam a Nomenclatura das Unidades Territoriais para Fins Estatísticos (NUTS - *Nomenclature of Territorial Units for Statistics*) de nível 3.
+
+Esta entidade estabelece uma relação de 1:n com a entidade municípios e uma relação de n:1 com a entidade NUTS II a que pertence.
+
+### Entidade `ǸUTS II`
+
+Os objectos desta entidade representam a Nomenclatura das Unidades Territoriais para Fins Estatísticos (NUTS - *Nomenclature of Territorial Units for Statistics*) de nível 2.
+
+Esta entidade estabelece uma relação de 1:n com a entidade municípios e uma relação de n:1 com a entidade NUTS II a que pertence.
+
+
+### Entidade `NUTS I`
+
+Os objectos desta entidade representam a Nomenclatura das Unidades Territoriais para Fins Estatísticos (NUTS - *Nomenclature of Territorial Units for Statistics*) de nível 1.
+
+Esta entidade estabelece uma relação de 1:n com a entidade NUTS II e uma relação de 1:n com a entidade Distritos.
+
 ### Entidade `Sede Administrativa`
 
-
+O objectos desta entidade representam a localização e nomenclatura das sedes administrativas aos vários níveis (e.g. Freguesia, Munícipio, Distrito ou Ilha). Esta entidade não estabelece nenhuma relação formal com as restantes entidade, pois a relação é feita geometricamente já na faze de outputs.
 
 ## Implementação do modelo (schemas, dominios, tabelas e atributos)
 
 Nesta secção descreve-se os principais schemas do modelo, as respectivas tabelas e atributos.
 
-O modelo conceptual foi distrituído por dois schemas `dominios` e `base`.
+O modelo conceptual foi distribuído por dois schemas `dominios` e `base`.
 
 ### Schema `dominios`
 
@@ -221,7 +266,7 @@ Valores:
 
 No schema `base` são guardadas todas as tabelas editáveis que permitem a edição e gestão da CAOP. Estas são as tabelas de trabalho para os editores da CAOP.
 
-Por questões de gestão dos diferentes sistemas de coordenadas, optou-se por separar as tabelas espaciais (com colunas de geometria), nomeadamente `centroide_ea` e `troco` pelas quatro regiões com prefixos e códigos EPSG distintos:
+Por questões de gestão dos diferentes sistemas de coordenadas, optou-se por separar algumas entidades em diferentes tabelas espaciais (com colunas de geometria), nomeadamente `centroide_ea` e `troco` pelas quatro regiões com prefixos e códigos EPSG distintos:
 
 * `_cont` - Continente (EPGS: 3763)
 * `_ram` - Região Autónoma da Madeira (EPSG: 5016)
@@ -238,9 +283,9 @@ As restantes tabelas são não espaciais, sem prefixos e são consideradas globa
 
 Na descrição abaixo apenas se descreve as tabelas identicas um vez, sendo a estrutura idêntica globalmente
 
-#### Tabelas `troco`
+#### Tabelas `base.troco`
 
-Esta entidade é implementada nas seguintes tabelas:
+A implementação da entidade `Troço` é feita pelas seguintes tabelas:
 
 * `base.troco_cont`
 * `base.troco_ram`
@@ -248,7 +293,7 @@ Esta entidade é implementada nas seguintes tabelas:
 * `base.troco_raa_cen_ori`
 
 Cada registo destas tabelas representa um troço de delimitação entre duas entidades
-adminitrativas ou o limite de uma entidade administrativa com o oceano Atlantico ou Espanha.
+administrativas ou o limite de uma entidade administrativa com o oceano Atlantico ou Espanha.
 
 Em termos geométricos, os troços são representados por linhas simples. Em termos topológicos, entre dois troços, não são permitidas sobreposição dos interiores das geometrias. Ou seja, apenas os inícios e fins das *linestrings* (*boundary* da geometria) podem tocar outros troços. Também é considerado erro topológico quando o inicio ou fim
 de um troço não se conecta a pelo menos um outro troço. Exceção feita a troços fechados.
@@ -276,7 +321,7 @@ de um troço não se conecta a pelo menos um outro troço. Exceção feita a tro
 
 #### `base.centroide_ea`
 
-Esta entidade é implementada nas seguintes tabelas:
+A entidade `Centroide EA` é implementada nas seguintes tabelas:
 
 * `base.centroide_ea_cont`
 * `base.centroide_ea_ram`
@@ -286,6 +331,9 @@ Esta entidade é implementada nas seguintes tabelas:
 Cada registo nestas tabelas representa o centro (não obrigatoriamente geométrico)
 de uma área administrativa. Cada área administrativa, que assume posteriormente a
 forma de um polígono, representa uma área desconexa de uma entidade administrativa (freguesia ou união de freguesias).
+
+Em termos topológico, dentro de cada área administrativa deve existir apenas um
+centroide. A inexistencia de centroide, ou a sua multiplicidade é considerado um erro. Impedindo a correcta criação dos polígonos CAOP.
 
 ##### Descrição dos atributos
 
@@ -305,8 +353,7 @@ forma de um polígono, representa uma área desconexa de uma entidade administra
 
 #### `base.entidade_administrativa`
 
-Os registos desta tabela alfanumérica representam as unidades administrativas
-de nível 5, o mais baixo (freguesias ou uniões de freguesias). As entidades administrativas (EA) são identificadas
+Implementação da entidade Entidade administrativa. Os registos desta tabela alfanumérica representam as unidades administrativas de nível 5, o mais baixo (freguesias ou uniões de freguesias). As entidades administrativas (EA) são identificadas
 inequivocamente através de um código único (DICOFRE ou DIMNFR). São ainda
 incluídas as entidades *Oceano Atlânctico* e *Espanha*. Para além do nome da entidade administrativa, é também identificada a unidade administrativa de nível superior a que pertence (município).
 
@@ -326,7 +373,7 @@ Uma restrição garante que o código único da entidade administrativa é compa
 
 #### `base.municipio`
 
-Os registos desta tabela alfanumérica representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados
+Implementação da entidade Municipio. Os registos desta tabela alfanumérica representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados
 inequivocamente através de um código único (DICO ou DIMN). Para além do nome da entidade administrativa, é também identificada a unidade administrativa superior (distrito ou ilha) e a unidade estatística (NUTS3) a que pertence.
 
 ##### Descrição dos atributos
@@ -346,6 +393,8 @@ inequivocamente através de um código único (DICO ou DIMN). Para além do nome
 Uma restrição garante que o código único do município é compatível com o código do distrito ou ilha identificado.
 
 #### distrito_ilha
+
+Implementação da entidade Município
 
 Os registos desta tabela alfanumérica representam a unidades administrativas de nível 3, os distritos e ilhas das regiões autónomas. Os distritos são identificados
 inequivocamente através de um código único (DI). Para além do nome da entidade administrativa, salienta-se a identificação da unidade estatística (NUTS1) a que pertence.
