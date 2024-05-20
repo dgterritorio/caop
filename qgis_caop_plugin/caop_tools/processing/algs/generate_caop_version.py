@@ -105,7 +105,7 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             QgsProcessingParameterDateTime(self.DATE, self.tr("Timestamp"), optional=True)
         )
         self.addParameter(
-            QgsProcessingParameterNumber(self.VERSION, self.tr("Version"), optional=True)
+            QgsProcessingParameterString(self.VERSION, self.tr("Version"), optional=True)
         )
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -117,8 +117,8 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             date_time = self.parameterAsDateTime(parameters, self.DATE, context)
 
         version = None
-        if self.VERSION in parameters and parameters[self.VERSION] is not None:
-            version = self.parameterAsInt(parameters, self.VERSION, context)
+        if self.VERSION in parameters and parameters[self.VERSION] != '':
+            version = self.parameterAsString(parameters, self.VERSION, context)
 
         if date_time is None and version is None:
             raise QgsProcessingException(self.tr("Please specify either timestamp or version you want to use."))
@@ -142,17 +142,19 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
 
         if date_time is not None:
             dt = date_time.toString("yyyy-MM-dd hh:mm:ss")
+            suffix = '::timestamp'
         else:
-            dt = str(version)
+            dt = version
+            suffix = '::text'
 
         try:
             conn.executeSql(
-                f"SELECT public.gerar_poligonos_caop('{schema_name}', '{region}', '{dt}' )",
+                f"SELECT public.gerar_poligonos_caop('{schema_name}', '{region}', '{dt}'{suffix} )",
                 multi_feedback,
             )
             multi_feedback.setCurrentStep(1)
             conn.executeSql(
-                f"SELECT gerar_trocos_caop('{schema_name}', '{region}', '{dt}')",
+                f"SELECT gerar_trocos_caop('{schema_name}', '{region}', '{dt}'{suffix})",
                 multi_feedback,
             )
             multi_feedback.setCurrentStep(2)

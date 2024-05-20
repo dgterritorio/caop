@@ -3,7 +3,7 @@ name=CAOP Tools
 description=Set of tools to maintain CAOP model
 about=Set of tools to maintain CAOP model.
 category=Plugins
-version=0.1.2
+version=0.1.3
 qgisMinimumVersion=3.28
 
 icon=icons/caop.svg

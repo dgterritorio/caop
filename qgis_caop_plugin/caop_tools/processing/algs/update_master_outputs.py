@@ -118,7 +118,7 @@ class UpdateMasterOutputs(QgsProcessingAlgorithm):
             )
             multi_feedback.setCurrentStep(2)
             conn.executeSql(
-                f"SELECT public.gerar_trocos_caop('master', '{region}')", multi_feedback
+                f"SELECT public.gerar_trocos_caop('master', '{region}', NULL::timestamp)", multi_feedback
             )
             multi_feedback.setCurrentStep(3)
         except QgsProviderConnectionException as e:
