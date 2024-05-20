@@ -40,7 +40,7 @@ erDiagram
 
 Os objecto desta entidade representam as unidades administrativas de nível 5, as freguesias ou uniões de freguesias. As entidades administrativas
 (EA) são identificadas inequivocamente através de um código único (DICOFRE ou
-DIMNFR). São ainda incluído o *Oceano Atlânctico* e *Espanha*. Esta entidade estabelece uma relação de 1:n com a a unidade administrativa de nível superior a que pertence (município).
+DTMNFR). São ainda incluído o *Oceano Atlânctico* e *Espanha*. Esta entidade estabelece uma relação de 1:n com a a unidade administrativa de nível superior a que pertence (município).
 Esta entidade é alfanumérica, não tendo atributos geométricos.
 
 ### Entidade `Municipio`
