@@ -1,0 +1,18 @@
+name: Code Style
+
+on:
+  push:
+    paths:
+      - '.github/workflows/**'
+      - 'qgis_caop_plugin/**'
+
+jobs:
+  check_code_style:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: psf/black@stable
+        with:
+          options: "--check --diff --verbose"
+          src: "./qgis_caop_plugin"
