@@ -1,0 +1,30 @@
+name: Package QGIS plugin
+
+on: [push, pull_request]
+paths: ['.github/workflows/**', 'qgis_caop_plugin/**']
+jobs:
+  create-plugin-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Qt dev tools
+        run: |
+          sudo apt update
+          sudo apt install -y qttools5-dev-tools
+
+      - name: Checkout sources
+        uses: actions/checkout@v4
+
+      - name: Compile translations
+        run: |
+          lrelease qgis_caop_plugin/caoptools/i18n/*.ts
+
+      - name: Collect files for packaging
+        run: |
+          rsync -av --exclude='*.pro' --exclude='*.ts' caop_tools output
+          (cd output && zip -9 -r ../caop_tools.zip caop_tools/)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: caop_tools
+          path: output/
