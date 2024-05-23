@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/**'
       - 'qgis_caop_plugin/**'
+
 jobs:
   create-plugin-package:
     runs-on: ubuntu-latest
@@ -19,7 +20,7 @@ jobs:
 
       - name: Compile translations
         run: |
-          lrelease qgis_caop_plugin/caoptools/i18n/*.ts
+          lrelease qgis_caop_plugin/caop_tools/i18n/*.ts
 
       - name: Collect files for packaging
         run: |
