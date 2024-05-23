@@ -1,6 +1,6 @@
 name: Package QGIS plugin
 
-on: [push, pull_request]
+on: [push]
 paths: ['.github/workflows/**', 'qgis_caop_plugin/**']
 jobs:
   create-plugin-package:
