@@ -102,10 +102,14 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             )
         )
         self.addParameter(
-            QgsProcessingParameterDateTime(self.DATE, self.tr("Timestamp"), optional=True)
+            QgsProcessingParameterDateTime(
+                self.DATE, self.tr("Timestamp"), optional=True
+            )
         )
         self.addParameter(
-            QgsProcessingParameterString(self.VERSION, self.tr("Version"), optional=True)
+            QgsProcessingParameterString(
+                self.VERSION, self.tr("Version"), optional=True
+            )
         )
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -117,14 +121,18 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
             date_time = self.parameterAsDateTime(parameters, self.DATE, context)
 
         version = None
-        if self.VERSION in parameters and parameters[self.VERSION] != '':
+        if self.VERSION in parameters and parameters[self.VERSION] != "":
             version = self.parameterAsString(parameters, self.VERSION, context)
 
         if date_time is None and version is None:
-            raise QgsProcessingException(self.tr("Please specify either timestamp or version you want to use."))
+            raise QgsProcessingException(
+                self.tr("Please specify either timestamp or version you want to use.")
+            )
 
         if date_time is not None and version is not None:
-            raise QgsProcessingException(self.tr("Please specify either timestamp or version you want to use."))
+            raise QgsProcessingException(
+                self.tr("Please specify either timestamp or version you want to use.")
+            )
 
         region = self.regions[self.parameterAsEnum(parameters, self.REGION, context)][1]
 
@@ -142,10 +150,10 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
 
         if date_time is not None:
             dt = date_time.toString("yyyy-MM-dd hh:mm:ss")
-            suffix = '::timestamp'
+            suffix = "::timestamp"
         else:
             dt = version
-            suffix = '::text'
+            suffix = "::text"
 
         try:
             conn.executeSql(
