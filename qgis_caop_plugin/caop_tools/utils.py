@@ -28,6 +28,9 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsGeometry,
     QgsPointXY,
+    QgsProject,
+    QgsFeature,
+    QgsDataSourceUri,
     QgsVectorLayerUtils,
     qgsDoubleNear,
 )
@@ -71,8 +74,10 @@ def split_features(layer, curve, preserve_circular, topological_editing):
         )
 
     topology_test_points = list()
-    features_data_to_add = list()
+    features_data_to_add = dict()
+    child_features = dict()
     field_count = layer.fields().count()
+    relations = QgsProject.instance().relationManager().referencedRelations(layer)
     for feat in features:
         if not feat.hasGeometry():
             continue
@@ -105,15 +110,27 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                     else:
                         attribute_map[field_idx] = feat.attribute(field_idx)
 
-                features_data_to_add.append(
-                    QgsVectorLayerUtils.QgsFeatureData(geom, attribute_map)
-                )
+                if feat.id() not in features_data_to_add:
+                    features_data_to_add[feat.id()] = [
+                        QgsVectorLayerUtils.QgsFeatureData(geom, attribute_map)
+                    ]
+                else:
+                    features_data_to_add[feat.id()].append(
+                        QgsVectorLayerUtils.QgsFeatureData(geom, attribute_map)
+                    )
 
             if topological_editing:
                 for p in feature_topology_test_points:
                     add_topological_points(layer, p)
 
             number_of_split_features += 1
+
+            for r in relations:
+                it = r.getRelatedFeatures(feat)
+                childs = list()
+                for f in it:
+                    childs.append(QgsFeature(f))
+                child_features[(r.id(), feat.id())] = childs
             layer.deleteFeature(feat.id())
         elif split_function_return not in (
             Qgis.GeometryOperationResult.Success,
@@ -121,10 +138,40 @@ def split_features(layer, curve, preserve_circular, topological_editing):
         ):
             result = split_function_return
 
-    if len(features_data_to_add) > 0:
-        features_list_to_add = QgsVectorLayerUtils.createFeatures(
-            layer, features_data_to_add
-        )
+    for parent_fid, data_to_add in features_data_to_add.items():
+        features_list_to_add = QgsVectorLayerUtils.createFeatures(layer, data_to_add)
+        for f in features_list_to_add:
+            for r in relations:
+                if (r.id(), parent_fid) in child_features:
+                    if not r.referencingLayer().isEditable():
+                        if not r.referencingLayer().startEditing():
+                            # TODO: handle errors
+                            pass
+
+                    child_fields_count = r.referencingLayer().fields().count()
+                    key_field = QgsDataSourceUri(
+                        r.referencingLayer().source()
+                    ).keyColumn()
+                    keys = r.fieldPairs()
+                    new_childs = list()
+                    for cf in child_features[(r.id(), parent_fid)]:
+                        attr_map = dict()
+
+                        for i in range(child_fields_count):
+                            attr_map[i] = cf.attribute(i)
+
+                        for k, v in keys.items():
+                            attr_map[cf.fieldNameIndex(k)] = f[v]
+
+                        new_childs.append(
+                            QgsVectorLayerUtils.QgsFeatureData(cf.geometry(), attr_map)
+                        )
+
+                    child_features_to_add = QgsVectorLayerUtils.createFeatures(
+                        r.referencingLayer(), new_childs
+                    )
+                    r.referencingLayer().addFeatures(child_features_to_add)
+
         layer.addFeatures(features_list_to_add)
 
     if number_of_split_features == 0:
