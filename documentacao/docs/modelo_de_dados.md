@@ -45,12 +45,12 @@ Esta entidade é alfanumérica, não tendo atributos geométricos.
 
 ### Entidade `Municipio`
 
-Os objectos desta entidade representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados inequivocamente através de um código único (DICO ou DIMN). Esta entidade estabelece uma relação de 1:n com a a unidade administrativa superior (distrito ou ilha) e uma relação 1:n com a unidade estatística (NUTS3) a que pertence.
+Os objectos desta entidade representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados inequivocamente através de um código único (DICO ou DTMN). Esta entidade estabelece uma relação de 1:n com a a unidade administrativa superior (distrito ou ilha) e uma relação 1:n com a unidade estatística (NUTS3) a que pertence.
 Esta entidade é alfanumérica, não tendo atributos geométricos.
 
 ### Entidade `Distrito ou Ilha`
 
-Os objectos desta entidade representam a unidades administrativas de nível 3, os distritos no continente e as ilhas das regiões autónomas. Os objectos são identificados inequivocamente através de um código único (DI). Esta entidade estabelece uma relação de 1:n com a unidade estatística (NUTS1) a que pertence.
+Os objectos desta entidade representam a unidades administrativas de nível 3, os distritos no continente e as ilhas das regiões autónomas. Os objectos são identificados inequivocamente através de um código único (DI ou DT). Esta entidade estabelece uma relação de 1:n com a unidade estatística (NUTS1) a que pertence.
 Esta entidade é alfanumérica, não tendo atributos geométricos.
 
 ### Entidade `Troço`
@@ -240,7 +240,7 @@ Valores:
 | 16            | Dados cartográficos que foram capturados, manipulados e disponibilizados pela Região Autónoma da Madeira, de acordo com as competências legalmente incumbidas a esta instituição                                                                                                                          | Dados da Direção Regional do Ordenamento do Território (R. A. Madeira)            |
 | 17            | Dados cartográficos, que foram capturados, manipulados e disponibilizados pelo Instituto                                                                                                                                                                                                                  |                                                                                   |
 
-#### Tabela `dominios.tipo_sede_autoridade`
+#### Tabela `dominios.tipo_sede_administrativa`
 
 Esta tabela foi criada com base na tabela `DesignacaoLocal` do modelo de dados **CartTop** para facilitar a importação de dados da mesma para a CAOP.
 
@@ -348,7 +348,7 @@ centroide. A inexistencia de centroide, ou a sua multiplicidade é considerado u
 #### `base.entidade_administrativa`
 
 Implementação da entidade Entidade administrativa. Os registos desta tabela alfanumérica representam as unidades administrativas de nível 5, o mais baixo (freguesias ou uniões de freguesias). As entidades administrativas (EA) são identificadas
-inequivocamente através de um código único (DICOFRE ou DIMNFR). São ainda
+inequivocamente através de um código único (DICOFRE ou DTMNFR). São ainda
 incluídas as entidades *Oceano Atlânctico* e *Espanha*. Para além do nome da entidade administrativa, é também identificada a unidade administrativa de nível superior a que pertence (município).
 
 Uma restrição garante que o código único da entidade administrativa é compatível com o código do município identificado.
@@ -365,7 +365,7 @@ Uma restrição garante que o código único da entidade administrativa é compa
 #### `base.municipio`
 
 Implementação da entidade Municipio. Os registos desta tabela alfanumérica representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados
-inequivocamente através de um código único (DICO ou DIMN). Para além do nome da entidade administrativa, é também identificada a unidade administrativa superior (distrito ou ilha) e a unidade estatística (NUTS3) a que pertence.
+inequivocamente através de um código único (DICO ou DTMN). Para além do nome da entidade administrativa, é também identificada a unidade administrativa superior (distrito ou ilha) e a unidade estatística (NUTS3) a que pertence.
 
 ##### Descrição dos atributos
 
@@ -384,7 +384,7 @@ Uma restrição garante que o código único do município é compatível com o 
 Implementação da entidade Município
 
 Os registos desta tabela alfanumérica representam a unidades administrativas de nível 3, os distritos e ilhas das regiões autónomas. Os distritos são identificados
-inequivocamente através de um código único (DI). Para além do nome da entidade administrativa, salienta-se a identificação da unidade estatística (NUTS1) a que pertence.
+inequivocamente através de um código único (DI ou DT). Para além do nome da entidade administrativa, salienta-se a identificação da unidade estatística (NUTS1) a que pertence.
 
 ##### Descrição dos atributos
 
@@ -472,7 +472,7 @@ Para além do código e nome da NUTS, salienta-se a indicação da NUTS de nivel
 | nuts2_cod          | varchar(4)            | Sim      | base.nuts2 (codigo)     | FOREIGN KEY ON UPDATE CASCADE|
 
 
-#### `base.sede_autoridade`
+#### `base.sede_administrativa`
 
 Os registos desta tabela geométrica representam as sede administrativas aos vários níveis (e.g. Freguesia, Munícipio, Distrito ou Ilha). A gestão destes dados prende-se essencialmente com a necessidade desta informação para os outputs da EuroBoundaries, não tendo equivalência nos outputs CAOP.
 
@@ -483,7 +483,7 @@ O campo `ebm_roa` é preenchido com códigos gerados pelo Euroboundaries, pelo q
 | Nome da Coluna          | Tipo de Dados         | Not Null | Referência (Coluna)               | Restrições                        |
 |-------------------------|-----------------------|----------|----------------------------------|----------------------------------|
 | identificador           | uuid                  | Sim      |                                  | PRIMARY KEY                      |
-| tipo_sede_autoridade    | varchar(1)            | Sim      | dominios.tipo_sede_autoridade (identificador) | FOREIGN KEY                      |
+| tipo_sede_administrativa    | varchar(1)            | Sim      | dominios.tipo_sede_administrativa (identificador) | FOREIGN KEY                      |
 | nome                    | varchar(255)          | Sim      |                                  |                                  |
 | ebm_roa                 | varchar(100)          | Não      |                                  |                                  |
 | geometria               | public.geometry(point, 4258) | Sim  |                                  |                                  |
@@ -612,7 +612,7 @@ Schema composto por dados temporários, usados na geração dos outputs, e de ar
 
 ## Utilizadores e permissões
 
-* **administrador** - grupo de utilizadores com permissões para alterarem a estrutura das tabelas, alterar os domínios e alterar os projectos QGIS
+* **administrador** - utilizador com permissões elevadas, permitindo-lhe alterar a estrutura das tabelas, alterar os domínios, alterar os projectos QGIS, adicionar novos roles e adicioná-los aos grupos de utilizadores
 * **editor** - grupo de utilizadores com permissões para edição dos dados das tabelas editaveis (centroides, trocos, etc...) e de leitura dos projectos QGIS
 * **leitor** - grupo apenas com permissões de leitura quer de tabelas, quer de projectos QGIS
 
@@ -629,7 +629,7 @@ foram criados projectos QGIS para cada umas das regiões com EPSGs diferentes:
   * `projecto_caop_edicao_raa_oci`
   * `projecto_caop_edicao_raa_cen_ori`
 
-Os projectos estão guardados directamente na base de dados. Por uma questão de preservação dos projectos, estes são *read-only* para os editores. Para efectuar alterações aos projectos é necessário usar um utilizador com permissões do grupo `administrador`.
+Os projectos estão guardados directamente na base de dados. Por uma questão de preservação dos projectos, estes são *read-only* para os editores. Para efectuar alterações aos projectos é necessário usar o utilizador `administrador`.
 
 ## Configuração da ligação à base de dados
 
@@ -640,10 +640,10 @@ Tanto os dados, como os projectos de edição preparados são guardados na base 
 3. No painel **Navegador**, clicar com o botão direito do rato sobre o item **PostgreSQL** e escolher a opção **Nova ligação**
 4. Na janela **Criar nova ligação PostGIS**, preencher os seguintes campos:
 
-   * **Nome:** `CAOP Produção`
-   * **Máquina:** `IP ou URL do servidor`
-   * **Porta:** `número da porta usada, geralmente 5432`
-   * **Base de dados:** `caop
+   * **Nome:** `CAOP Produção` ou `CAOP Testes`
+   * **Máquina:** `192.168.10.102`
+   * **Porta:** `5432`
+   * **Base de dados:** `caop` ou `caop_testes`
 
 5. Ainda na janela **Criar nova ligação PostGIS**, na secção **Autenticação**, escolher o separador **Configurações** e clicar no botão **Criar nova configuração de autenticação**.
 6. Se exigido, escolha uma palavra-passe mestra. Esta será a única palavra-passe que terá de decorar quando precisar de aceder a projectos com necessidade de autenticação.
@@ -655,8 +655,8 @@ Tanto os dados, como os projectos de edição preparados são guardados na base 
 8. Ainda na janela **Autenticação**, escolher\preencher os seguintes campos:
    * **Nome:** `Nome à escolha` (e.g. Credenciais CAOP)
    * `Basic authentication`
-   * **Utilizador:** `Nome do utilizador PostgreSQL` (e.g. user1)
-   * **Palavra-passe:** `Password do utilizador` (e.g. pass1)
+   * **Utilizador:** `Nome do utilizador PostgreSQL` (e.g. `user1`)
+   * **Palavra-passe:** `Password do utilizador` (e.g. `pass1`)
 9. Clicar em `Save`
 
    ![Alt text](image-4.png)
@@ -678,6 +678,7 @@ Para auxiliar no processo de edição da CAOP e na geração de outputs, foi cri
 * Pré-preenchimento do campo `motivo` nos campos editados
 * Actualização dos dados actuais no schema master
 * Criar nova versão da CAOP
+* Ferramenta de corte de troços com funcionalidades extras
 
 A instalação do plugin é feita através do arquivo Zip fornecido.
 
@@ -735,34 +736,56 @@ Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve pr
 
 ### Operações de edição
 
-#### Divisão de um troço
+#### Alteração de um troço
 
-Uma das edições mais comuns é a alteração de uma fronteira entre duas Freguesias. Para isso é preciso isolar a secção do troços a alterar, do restante troço que não será alterado. Para isso, usaremos a ferramentas de **Split Features** Especifica do plugin CAOP Tools. A ferramenta tem duas características que a distingue da ferramenta nativa do QGIS. Em primeiro lugar, sempre que uma linha é cortada, são sempre criados novos identificadores para os troços resultantes. Em segundo lugar, o campo **troco_parente** é preenchido com o identificador do troço original, permitindo-nos manter uma ligação ao histórico anterior dos novos troços.
+Uma das edições mais comuns é a alteração de uma fronteira entre duas Freguesias. É preciso isolar a secção do troço a alterar do restante troço que não será alterado. Para isso, usaremos a ferramentas de **Split Features** Específica do plugin CAOP Tools. A ferramenta tem três características que a distingue da ferramenta nativa do QGIS:
 
-![Alt text](image-13.png)
+*  Sempre que um troço é cortado, são sempre criados novos identificadores para os troços resultantes.
+*  O campo **troco_parente** é preenchido com o identificador do troço original, permitindo-nos manter uma ligação ao histórico dos novos troços.
+*  As fontes associadas ao troço são replicadas a todos os novos troços.
 
-**ATENÇÃO:** O processo de corte de um troço, perde a relação com as fontes. Pelo menos para já, antes de iniciar o corte, é conveniente tomar nota das fontes relacionadas ao troço para mais tarde as adicionar aos novos troços.
+Processo passo a passo:
 
-O uso da ferramenta é idêntico ao split features do QGIS, deve-se seleccionar o troço a cortar (não é obrigatório, mas evita cortes por engano) e e desenhar uma linha que atravesse o troço. Deve de preferência, cortar em vertices já existentes.
+1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Alteração de fronteira entre a freguesia de Alcabideche e São Domingos de Rana`)
+2. Seleccionar a camada `Fontes` e , se necessário, ligar a edição da mesma.
+3. Na **Digitizing toolbar**, clique no botão **adicionar novo elemento**.
+4. Preencha o formulário a informação relativa à nova fonte. Clique em Ok e grave as alterações na camada `Fontes`.
+5. Seleccionar a camada `Troços` e , se necessário, ligar a edição da mesma.
+6. Com uma ferramenta de seleção, selecionar o troço a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
+7. Na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools
+
+   ![Alt text](image-13.png)
+
+8. Usando a ferramenta de corte por cima do mapa, desenhar (clicando com o botão esquerdo do rato) uma linha que atravesse o troço no local (ou locais) onde se pretende cortá-lo para isolar os segmentos do troço que irão ser alterados. Para terminar a linha clicar com o botão direito do rato. (Se possível, devemos cortar as linhas em vertices já existentes).
+
+   **Nota** Este passo pode ser feito através de vários cortes isolados.
+9.  Usar as ferramentas do QGIS para alterar a geometria do novo troço (e.g. Editor de vértices (digitizing toolbar), reshape (Advanced digitizing toolbar), etc...)
+10. Gravar as alterações na camada dos troços.
+11. Usando a tabela de atributo ou a ferramenta identify, abrir o formulário do troço alterado. No separador **Fontes** ligar a edição, eliminar as fontes antigas e adicionar a nova fonte que foi criada no passo 3 e 4.
+12. Ainda no Separador **Fontes**, gravar as alterações feitas.
+13. Fechar o formulário clicando em OK ou Cancel.
+
 
 #### Dividir uma área administrativa em dois
 
 1. Editar a camada fonte adicionando a nova fonte. Gravar.
 2. Criar as novas entidades administrativas (mantendo as anteriores) e gravar a camada.
-3. Criar os centroides das areas administrativas ou alterar o código (dtmnfre)
+3. Criar os centroides das areas novas administrativas ou alterar o código (dtmnfr) de centroides já existentes
 4. Eliminar os centroides que não façam falta, gravar camada centroides
-5. Cortar os troços nos entroncamentos com a nova fronteira.
-6. Desenhar (ou importar nova fronteira), Gravar.
-7. Em todos os troços cortados  adicionar as fontes antigas.
-8. Ao troço criado, adicionar a nova fonte.
-9. Apagar as entidades antigas.
+5. Cortar os troços adjacentes à nova fronteira nos entroncamentos com a mesma usando a ferramenta do CAOP Tools.
 
-#### Agregar duas (ou mais)  àreas administrativas
+   ![Alt text](image-13.png)
 
-1. Criar nova entidade administrativas que inclui as duas áreas e gravar.
-2. Criar um novo centroíde para a nova entidade administrativa.
-3. Eliminar os dois centroides antigos. Gravar
-4. Eliminar os troços que faziam fronteira entre as duas areas administrativas. Gravar.
+6. Desenhar (ou importar nova fronteira), garantindo o snapping com as outras fronteiras, Gravar a camada troços.
+7. Abrir o formulário do novo troço e no separador das fontes, adicionar a nova fonte.
+8. Editar a camada das entidades e apagar alguma entidade que tenha deixado de fazer sentido. Gravar
+
+#### Agregar duas (ou mais)  àreas\entidades administrativas
+
+1. Criar nova entidade administrativas que inclua as antigas entidades administrativas (e.g. `União das freguesias de Cascais, Alcabideche e Estoril`) e gravar.
+2. Criar um novo centroíde para representar a nova entidade administrativa.
+3. Eliminar os dois (ou mais) centroides obsoletos. Gravar
+4. Eliminar os troços que faziam fronteira(s) entre as duas ou mains áreas administrativas. Gravar.
 5. Eliminar as antigas entidades administrativas. Gravar
 
 ## Actualizar Outputs
