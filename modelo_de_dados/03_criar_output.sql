@@ -254,7 +254,7 @@ CREATE OR REPLACE FUNCTION public.gerar_poligonos_caop(output_schema text DEFAUL
 -- parametros:
 -- - output_schema (TEXT) - nome do schema onde guardar os resultados, default 'master'
 -- - prefixo (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
--- - output_versao (TIMESTAMP) , número de uma versão existente na tabela versioning.versao
+-- - output_versao (TEXT) , número de uma versão existente na tabela versioning.versao
 RETURNS Boolean AS
 $body$
 DECLARE 

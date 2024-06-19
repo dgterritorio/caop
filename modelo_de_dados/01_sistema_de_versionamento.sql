@@ -216,7 +216,7 @@ SELECT vsr_add_versioning_to('"base".raa_oci_centroide_ea');
 SELECT vsr_add_versioning_to('"base".raa_oci_troco');
 SELECT vsr_add_versioning_to('"base".raa_cen_ori_centroide_ea');
 SELECT vsr_add_versioning_to('"base".raa_cen_ori_troco');
-SELECT vsr_add_versioning_to('"base".sede_autoridade');
+SELECT vsr_add_versioning_to('"base".sede_administrativa');
 
 -- Aplicar versionamento às tabelas dos dominios
 SELECT vsr_add_versioning_to('"dominios".caracteres_identificadores_pais');
@@ -225,7 +225,7 @@ SELECT vsr_add_versioning_to('"dominios".nivel_limite_administrativo');
 SELECT vsr_add_versioning_to('"dominios".significado_linha');
 SELECT vsr_add_versioning_to('"dominios".tipo_area_administrativa');
 SELECT vsr_add_versioning_to('"dominios".tipo_fonte');
-SELECT vsr_add_versioning_to('"dominios".tipo_sede_autoridade');
+SELECT vsr_add_versioning_to('"dominios".tipo_sede_administrativa');
 
 --NOTA:: Se o numero de colunas de uma tabela original for alterado, então a tabela de backup também terá
 -- de ser alterada e com a mesma ordem, caso contrário a função deixará de funcionar.
@@ -244,7 +244,7 @@ SELECT vsr_remove_versioning_from('"base".distrito_ilha');
 SELECT vsr_remove_versioning_from('"base".municipio');
 SELECT vsr_remove_versioning_from('"base".entidade_administrativa');
 SELECT vsr_remove_versioning_from('"base".fonte');
-SELECT vsr_remove_versioning_from('"base".lig_troco_fonte');
+SELECT vsr_remove_versioning_from('"dominios".tipo_sede_autoridade');
 SELECT vsr_remove_versioning_from('"base".ram_troco');
 SELECT vsr_remove_versioning_from('"base".cont_centroide_ea');
 

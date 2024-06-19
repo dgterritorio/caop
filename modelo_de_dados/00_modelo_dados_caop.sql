@@ -63,12 +63,12 @@ CREATE TABLE dominios.caracteres_identificadores_pais (
 
 COMMENT ON TABLE dominios.nivel_limite_administrativo IS 'ICC. Identificação do(s) país(es) responsável(eis) pelo troço de limite através do código de dois caracteres, da mesma forma que foi definido pelo EuroBoundaryMap';
 
-CREATE TABLE dominios.tipo_sede_autoridade (
+CREATE TABLE dominios.tipo_sede_administrativa (
 	identificador varchar(1) PRIMARY KEY,
 	nome VARCHAR(100) NOT NULL,
 	descricao VARCHAR NOT NULL);
 
-COMMENT ON TABLE dominios.tipo_sede_autoridade IS 'ROA. Tipo para o Residence of Autorithy. Sedes de Distrito, Sede de Concelho, Sede de Freguesia';
+COMMENT ON TABLE dominios.tipo_sede_administrativa IS 'ROA. Tipo para o Residence of Autorithy. Sedes de Distrito, Sede de Concelho, Sede de Freguesia';
 
 
 -- Schema com as tabelas de base, editáveis e sob versionamento
@@ -140,15 +140,15 @@ ADD CONSTRAINT dtmnfr_dtmn_compativeis CHECK (CASE WHEN codigo IN ('97','98','99
 -- Actualmente, apenas existem dados até ao nível do concelho. Se se entender adicionar as sedes de freguesia
 -- terá de ser solicitar a geração de códigos ROA ao euroBoundaries
 
-CREATE TABLE base.sede_autoridade (
+CREATE TABLE base.sede_administrativa (
 	identificador uuid PRIMARY KEY DEFAULT uuid_generate_v1mc(),
-	tipo_sede_autoridade varchar(1) NOT NULL REFERENCES dominios.tipo_sede_autoridade(identificador),
+	tipo_sede_administrativa varchar(1) NOT NULL REFERENCES dominios.tipo_sede_administrativa(identificador),
 	nome varchar(255) NOT NULL,
 	ebm_roa VARCHAR(100),
 	geometria geometry(POINT, 4258) NOT NULL
 );
 
-CREATE INDEX ON base.sede_autoridade USING gist(geometria);
+CREATE INDEX ON base.sede_administrativa USING gist(geometria);
 
 -- TABELAS GEOMÉTRICA
 -- Continente 

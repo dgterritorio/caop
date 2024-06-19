@@ -53,7 +53,7 @@ INSERT INTO dominios.tipo_area_administrativa (identificador,descricao,nome, ebm
 	 ('5','Área, que engloba uma massa de água, e que se encontra fora de terra','Área Costeira','Coastal water'),
 	 ('7','Área que se encontra longe de limites de costa, mas que engloba uma massa de água de grandes dimensões','Área de “Águas Interiores”','Inland water');
 
-INSERT INTO dominios.tipo_sede_autoridade (identificador, nome, descricao) VALUES
+INSERT INTO dominios.tipo_sede_administrativa (identificador, nome, descricao) VALUES
 	('1', 'Capital do País', 'Cidade onde está situada a sede administrativa do país.'),
 	('2', 'Sede administrativa de Região Autónoma', 'Cidade onde está situada a sede administrativa da Região Autónoma.'),
 	('3', 'Capital de Distrito', 'Cidade onde está situada a sede administrativa do distrito.'),

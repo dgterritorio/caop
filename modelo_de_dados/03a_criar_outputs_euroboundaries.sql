@@ -400,7 +400,7 @@ SELECT DISTINCT ON ("InspireId", geometry)
 	'5' AS "TAA",
 	st_multi(p.geometria)::geometry(multipolygon, 4258) AS geometry
 FROM temp.ebm_poligonos_finais_coastal_water AS p
-LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria))
+LEFT JOIN euroboundaries.caop_areas_administrativas AS caa ON (st_intersects(st_pointonsurface(p.geometria),caa.geometria));
 
 -- ADICIONAR SUFIXOS PARA OS CASOS DAS Entidades Administrativas com compostas por várias partes
 
@@ -447,8 +447,8 @@ WITH all_areas AS (
 		NULL AS "PPL",
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
-	FROM all_areas, base.sede_autoridade AS sa 
-	WHERE tipo_sede_autoridade = '1'
+	FROM all_areas, base.sede_administrativa AS sa 
+	WHERE tipo_sede_administrativa = '1'
 UNION ALL
 	SELECT -- Continente
 		'PT' AS "ICC",
@@ -464,7 +464,7 @@ UNION ALL
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM master.cont_distritos
-	LEFT JOIN base.sede_autoridade AS sa ON tipo_sede_autoridade = '1'
+	LEFT JOIN base.sede_administrativa AS sa ON tipo_sede_administrativa = '1'
 UNION ALL
 	SELECT -- Distritos continente
 		'PT' AS "ICC",
@@ -481,7 +481,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.cont_distritos AS cd
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '3'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '3'
 UNION ALL
 	SELECT -- Municipios Continente
 		'PT' AS "ICC",
@@ -498,7 +498,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.cont_municipios AS cm
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '4'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '4'
 UNION ALL
 	SELECT -- Freguesias continente
 		'PT' AS "ICC",
@@ -515,7 +515,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.cont_freguesias AS cf
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '5'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '5'
 UNION ALL
 	SELECT -- MADEIRA
 		'PT' AS "ICC",
@@ -531,8 +531,8 @@ UNION ALL
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM master.ram_distritos AS d
-	LEFT JOIN base.sede_autoridade AS sa
-		ON tipo_sede_autoridade = '2' AND st_intersects(d.geometria, st_transform(sa.geometria, 5016))
+	LEFT JOIN base.sede_administrativa AS sa
+		ON tipo_sede_administrativa = '2' AND st_intersects(d.geometria, st_transform(sa.geometria, 5016))
 UNION ALL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
@@ -549,7 +549,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.ram_distritos AS cd
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '3'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_administrativa = '3'
 UNION ALL
 	SELECT -- Municipios Madeira
 		'PT' AS "ICC",
@@ -566,7 +566,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.ram_municipios AS cm
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '4'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_administrativa = '4'
 UNION ALL
 	SELECT -- Freguesias Madeira
 		'PT' AS "ICC",
@@ -583,7 +583,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.ram_freguesias AS cf
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_autoridade = '5'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5016)) AND sa.tipo_sede_administrativa = '5'
 UNION ALL
 	SELECT -- ACORES
 		'PT' AS "ICC",
@@ -599,8 +599,8 @@ UNION ALL
 		(sum(area_ha)/100)::numeric(15,2) AS "ARA",
 		NULL AS "effectiveDate"
 	FROM (SELECT * FROM master.raa_oci_distritos UNION ALL SELECT * FROM master.raa_cen_ori_distritos) AS a
-	LEFT JOIN base.sede_autoridade AS sa
-		ON tipo_sede_autoridade = '2' AND st_intersects(st_transform(a.geometria,4258), sa.geometria) 
+	LEFT JOIN base.sede_administrativa AS sa
+		ON tipo_sede_administrativa = '2' AND st_intersects(st_transform(a.geometria,4258), sa.geometria) 
 UNION ALL -- ACORES OCIDENTAL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
@@ -617,7 +617,7 @@ UNION ALL -- ACORES OCIDENTAL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_oci_distritos AS cd
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '3'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_administrativa = '3'
 UNION ALL
 	SELECT -- Municipios acores ocidental
 		'PT' AS "ICC",
@@ -634,7 +634,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_oci_municipios AS cm
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '4'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_administrativa = '4'
 UNION ALL
 	SELECT -- Freguesias Acores Ocidental
 		'PT' AS "ICC",
@@ -651,7 +651,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_oci_freguesias AS cf
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_autoridade = '5'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5014)) AND sa.tipo_sede_administrativa = '5'
 UNION ALL
 	SELECT -- Ilhas -- Acores central e oriental
 		'PT' AS "ICC",
@@ -668,7 +668,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_cen_ori_distritos AS cd
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '3'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cd.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_administrativa = '3'
 UNION ALL
 	SELECT -- Municipios acores central e oriental
 		'PT' AS "ICC",
@@ -685,7 +685,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_cen_ori_municipios AS cm
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '4'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cm.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_administrativa = '4'
 UNION ALL
 	SELECT -- Freguesias Acores central e oriental
 		'PT' AS "ICC",
@@ -702,7 +702,7 @@ UNION ALL
 		NULL AS "effectiveDate"
 	FROM
 		master.raa_cen_ori_freguesias AS cf
-		LEFT JOIN base.sede_autoridade AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_autoridade = '5'
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(cf.geometria, st_transform(sa.geometria, 5015)) AND sa.tipo_sede_administrativa = '5'
 ;
 
 DROP MATERIALIZED VIEW IF EXISTS master.ebm_nam CASCADE;

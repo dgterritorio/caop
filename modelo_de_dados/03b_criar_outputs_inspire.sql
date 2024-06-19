@@ -24,7 +24,6 @@ FROM base.cont_troco AS t
 CREATE INDEX ON master.inspire_admin_boundaries_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_5thorder_cont;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_5thorder_cont AS
 SELECT DISTINCT ON (dicofre)
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dicofre || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
@@ -40,13 +39,12 @@ sa.nome AS "residenceOfAutorithy",
 f.geometria::geometry(multipolygon,3763) AS geometry
 FROM master.cont_freguesias AS f
 	LEFT JOIN base.cont_troco AS t ON f.dicofre IN (t.ea_direita, t.ea_esquerda)
-	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(f.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '5'
+	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(f.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '5'
 ORDER BY dicofre, t.inicio_objecto DESC;
 
 CREATE INDEX ON master.inspire_admin_units_5thorder_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_4thorder_cont;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_4thorder_cont AS
 SELECT DISTINCT ON (dico)
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dico || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
@@ -62,13 +60,12 @@ sa.nome AS "residenceOfAutorithy",
 m.geometria::geometry(multipolygon, 3763) AS geometry
 FROM master.cont_municipios AS m
 	LEFT JOIN base.cont_troco AS t ON m.dico IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
-	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(m.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '4'
+	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(m.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '4'
 ORDER BY dico, t.inicio_objecto DESC; 
 
-CREATE INDEX ON master.inspire_admin_units_4thorder_cont USING gist(geometry)
+CREATE INDEX ON master.inspire_admin_units_4thorder_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_3rdorder_cont;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_3rdorder_cont AS
 SELECT DISTINCT ON (di)
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || di || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
@@ -84,7 +81,7 @@ sa.nome AS "residenceOfAutorithy",
 d.geometria AS geometry
 FROM master.cont_distritos AS d
 	LEFT JOIN base.cont_troco AS t ON d.di IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
-	LEFT JOIN base.sede_autoridade AS sa ON st_intersects(d.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_autoridade = '3'
+	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(d.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '3'
 ORDER BY di, t.inicio_objecto DESC;
 
 CREATE INDEX ON master.inspire_admin_units_3rdorder_cont USING gist(geometry);
@@ -96,7 +93,6 @@ GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
 -- MADEIRA
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_ram;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_ram AS
 SELECT 
 	t.identificador AS "inspireId",
@@ -113,7 +109,6 @@ FROM master.ram_trocos AS t
 	JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.nome;
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_cen_ori;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_cen_ori AS
 SELECT 
 t.identificador AS "inspireId",
@@ -130,7 +125,6 @@ FROM master.raa_cen_ori_trocos AS t
 JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.nome;
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_oci;
-
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_oci AS
 SELECT 
 t.identificador AS "inspireId",
