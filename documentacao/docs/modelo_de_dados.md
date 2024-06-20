@@ -734,7 +734,7 @@ Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve pr
 
 ![Alt text](image-12.png)
 
-### Operações de edição
+### Operações de edição comuns
 
 #### Alteração de um troço
 
@@ -747,23 +747,86 @@ Uma das edições mais comuns é a alteração de uma fronteira entre duas Fregu
 Processo passo a passo:
 
 1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Alteração de fronteira entre a freguesia de Alcabideche e São Domingos de Rana`)
-2. Seleccionar a camada `Fontes` e , se necessário, ligar a edição da mesma.
-3. Na **Digitizing toolbar**, clique no botão **adicionar novo elemento**.
-4. Preencha o formulário a informação relativa à nova fonte. Clique em Ok e grave as alterações na camada `Fontes`.
-5. Seleccionar a camada `Troços` e , se necessário, ligar a edição da mesma.
-6. Com uma ferramenta de seleção, selecionar o troço a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
+
+   ![Definição do motivo da edição](image-24.png)
+2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
+
+   ![alt text](image-25.png)
+
+3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
+
+   ![alt text](image-26.png)
+
+4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
+
+   ![alt text](image-45.png)
+
+5. No Painel **Camadas**, seleccionar a camada `Troços` e ligar a edição da mesma.
+
+   ![alt text](image-29.png)
+
+6. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o troço a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
+
+   ![alt text](image-30.png)
+
 7. Na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools
 
-   ![Alt text](image-13.png)
+   ![alt text](image-31.png)
 
-8. Usando a ferramenta de corte por cima do mapa, desenhar (clicando com o botão esquerdo do rato) uma linha que atravesse o troço no local (ou locais) onde se pretende cortá-lo para isolar os segmentos do troço que irão ser alterados. Para terminar a linha clicar com o botão direito do rato. (Se possível, devemos cortar as linhas em vertices já existentes).
+8. Garantindo que o snapping está ligado, como descrito acima, com a ferramenta de corte por cima do mapa, desenhar (clicando com o botão esquerdo do rato para adicionar vertices) uma linha que atravesse o troço no local (ou locais) onde se pretende cortá-lo para isolar os segmentos do troço que irão ser alterados. Para terminar a linha clicar com o botão direito do rato. (Se possível, devemos cortar as linhas em vertices já existentes).
 
-   **Nota** Este passo pode ser feito através de vários cortes isolados.
-9.  Usar as ferramentas do QGIS para alterar a geometria do novo troço (e.g. Editor de vértices (digitizing toolbar), reshape (Advanced digitizing toolbar), etc...)
-10. Gravar as alterações na camada dos troços.
-11. Usando a tabela de atributo ou a ferramenta identify, abrir o formulário do troço alterado. No separador **Fontes** ligar a edição, eliminar as fontes antigas e adicionar a nova fonte que foi criada no passo 3 e 4.
-12. Ainda no Separador **Fontes**, gravar as alterações feitas.
-13. Fechar o formulário clicando em OK ou Cancel.
+
+   ![alt text](image-32.png)
+
+   **Nota 1:** Este passo pode ser feito através de vários cortes isolados.
+
+   **Nota 2:** Ao desenhar, pode usar a tecla **Delete** para eliminar o último vértice introduzido.
+
+9. Usando novamente as ferramentas de seleção, seleccione o troço a ser alterado.
+
+    ![alt text](image-33.png)
+
+10. Usar as ferramentas do QGIS para alterar a geometria do novo troço, por exemplo:
+
+    * **Ferramenta de vértices** (Barra de digitalização) que permite mover um ou mais vértices
+
+      ![alt text](image-35.png)
+
+    * **Editor de vértices** (Acesso através de clique direito do rato sobre o elemento quando a usar a **Ferramenta de vértices**) que permite editar as coordenadas de cada vértice.
+
+      ![alt text](image-36.png)
+
+    * **Redesenhar elementos** (Barra de digitalização avançada) que permite redesenhar um novo troço
+
+      ![alt text](image-37.png)
+
+    Para comprender o uso destas ferramentas em detalhes, sugere-se a consulta da documentação do QGIS:
+
+    * [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool)
+    *  [Editor de vértices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributeshtml#the-vertex-editor-panel)
+    * [Redesenhar elementos](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#reshape-features)
+
+    **Nota:** Todas estas ferramentas devem ser usadas com auxílio das ferramentas de snapping, inclusivamente a opção de tracejamento que permite desenhar com rapidez usando outras camadas como referência.
+
+11. De seguida, vamos editar as fontes dos troços alterados. Na **Barra de attributos** clicar em **Abrir tabela de atributos (Editados e Novos Elementos)**.
+
+    ![alt text](image-41.png)
+
+12. Na **tabela de atributos** da camada `troço`, clicar em  **Mudar para vista para modo de formulário**. Clicar sobre o o elemento cuja geometria foi alterada (em principio ainda estará selecionado). De seguida, selecionar o separador `fontes`.
+
+    ![alt text](image-43.png)
+
+13. No separador `Fontes`, activar a edição, selecionar as fontes existentes e apagá-las.
+
+    ![alt text](image-44.png)
+
+14. Ainda no separador **Fontes**, clicar em **Adicionar elemento filho** e para o campo `fonte_id`escolher a fonte criada no passo 2 a 5. A forma mais simples de encontrar a fonte é iniciar a escrever a data ou a descrição (e.g. `135/2024`) até que a fonte correcta apareça. Clicar em **Ok**
+
+    ![alt text](image-46.png)
+
+15. Feitas e confirmadas todas as alterações é preciso gravar as camadas editadas, para que as modificações sejam enviadas para a base de dados. Devido às relações de dependência das camadas, as alterações à camada `lig_troco_fonte` devem ser as última a serem gravada. Uma forma prática de gravar todas as alterações e desligar a edição é, na **Barra de digitalização**, escolher a opção **Guardar para todas as camadas**, seguida de **Cancelar para Todas as Camadas**
+
+    ![alt text](image-47.png)
 
 
 #### Dividir uma área administrativa em dois
