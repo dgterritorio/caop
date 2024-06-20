@@ -7,4 +7,4 @@ SOURCES = __init__.py \
           processing/algs/update_master_outputs.py \
           processing/algs/update_validation_layers.py
 
-TRANSLATIONS = i18n/caoptools_pt.ts
+TRANSLATIONS = i18n/caoptools_pt_PT.ts

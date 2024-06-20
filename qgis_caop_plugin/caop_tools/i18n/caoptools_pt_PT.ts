@@ -87,22 +87,22 @@
         <translation>Data e hora</translation>
     </message>
     <message>
-        <location filename="../processing/algs/generate_caop_version.py" line="135"/>
+        <location filename="../processing/algs/generate_caop_version.py" line="143"/>
         <source>Could not retrieve connection details for {}</source>
         <translation>Não foi possível obter os detalhes da ligação {}</translation>
     </message>
     <message>
-        <location filename="../processing/algs/generate_caop_version.py" line="160"/>
+        <location filename="../processing/algs/generate_caop_version.py" line="170"/>
         <source>Error executing database function: {}</source>
         <translation>Erro a executar função da base de dados: {}</translation>
     </message>
     <message>
-        <location filename="../processing/algs/generate_caop_version.py" line="107"/>
+        <location filename="../processing/algs/generate_caop_version.py" line="109"/>
         <source>Version</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../processing/algs/generate_caop_version.py" line="127"/>
+        <location filename="../processing/algs/generate_caop_version.py" line="133"/>
         <source>Please specify either timestamp or version you want to use.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -208,7 +208,7 @@
         <translation>Não foi possível obter os detalhes da ligação {}</translation>
     </message>
     <message>
-        <location filename="../processing/algs/update_master_outputs.py" line="125"/>
+        <location filename="../processing/algs/update_master_outputs.py" line="126"/>
         <source>Error executing database function: {}</source>
         <translation>Erro a executar função da base de dados: {}</translation>
     </message>
