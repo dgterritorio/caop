@@ -96,7 +96,13 @@ O objectos desta entidade representam a localização e nomenclatura das sedes a
 
 ## Implementação do modelo (schemas, dominios, tabelas e atributos)
 
-Nesta secção descreve-se os principais schemas do modelo, as respectivas tabelas e atributos.
+A implementação do modelo conceptual foi feita em PostgreSQL/PostGIS. Os scrips usados foram os seguintes:
+
+* `00_modelo_dados_caop.sql`
+* `01_sistema_de_versionamento.sql`
+* `02_preenchimento_tabelas_de_valores.sql`
+
+ Nesta secção descreve-se os principais schemas do modelo implementado, as respectivas tabelas e atributos.
 
 O modelo conceptual foi distribuído por dois schemas `dominios` e `base`.
 
@@ -314,7 +320,7 @@ de um troço não se conecta a pelo menos um outro troço. Exceção feita a tro
 
 ##### Diagram relacional
 
-![Diagrama relacional](image-1.png)
+![Diagram relacional Troco](image-49.png)
 
 #### `base.centroide_ea`
 
@@ -343,7 +349,7 @@ centroide. A inexistencia de centroide, ou a sua multiplicidade é considerado u
 
 ##### Diagram relacional
 
-![Alt text](image.png)
+![Diagram relacional centroide](image-50.png)
 
 #### `base.entidade_administrativa`
 
@@ -362,6 +368,10 @@ Uma restrição garante que o código único da entidade administrativa é compa
 | nome           | varchar       | Sim      |                         |                                          |
 | municipio_cod  | varchar(4)    | Não      | base.municipio (codigo) | CHECK dtmnfr_dtmn_compativeis            |
 
+##### Diagram relacional
+
+![Diagram relacional Entidade Administrativa](image-51.png)
+
 #### `base.municipio`
 
 Implementação da entidade Municipio. Os registos desta tabela alfanumérica representam a unidades administrativas de nível 4, os municípios. Os municípios são identificados
@@ -379,9 +389,13 @@ inequivocamente através de um código único (DICO ou DTMN). Para além do nome
 
 Uma restrição garante que o código único do município é compatível com o código do distrito ou ilha identificado.
 
+###### Diagrama relacional
+
+![Diagrama relacional municipio](image-52.png)
+
 #### distrito_ilha
 
-Implementação da entidade Município
+Implementação da entidade Distrito_Ilha
 
 Os registos desta tabela alfanumérica representam a unidades administrativas de nível 3, os distritos e ilhas das regiões autónomas. Os distritos são identificados
 inequivocamente através de um código único (DI ou DT). Para além do nome da entidade administrativa, salienta-se a identificação da unidade estatística (NUTS1) a que pertence.
@@ -394,6 +408,11 @@ inequivocamente através de um código único (DI ou DT). Para além do nome da 
 | codigo             | varchar(2)            | Sim      |                           | UNIQUE (distrito_ilha_di_key)          |
 | nome               | varchar               | Sim      |                           |                                        |
 | nuts1_cod          | varchar(3)            | Sim      | base.nuts1 (codigo)       |                                        |
+
+
+###### Diagrama relacional
+
+![Diagrama relacional Distrito ou Ilha](image-53.png)
 
 #### `base.fonte`
 
@@ -410,12 +429,18 @@ Os registos desta tabela alfanumérica representam fontes (Decreto-Lei, Cadastro
 | observacoes        | varchar               | Não      |                           |                                        |
 | diploma            | varchar(255)          | Não      |                           |                                        |
 
+
+###### Diagrama relacional
+
+![Diagrama relacional Fonte](image-54.png)
+
 A entidade `fonte` estabelece uma relação de N:M com a entidade `troco`, onde um troço pode ter origem em várias fontes e a mesma fonte pode estar na origem de diferentes troços. Esta relação é implementa através das seguintes tabelas auxiliares:
 
 * `base.lig_troco_cont_fonte`
 * `base.lig_troco_ram_fonte`
 * `base.lig_troco_raa_oci_fonte`
 * `base.lig_troco_raa_cen_ori_fonte`
+
 
 ##### Descrição dos atributos (`lig_troco_fonte``)
 
@@ -427,7 +452,7 @@ A entidade `fonte` estabelece uma relação de N:M com a entidade `troco`, onde 
 
 ##### Diagrama relacional ligação N:M (Exemplo Continente)
 
-![Alt text](image-2.png)
+![Diagrama relacional ligação N:M (Exemplo Continente)](image-55.png)
 
 #### nuts1
 
@@ -456,6 +481,10 @@ Para além do código e nome da NUTS, salienta-se a indicação da NUTS de nivel
 | nome               | varchar               | Sim      |                         | UNIQUE (nome)                |
 | nuts1_cod          | varchar(3)            | Sim      | base.nuts1 (codigo)     | FOREIGN KEY ON UPDATE CASCADE|
 
+##### Diagrama relacional
+
+![Diagrama relacional - NUTS2](image-56.png)
+
 #### nuts3
 
 Os registos desta tabela alfanumérica representam a Nomenclatura das Unidades Territoriais para Fins Estatísticos (NUTS - *Nomenclature of Territorial Units for Statistics*) de nível 3.
@@ -470,6 +499,10 @@ Para além do código e nome da NUTS, salienta-se a indicação da NUTS de nivel
 | codigo             | varchar(5)            | Sim      |                         | UNIQUE (codigo)              |
 | nome               | varchar               | Sim      |                         | UNIQUE (nome)                |
 | nuts2_cod          | varchar(4)            | Sim      | base.nuts2 (codigo)     | FOREIGN KEY ON UPDATE CASCADE|
+
+##### Diagrama relacional
+
+![Diagrama relacional - NUTS3](image-57.png)
 
 
 #### `base.sede_administrativa`
@@ -488,19 +521,26 @@ O campo `ebm_roa` é preenchido com códigos gerados pelo Euroboundaries, pelo q
 | ebm_roa                 | varchar(100)          | Não      |                                  |                                  |
 | geometria               | public.geometry(point, 4258) | Sim  |                                  |                                  |
 
+
+## Schemas Auxiliares
+
+* `master` - Schema para guardar os outputs atuais.
+* `temp` - Schema composto por dados temporários, usados na geração dos outputs, e de arquivo,usados durante a importação inicial dos dados.
+* `eEuroboundaries` - Schema composto por dado relevantes para a execução das tarefas relacionadas com o EuroBoundaries
+
 ## Registo de histórico
 
 Foi criado um sistema de histórico, aplicado a todas as tabelas dos schemas `base` e `dominios`.
 
-A todas as tabelas desses dois schemas são adicionados os seguintes campos
+A todas as tabelas desses dois schemas são adicionados os seguintes campos:
 
 * `inicio_objeto`
 * `utilizador`
 * `motivo`
 
-Durante a edição nas tabelas, os campos `inicio_objeto` e `utilizador` são preenchidos automaticamente.
+Durante a edição nas tabelas, os campos `inicio_objeto` e `utilizador` são preenchidos automaticamente pela data e hora actual e o utilizador usado na sessão.
 
-O campo `motivo` tem por objectivo dar algum contexto às alterações executadas, ajudando a leitura do histórico. Este campo só é preenchido de forma semiautomática se forem usados os projectos oficiais de edição no QGIS em simultâneo com o Plugin CAOP Tools (ver descrição dos procedimentos de edição).
+O campo `motivo` tem por objetivo dar algum contexto às alterações executadas, ajudando a leitura do histórico. Este campo só é preenchido de forma semiautomática se forem usados os projetos oficiais de edição no QGIS em simultâneo com o Plugin CAOP Tools (ver descrição dos procedimentos de edição).
 
 Para cada tabela sob histórico, existe uma camada de backup no schema `versionamento` onde são gravadas todas as linhas alteradas ou apagadas, com as respectiva data de alteração ou eliminação.
 
@@ -510,13 +550,19 @@ Recorrendo a SQL, existe uma função **vsr_table_at_time(nome da tabela, data e
 SELECT * from vsr_table_at_time (NULL::"base".cont_troco, '2014-04-19 18:26:57');
 ```
 
-### Descrição dos dados gerados
+## Utilizadores e permissões
 
-A implementação do modelo conceptual, permite-nos gerar vários conjuntos de dados:
+* **administrador** - utilizador com permissões elevadas, permitindo-lhe alterar a estrutura das tabelas, alterar os domínios, alterar os projectos QGIS, adicionar novos roles e adicioná-los aos grupos de utilizadores
+* **editor** - grupo de utilizadores com permissões para edição dos dados das tabelas editaveis (centroides, trocos, etc...) e de leitura dos projectos QGIS. Os editores podem também executar as funções de geração de outputs.
+* **leitor** - grupo apenas com permissões de leitura quer de tabelas, quer de projectos QGIS
 
-#### CAOP
+## Gerar conjuntos de dados finais
 
-A criação de outputs CAOP é feita por região, sendo que para cada uma das regiões cria as seguintes tabelas (identificadas pelo respectivo prefixo):
+A implementação do modelo conceptual, permite-nos gerar vários conjuntos de dados finais:
+
+### Dados CAOP
+
+A criação de dados finais CAOP é feita por região, sendo que para cada uma das regiões cria as seguintes tabelas (identificadas pelo respectivo prefixo):
 
 * {regiao}_trocos
 * {regiao}_areas_administrativas
@@ -528,7 +574,7 @@ A criação de outputs CAOP é feita por região, sendo que para cada uma das re
 * {regiao}_nuts1
 * inf_fonte_troco
 
-Os outputs CAOP podem ser criados quer através de funções disponíveis na base de
+Os dados finais CAOP podem ser criados quer através de funções disponíveis na base de
 dados.
 
 * **gerar_poligonos_caop(output_schema , prefixo , data_hora\versao )**
@@ -536,7 +582,7 @@ dados.
   Função para gerar os poligonos de output da CAOP com base nos trocos e centroides existentes no schema base
   **ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.**
 
-  **parametros:**
+  **Parâmetros:**
 
   - **output_schema** (TEXT) - nome do schema onde guardar os resultados, default 'master'
   - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
@@ -544,23 +590,23 @@ dados.
   - **versao** (TEXT), como alternativa à data_hora, é possível usar uma versão, registada
     na tabela `versioning.versao`
 
-* **actualizar_trocos(prefixo )**
+* **actualizar_trocos(prefixo)**
 
-   Função para preencher campos `ea_direita`, `ea_esquerda` e o `nivel_limite_admin` com base nos polígonos gerados pela função gerar_poligonos_caop para o schema master.
+   Função para preencher campos `ea_direita`, `ea_esquerda` e o `nivel_limite_admin` com base nos polígonos gerados pela função gerar_poligonos_caop() para o schema master.
 
-   Parametros:
+   **Parâmetros**:
 
-   - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as     ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+   - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as     ilhas, valores possiveis são (`cont`, '`ram`, `raa_oci`, `raa_cen_ori`), default `cont`
 
 * **actualizar_poligonos_caop(output_schema, prefixo, data_hora)**
 
   Função para actualizar os poligonos de output da CAOP com base no schema e em vistas materializadas já existentes.
-  Para correr em schemas de output inexistentes, há que correr primeiro a funcao gerar_poligonos_caop. NECESSITA DE PERMISSÕES DE EDITOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
+  Para correr em schemas de output inexistentes, há que correr primeiro a funcao gerar_poligonos_caop. **NECESSITA DE PERMISSÕES DE EDITOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.**
 
   **Parametros**:
 
   - **output_schema** (TEXT) - nome do schema onde guardar os resultados, default 'master'
-  - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+  - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são (`cont`, '`ram`, `raa_oci`, `raa_cen_ori`), default `cont`
   - **data_hora** (TIMESTAMP) , permite definir um dia e hora para criar um output baseado em dados passados, default hora actual
 
 
@@ -570,66 +616,48 @@ dados.
 
   parametros:
   - **output_schema** (TEXT) - nome do schema onde guardar os resultados, default 'master'
-  - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+  - **prefixo** (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são (`cont`, '`ram`, `raa_oci`, `raa_cen_ori`), default `cont`
   - **data_hora** (TIMESTAMP) , permite definir um dia e hora para criar um output baseado em dados passados, default hora actual
   - **versao** (TEXT), como alternativa à data_hora, é possível usar uma versão, registada na tabela `versioning.versao`
 
-Para facilitar a criação de outputs CAOP, foi criado um interface gráfico em ambiente QGIS para correr estas funções de forma encadeada consoante o objectivo.
+Para facilitar a criação de outputs CAOP, foi criado um interface gráfico em ambiente QGIS para correr estas funções de forma encadeada consoante o objectivo. Ver Plugin QGIS.
 
-### EuroBoundaries
+### Dados EuroBoundaries
 
-A criação de outputs EuroBoundaries é feita de forma global, usando os dados actualizados com schema master. As tabelas geradas são as seguintes:
+A criação de conjuntos de dados EuroBoundaries é feita de forma global, usando os dados actualizados no schema `master`. As tabelas geradas são as seguintes:
 
 * ebm_a
 * ebm_nuts
 * ebm_nam
 
-A geração dos outputs EuroBoundaries é feita através de um script SQL `03a_criar_outputs_euroboundaries.sql`
+Os conjuntos de dados EuroBoundaries é feita através da execução de um script SQL `03a_criar_outputs_euroboundaries.sql`
 
-### Inspire
+### Dados Inspire
 
-A criação de outputs Inspire é feita por região, sendo que para cada uma das regiões  cria as seguintes tabelas (identificadas pelo respectivo sufixo):
+A criação de conjuntos de dados Inspire é feita por região, sendo que para cada uma das regiões  cria as seguintes tabelas (identificadas pelo respectivo sufixo):
 
 * inspire_admin_boundaries_{regiao}
 * inspire_admin_units_5thorder_{regiao}
 * inspire_admin_units_4thorder_{suffixo}
 * inspire_admin_units_3rdhorder_{suffixo}
 
-A geração dos outputs EuroBoundaries é feita através de um script SQL `03b_criar_outputs_inspire.sql`
+A geração dos outputs EuroBoundaries é feita através da execução de um script SQL `03b_criar_outputs_inspire.sql`
 
+## Validações Geométricas e topológicas
 
-### Schema master
-
-Schema criado e mantido pela ferramenta Actualizar CAOP
-
-### Schema temp
-
-Schema composto por dados temporários, usados na geração dos outputs, e de arquivo,usados durante a importação inicial dos dados.
-
-### Schema EuroBoundaries
-
-* Lista de schemas e tabelas editaveis
-
-## Utilizadores e permissões
-
-* **administrador** - utilizador com permissões elevadas, permitindo-lhe alterar a estrutura das tabelas, alterar os domínios, alterar os projectos QGIS, adicionar novos roles e adicioná-los aos grupos de utilizadores
-* **editor** - grupo de utilizadores com permissões para edição dos dados das tabelas editaveis (centroides, trocos, etc...) e de leitura dos projectos QGIS
-* **leitor** - grupo apenas com permissões de leitura quer de tabelas, quer de projectos QGIS
-
-
-## Funções para geração de outputs
+No schema `validacao`, foi criado um conjunto de vistas materializadas que permitem aferir a qualidade do estado actual dos dadod. O script de criação destas vistas materializadas pode ser consultada em `04_validacao.sql`.
 
 # Visualização e edição dos dados em QGIS
 
 Para tornar a visualização e edição dos dados da CAOP de forma adequada e conveniente,
-foram criados projectos QGIS para cada umas das regiões com EPSGs diferentes:
+foram criados projectos QGIS para cada umas das regiões com Sistemas de Coordenadas de Referência diferentes:
 
   * `projecto_caop_edicao_cont`
   * `projecto_caop_edicao_ram`
   * `projecto_caop_edicao_raa_oci`
   * `projecto_caop_edicao_raa_cen_ori`
 
-Os projectos estão guardados directamente na base de dados. Por uma questão de preservação dos projectos, estes são *read-only* para os editores. Para efectuar alterações aos projectos é necessário usar o utilizador `administrador`.
+Os projectos estão guardados directamente na base de dados. Por uma questão de preservação dos projectos, estes são *read-only* para os editores. Para efectuar alterações permanentes aos projectos é necessário usar o utilizador `administrador`.
 
 ## Configuração da ligação à base de dados
 
@@ -719,32 +747,37 @@ Os projectos de edição estão organizados da seguinte forma:
 
 ### Ligar Snapping
 
-Sempre que se esteja a editar as tabelas geométicas da CAOP (em particular os troços) é importante garantir que a função de **snapping** está ligada. O snapping ajuda a garantir a coerencia topológica entre os vários troços. Em QGIS,para ligar o snapping, seguimos os seguintes passos:
+Sempre que se esteja a editar as geometrias da CAOP (em particular os troços) é importante garantir que a função de **snapping** está ligada. O snapping ajuda a garantir a coerência topológica entre os vários troços. Em QGIS, para ligar o snapping, seguimos os seguintes passos:
 
 1. Se não estiver visível, ligar a barra de ferramentas **Snapping** em **Configurações** > **Barras de Ferramentas** > **Barra de Snapping**
+
 2. Na barra de snapping, abilitar o snapping carregando no icon do iman.
 
 3. Em termos de opções, no segundo botão da esquerda sugere-se o uso da **Camada activa** para apenas fazer snapping com elementos da camada `troco`. Caso se pretenda usar outras camadas como referência, sugere-se usar a opção **Configuração Avançada** e no botão **Editar Configuração Avançada** seleccionar apenas as camadas relevantes.
-4. No terceiro botão da esquerda, deve~se usar só os **Vértice**
+
+4. No terceiro botão da esquerda, deve~se usar só a opção **Vértices**
+
    ![Alt text](image-11.png)
 
 ### Preencher o motivo
 
-Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve preencher o motivo da actual edição. Este texto é guardado automaticamente nos registos das tabelas, ajudando a ententer o histórico de cada registo.
+Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve preencher o motivo da actual edição. Este texto é guardado automaticamente nos registos das tabelas, ajudando a descrever o histórico de cada registo.
 
 ![Alt text](image-12.png)
 
-### Operações de edição comuns
+### Execução de operações de edição comuns
 
-#### Alteração de um troço
+#### Alterar geometria de um troço
 
-Uma das edições mais comuns é a alteração de uma fronteira entre duas Freguesias. É preciso isolar a secção do troço a alterar do restante troço que não será alterado. Para isso, usaremos a ferramentas de **Split Features** Específica do plugin CAOP Tools. A ferramenta tem três características que a distingue da ferramenta nativa do QGIS:
+Uma das edições mais comuns é a alteração de uma fronteira entre duas Freguesias. Para isso, é preciso isolar a secção do troço a alterar do restante troço que não será alterado. Alterar a geometria do troço isolado. Atribuir uma nova fonte ao troço alterado.
+
+Neste processo, deve-se usar a ferramentas de **Split Features** específica do plugin CAOP Tools. A ferramenta tem três características que a distingue da ferramenta nativa do QGIS:
 
 *  Sempre que um troço é cortado, são sempre criados novos identificadores para os troços resultantes.
 *  O campo **troco_parente** é preenchido com o identificador do troço original, permitindo-nos manter uma ligação ao histórico dos novos troços.
 *  As fontes associadas ao troço são replicadas a todos os novos troços.
 
-Processo passo a passo:
+##### Descrição passo a passo
 
 1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Alteração de fronteira entre a freguesia de Alcabideche e São Domingos de Rana`)
 
@@ -829,19 +862,148 @@ Processo passo a passo:
     ![alt text](image-47.png)
 
 
-#### Dividir uma área administrativa em dois
+#### Dividir uma freguesia (área administrativa) em dois
 
-1. Editar a camada fonte adicionando a nova fonte. Gravar.
-2. Criar as novas entidades administrativas (mantendo as anteriores) e gravar a camada.
-3. Criar os centroides das areas novas administrativas ou alterar o código (dtmnfr) de centroides já existentes
-4. Eliminar os centroides que não façam falta, gravar camada centroides
-5. Cortar os troços adjacentes à nova fronteira nos entroncamentos com a mesma usando a ferramenta do CAOP Tools.
+Outra tipo de edição comum é a divisão da área de uma freguesia (área administrativa) em duas (ou mais) novas freguesias. Este processo implica:
 
-   ![Alt text](image-13.png)
+* Criar novas entidades administrativas
+* Criar uma nova fonte
+* Desenhar novos troços que representem as linhas de fronteira entre as freguesias a criar, garantindo a coerência topológica com troços já existentes
+* Atribuir a nova fonte a todos os troço criados ou alterados
+* Adicionar novos centroides nas freguesias e eliminar os antigos
 
-6. Desenhar (ou importar nova fronteira), garantindo o snapping com as outras fronteiras, Gravar a camada troços.
-7. Abrir o formulário do novo troço e no separador das fontes, adicionar a nova fonte.
-8. Editar a camada das entidades e apagar alguma entidade que tenha deixado de fazer sentido. Gravar
+#### Descrição passo a passo
+
+1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Dividir a União de Freguesias de Cascais e Estoril`)
+
+   ![Definição do motivo da edição](image-58.png)
+
+2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
+
+   ![alt text](image-25.png)
+
+3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
+
+   ![alt text](image-26.png)
+
+4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
+
+   ![alt text](image-59.png)
+
+5. No Painel **Camadas**, seleccionar a camada `Troços` e ligar a edição da mesma.
+
+   ![alt text](image-29.png)
+
+6. Na **Barra de digitalização** seleccionar a ferramenta **Adicionar elemento linha**
+
+   ![alt text](image-60.png)
+
+7. Garantindo que o snapping está ligado, como descrito acima, desenhar sobre o mapa (clicando com o botão esquerdo do rato para adicionar vertices) uma linha que represente a nova fronteira. Para terminar a linha clicar com o botão direito do rato.
+
+   ![alt text](image-61.png)
+
+   **Nota:** Alternativamente, se disponível, podemos copiar a linha de uma camada auxiliar para dentro da camada troço através usando os botões de copy-paste da **Barra de digitalização**
+
+   ![alt text](image-62.png)
+
+8. Preencher o formulário do novo troço. Para o campo nivel_limite_administrativo escolher `Não aplicável`. Clicar em **OK**.
+
+   ![alt text](image-65.png)
+
+9.  Fazer Zoom In nas zonas de intersecção do novo troço com troços existentes.
+
+10. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o troço existente a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
+
+    ![alt text](image-66.png)
+
+11. Na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools
+
+   ![alt text](image-64.png)
+
+12. Garantindo que o snapping está ligado, como descrito acima, com a ferramenta de corte por cima do mapa, desenhar (clicando com o botão esquerdo do rato para adicionar vertices) uma linha que atravesse o troço no local em que este intersecta com o troço novo. Para terminar a linha clicar com o botão direito do rato. (Se possível, devemos cortar as linhas em vertices já existentes).
+
+   ![alt text](image-67.png)
+
+13. Com zoom elevado, garantir que os três vertices são coindidentes. Se não forem coincidentes, usar a ferramenta **Ferramenta de vértices** (Barra de digitalização) para mover o vértice do novo troço para coincidir com o outros dois vértices recém criados pela ferramenta de corte.
+
+      ![alt text](image-35.png)
+
+15. Repetir os últimos 5 passos para a outra extremidade do novo troço.
+
+14. De seguida, vamos adicionar a nova fonte a todos os troços alterados. Mantendo a camada `troço`activa, na **Barra de attributos** clicar em **Abrir tabela de atributos (Editados e Novos Elementos)**.
+
+    ![alt text](image-41.png)
+
+12. Na **tabela de atributos** da camada `troço`, clicar em  **Mudar para vista para modo de formulário**. Clicar sobre um dos elementos troço alterados. De seguida, selecionar o separador `fontes`.
+
+    ![alt text](image-68.png)
+
+14. Ainda no separador **Fontes**, clicar em **Adicionar elemento filho** e para o campo `fonte_id`escolher a fonte criada anteriormente. A forma mais simples de encontrar a fonte é iniciar a escrever a data ou a descrição (e.g. `666/2024`) até que a fonte correcta apareça. Clicar em **Ok**
+
+    ![alt text](image-69.png)
+
+15. Repetir o passo anterior para todos os troços. No final, todos os troços alterados devem conter a nova fonte. Fechar a tabela de atributos.
+
+    ![alt text](image-70.png)
+
+16. Esta é uma boa altura para gravar as alterações feitas. Devido às relações de dependência das camadas, as alterações à camada `lig_troco_fonte` devem ser as última a serem gravada. Uma forma prática de gravar todas as alterações e desligar a edição é, na **Barra de digitalização**, escolher a opção **Guardar para todas as camadas**, seguida de **Cancelar para Todas as Camadas**
+
+    ![alt text](image-47.png)
+
+17. De seguida, vamos criar e editar todos os centroides necessário de forma a que cada área administrativa tenha um centroide, mas primeiro teremos de criar as entidades administrativas na tabela alfanumérica. No Painel **Camadas**, seleccionar a camada `entidade_Administrativa` e ligar a edição da mesma.
+
+    ![alt text](image-71.png)
+
+18. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova entidade administrativa.
+
+    ![alt text](image-26.png)
+
+19. Preencher o formulário a informação relativa à nova entidade administrativa e clique em Ok.
+
+    ![alt text](image-73.png)
+
+20. Repetir os dois passos anteriores por cada nova entidade administrativa (Freguesia) a criar.
+
+21. Agora, é necessário procurar e eliminar a entidade administrativa obsoleta. Na **Barra de atributos** clicar no botão **Abrir tabela de atributos**.
+
+    ![alt text](image-80.png)
+
+22. No canto inferior esquerdo da tabela de atributos selecionar **Mostrar todos os elemento** > **Filtro de Campos** > **Nome**
+
+    ![alt text](image-81.png)
+
+23. Usando o campo de filtro, podemos escrever por um termo a procurar (e.g. `Cascais`) e carregamos em `Enter`. Isto irá filtrar aos elementos que contenham esse termo. Depois podemos selecionar o elemento e carregar no botão eliminar.
+
+    ![alt text](image-82.png)
+
+
+24. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
+
+    ![alt text](image-74.png)
+
+25. Na **Barra de Digitalização**, clique no botão **Adicionar elemento ponto** para adicionar um centroide em falta (e.g. o centroide da freguesia do Estoril). Clicando depois no mapa para adicionar o ponto para a área administrativa em falta.
+
+    ![alt text](image-75.png)
+
+26. Preencher o formulário a informação relativa ao novo centroide com a entidade administrativa respectiva e clique em OK.
+
+    ![alt text](image-76.png)
+
+27. No Caso da existencia de centroides que já sirvam para identificar àreas administrativas, podemo apenas mudar-lhe a entidade administrativa. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar todos os centroides a alterar a entidade.
+
+    ![alt text](image-77.png)
+
+28. Na **Barra de Digitalização**, clique no botão **Alterar simultâneamente atributos dos elementos selecionados**
+
+    ![alt text](image-78.png)
+
+29. No formulário, alterar o campo `Entidade administrativa` para a nova entidade. Não alterar o campo `Tipo de área administrativa`. Clicar em OK.
+
+    ![alt text](image-79.png)
+
+
+30. Já só falta gravar as última alterações. Devido às relações de dependência das camadas é necessário gravar primeiramente a camada `Entidades administrativas`e só depois a camada `centroides_ea`.
+
 
 #### Agregar duas (ou mais)  àreas\entidades administrativas
 
@@ -867,7 +1029,9 @@ Esta ferramenta actualiza as camadas de output CAOP, para os dados actuais, no s
 
 ## Validar Outputs
 
-Após actualizar os outputs, é essencial garantir a sua coerência geomética e topológica das edições. Para tal, no barra de ferramentas CAOP Tools, carregar no botão **Actualizar Validações**.
+Após actualizar os outputs, é essencial garantir a sua coerência geomética e topológica das edições.
+
+Para tal, no barra de ferramentas CAOP Tools, carregar no botão **Actualizar Validações**.
 
 ![Alt text](image-16.png)
 
@@ -883,17 +1047,17 @@ Esta ferramenta actualiza as camadas existentes no grupo **Validação**.
 
 Cada camada representa um erro específico. O número no final indica o número de erros encontrados.
 
-* trocos_geometria_invalida - Erros de geometria na camada trocos, comprimento 0, vertices duplicados.
-* trocos_dangles -  Fins ou inicios de troços que não estão conectados a mais nenhum troço
-* trocos_cruzados - Troços que cruzam outros troços sem que haja um corte ou que estão sorepostos em algum segmento
-* trocos_duplicados -  Troços exactamente iguais e sobrepostos
-* centroides_duplicados - centroides iguais no mesmo local
-* poligonos_temp_erros - Polígonos sem centroide dentro ou com mais que um centroide (geralmente relacionado com algum dangle)
-* diferencas_geom_gerado_publicado - Mostra a diferença em termos de geometrias (polígonos) entre a versão de output e uma camada de referência (neste caso, a CAOP Publicada)
+* `trocos_geometria_invalida` - Erros de geometria na camada trocos, comprimento 0, vertices duplicados.
+* `trocos_dangle` -  Fins ou inicios de troços que não estão conectados a mais nenhum troço
+* `trocos_cruzado` - Troços que cruzam outros troços sem que haja um corte ou que estão sorepostos em algum segmento
+* `trocos_duplicado` -  Troços exactamente iguais e sobrepostos
+* `centroides_duplicado` - centroides iguais no mesmo local
+* `poligonos_temp_erro` - Polígonos sem centroide dentro ou com mais que um centroide (geralmente relacionado com algum dangle)
+* `diferencas_geom_gerado_publicado` - Mostra a diferença em termos de geometrias (polígonos) entre a versão de output e uma camada de referência (neste caso, a CAOP Publicada)
 
 ### Gerar output CAOP
 
-Uma vez satisfeitos com as alterações, e no caso de querermos guardar os resultados num schema qeu não o `master`, podemos usar a ferramenta **Gerar CAOP**.
+Uma vez satisfeitos com as alterações, e no caso de querermos guardar os resultados num schema que não o `master`, podemos usar a ferramenta **Gerar CAOP**.
 
 ![Alt text](image-18.png)
 
