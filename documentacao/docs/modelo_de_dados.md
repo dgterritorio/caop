@@ -320,7 +320,7 @@ de um troço não se conecta a pelo menos um outro troço. Exceção feita a tro
 
 ##### Diagram relacional
 
-![Diagram relacional Troco](image-49.png)
+![Diagram relacional Troco](imagens/image-49.png)
 
 #### `base.centroide_ea`
 
@@ -349,7 +349,7 @@ centroide. A inexistencia de centroide, ou a sua multiplicidade é considerado u
 
 ##### Diagram relacional
 
-![Diagram relacional centroide](image-50.png)
+![Diagram relacional centroide](imagens/image-50.png)
 
 #### `base.entidade_administrativa`
 
@@ -370,7 +370,7 @@ Uma restrição garante que o código único da entidade administrativa é compa
 
 ##### Diagram relacional
 
-![Diagram relacional Entidade Administrativa](image-51.png)
+![Diagram relacional Entidade Administrativa](imagens/image-51.png)
 
 #### `base.municipio`
 
@@ -391,7 +391,7 @@ Uma restrição garante que o código único do município é compatível com o 
 
 ###### Diagrama relacional
 
-![Diagrama relacional municipio](image-52.png)
+![Diagrama relacional municipio](imagens/image-52.png)
 
 #### distrito_ilha
 
@@ -412,7 +412,7 @@ inequivocamente através de um código único (DI ou DT). Para além do nome da 
 
 ###### Diagrama relacional
 
-![Diagrama relacional Distrito ou Ilha](image-53.png)
+![Diagrama relacional Distrito ou Ilha](imagens/image-53.png)
 
 #### `base.fonte`
 
@@ -432,7 +432,7 @@ Os registos desta tabela alfanumérica representam fontes (Decreto-Lei, Cadastro
 
 ###### Diagrama relacional
 
-![Diagrama relacional Fonte](image-54.png)
+![Diagrama relacional Fonte](imagens/image-54.png)
 
 A entidade `fonte` estabelece uma relação de N:M com a entidade `troco`, onde um troço pode ter origem em várias fontes e a mesma fonte pode estar na origem de diferentes troços. Esta relação é implementa através das seguintes tabelas auxiliares:
 
@@ -452,7 +452,7 @@ A entidade `fonte` estabelece uma relação de N:M com a entidade `troco`, onde 
 
 ##### Diagrama relacional ligação N:M (Exemplo Continente)
 
-![Diagrama relacional ligação N:M (Exemplo Continente)](image-55.png)
+![Diagrama relacional ligação N:M (Exemplo Continente)](imagens/image-55.png)
 
 #### nuts1
 
@@ -483,7 +483,7 @@ Para além do código e nome da NUTS, salienta-se a indicação da NUTS de nivel
 
 ##### Diagrama relacional
 
-![Diagrama relacional - NUTS2](image-56.png)
+![Diagrama relacional - NUTS2](imagens/image-56.png)
 
 #### nuts3
 
@@ -502,7 +502,7 @@ Para além do código e nome da NUTS, salienta-se a indicação da NUTS de nivel
 
 ##### Diagrama relacional
 
-![Diagrama relacional - NUTS3](image-57.png)
+![Diagrama relacional - NUTS3](imagens/image-57.png)
 
 
 #### `base.sede_administrativa`
