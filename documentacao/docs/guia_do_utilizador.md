@@ -1,3 +1,17 @@
+---
+title:  CAOP - Manual de utilizador QGIS
+author:
+- Alexandre Neto, Giovanni Manghi, Alexander Bruy (NaturalGIS)
+date: 23 de Junho de 2024
+geometry:
+- margin=1in
+header-includes: |
+    \usepackage{fancyhdr}
+    \pagestyle{fancy}
+    \fancyhead[RE,RO]{CAOP - Manual de utilizador QGIS}
+    \fancyhead[LO,LE]{NaturalGIS CC BY-SA 4.0}
+...
+
 # Visualização e edição dos dados CAOP em QGIS
 
 Para tornar a visualização e edição dos dados da CAOP de forma adequada e conveniente,
@@ -25,25 +39,29 @@ Tanto os dados, como os projectos de edição preparados são guardados na base 
  5. Ainda na janela **Criar nova ligação PostGIS**, na secção **Autenticação**, escolher o separador **Configurações** e clicar no botão **Criar nova configuração de autenticação**.
  6. Se exigido, escolha uma palavra-passe mestra. Esta será a única palavra-passe que terá de decorar quando precisar de aceder a projectos com necessidade de autenticação.
 
-    ![Alt text](imagens/image-3.png)
+    ![Definir palavra-passe mestra](imagens/image-3.png)
+
  7. Na janela **Autenticação**, junto ao **Id** clicar no símbolo do cadeado e
     preencher o campo com `dgtprod`
+
  8. Ainda na janela **Autenticação**, escolher\\preencher os seguintes campos:
     * **Nome:** `Nome à escolha` (e.g. Credenciais CAOP)
     * `Basic authentication`
     * **Utilizador:** `Nome do utilizador PostgreSQL` (e.g. `user1`)
     * **Palavra-passe:** `Password do utilizador` (e.g. `pass1`)
+
  9. Clicar em `Save`
 
-    ![Alt text](imagens/image-4.png)
+    ![Gravar autenticação](imagens/image-4.png)
+
 10. De volta à janela **Criar nova ligação PostGIS**, clicar em **Testar ligação** para garantir que todos os dados de acesso estão correctos.
 11. Garantir que pelo menos a opção **Permitir guardar e carregar projetos QGIS na base de dados** e clicar em **OK**
 
-    ![Alt text](imagens/image-5.png)
+    ![Criar ligação PostGIS](imagens/image-5.png)
 
 Agora no painel **Navegador** deverá ser possível visualizar a recém-criada ligação, clicando na mesma será possível visualizar o seu conteúdo.
 
-![Alt text](imagens/image-6.png)
+![Visualizar conteúdo da ligação](imagens/image-6.png)
 
 ## Instalação plugin CAOP Tools
 
@@ -62,7 +80,7 @@ A instalação do plugin é feita através do arquivo Zip fornecido.
 4. Clicar em **Instalar módulo**.
 5. Fechar a janela dos **Plugins**
 
-   ![Alt text](imagens/image-7.png)
+   ![Instalar plugin](imagens/image-7.png)
 
 ## Edição dos dados CAOP
 
@@ -77,7 +95,7 @@ Os projectos de edição estão guardados na base de dados, dentro do schema `pu
 3. Expandir o schema `public`.
 4. Fazer duplo-clique sobre o nome do projecto (e.g. `projecto_caop_edicao_cont`) ou simplesmente arrastando-o para a área do mapa.
 
-   ![Alt text](imagens/image-9.png)
+   ![Abrir projecto por drag and drop](imagens/image-9.png)
 
 Os projectos de edição estão organizados por grupos da seguinte forma:
 
@@ -89,7 +107,7 @@ Os projectos de edição estão organizados por grupos da seguinte forma:
 * **versioning** - tabelas de backup associados ao sistema de histórico
 * **basemaps** - camadas auxiliares de contexto
 
-![Alt text](imagens/image-10.png)
+![Organização do projecto](imagens/image-10.png)
 
 ### Ligar Snapping
 
@@ -100,13 +118,13 @@ Sempre que se esteja a editar as geometrias da CAOP (em particular os troços) �
 3. Em termos de opções, no segundo botão da esquerda sugere-se o uso da **Camada activa** para apenas fazer snapping com elementos da camada `troco`. Caso se pretenda usar outras camadas como referência, sugere-se usar a opção **Configuração Avançada** e no botão **Editar Configuração Avançada** seleccionar apenas as camadas relevantes.
 4. No terceiro botão da esquerda, deve~se usar só a opção **Vértices**
 
-   ![Alt text](imagens/image-11.png)
+   ![Barra de snapping](imagens/image-11.png)
 
 ### Preencher o motivo
 
 Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve preencher o motivo da actual edição. Este texto é guardado automaticamente nos registos das tabelas, ajudando a descrever o histórico de cada registo.
 
-![Alt text](imagens/image-12.png)
+![Edição do motivo](imagens/image-12.png)
 
 ### Execução de operações de edição comuns
 
@@ -125,24 +143,31 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
  1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Alteração de fronteira entre a freguesia de Alcabideche e São Domingos de Rana`)
 
     ![Definição do motivo da edição](imagens/image-24.png)
+
  2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
 
-    ![alt text](imagens/image-25.png)
+    ![Ligar edição da camada Fontes](imagens/image-25.png)
+
  3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
 
-    ![alt text](imagens/image-26.png)
+    ![Adicionar registo](imagens/image-26.png)
+
  4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
 
-    ![alt text](imagens/image-45.png)
+    ![ ](imagens/image-45.png)
+
  5. No Painel **Camadas**, seleccionar a camada `Troços` e ligar a edição da mesma.
 
     ![alt text](imagens/image-29.png)
+
  6. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o troço a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
 
     ![alt text](imagens/image-30.png)
+
  7. Na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools
 
     ![alt text](imagens/image-31.png)
+
  8. Garantindo que o snapping está ligado, como descrito acima, com a ferramenta de corte por cima do mapa, desenhar (clicando com o botão esquerdo do rato para adicionar vertices) uma linha que atravesse o troço no local (ou locais) onde se pretende cortá-lo para isolar os segmentos do troço que irão ser alterados. Para terminar a linha clicar com o botão direito do rato. (Se possível, devemos cortar as linhas em vertices já existentes).
 
     ![alt text](imagens/image-32.png)
@@ -153,35 +178,44 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
  9. Usando novamente as ferramentas de seleção, seleccione o troço a ser alterado.
 
     ![alt text](imagens/image-33.png)
+
 10. Usar as ferramentas do QGIS para alterar a geometria do novo troço, por exemplo:
     * **Ferramenta de vértices** (Barra de digitalização) que permite mover um ou mais vértices
 
       ![alt text](imagens/image-35.png)
+
     * **Editor de vértices** (Acesso através de clique direito do rato sobre o elemento quando a usar a **Ferramenta de vértices**) que permite editar as coordenadas de cada vértice.
 
       ![alt text](imagens/image-36.png)
+
     * **Redesenhar elementos** (Barra de digitalização avançada) que permite redesenhar um novo troço
 
       ![alt text](imagens/image-37.png)
 
     Para comprender o uso destas ferramentas em detalhes, sugere-se a consulta da documentação do QGIS:
+
     * [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool)
     * [Editor de vértices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributeshtml#the-vertex-editor-panel)
     * [Redesenhar elementos](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#reshape-features)
 
     **Nota:** Todas estas ferramentas devem ser usadas com auxílio das ferramentas de snapping, inclusivamente a opção de tracejamento que permite desenhar com rapidez usando outras camadas como referência.
+
 11. De seguida, vamos editar as fontes dos troços alterados. Na **Barra de attributos** clicar em **Abrir tabela de atributos (Editados e Novos Elementos)**.
 
     ![alt text](imagens/image-41.png)
+
 12. Na **tabela de atributos** da camada `troço`, clicar em  **Mudar para vista para modo de formulário**. Clicar sobre o o elemento cuja geometria foi alterada (em principio ainda estará selecionado). De seguida, selecionar o separador `fontes`.
 
     ![alt text](imagens/image-43.png)
+
 13. No separador `Fontes`, activar a edição, selecionar as fontes existentes e apagá-las.
 
     ![alt text](imagens/image-44.png)
+
 14. Ainda no separador **Fontes**, clicar em **Adicionar elemento filho** e para o campo `fonte_id`escolher a fonte criada no passo 2 a 5. A forma mais simples de encontrar a fonte é iniciar a escrever a data ou a descrição (e.g. `135/2024`) até que a fonte correcta apareça. Clicar em **Ok**
 
     ![alt text](imagens/image-46.png)
+
 15. Feitas e confirmadas todas as alterações é preciso gravar as camadas editadas, para que as modificações sejam enviadas para a base de dados. Devido às relações de dependência das camadas, as alterações à camada `lig_troco_fonte` devem ser as última a serem gravada. Uma forma prática de gravar todas as alterações e desligar a edição é, na **Barra de digitalização**, escolher a opção **Guardar para todas as camadas**, seguida de **Cancelar para Todas as Camadas**
 
     ![alt text](imagens/image-47.png)
@@ -205,9 +239,11 @@ Outra tipo de edição comum é a divisão da área de uma freguesia (área admi
 2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
 
     ![alt text](imagens/image-25.png)
+
 3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
 
     ![alt text](imagens/image-26.png)
+
 4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
 
     ![alt text](imagens/image-59.png)
@@ -219,6 +255,7 @@ Outra tipo de edição comum é a divisão da área de uma freguesia (área admi
 6. Na **Barra de digitalização** seleccionar a ferramenta **Adicionar elemento linha**
 
     ![alt text](imagens/image-60.png)
+
 7. Garantindo que o snapping está ligado, como descrito acima, desenhar sobre o mapa (clicando com o botão esquerdo do rato para adicionar vertices) uma linha que represente a nova fronteira. Para terminar a linha clicar com o botão direito do rato.
 
    ![alt text](imagens/image-61.png)
@@ -226,13 +263,16 @@ Outra tipo de edição comum é a divisão da área de uma freguesia (área admi
    **Nota:** Alternativamente, se disponível, podemos copiar a linha de uma camada auxiliar para dentro da camada troço através usando os botões de copy-paste da **Barra de digitalização**
 
     ![alt text](imagens/image-62.png)
+
  8. Preencher o formulário do novo troço. Para o campo nivel_limite_administrativo escolher `Não aplicável`. Clicar em **OK**.
 
     ![alt text](imagens/image-65.png)
+
  9. Fazer Zoom In nas zonas de intersecção do novo troço com troços existentes.
 10. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o troço existente a cortar (este passo não é obrigatório, mas pode ajudar a evitar cortes por engano de outros troços)
 
     ![alt text](imagens/image-66.png)
+
 11. Na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools.
 
     ![alt text](imagens/image-64.png)

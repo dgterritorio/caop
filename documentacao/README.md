@@ -10,11 +10,11 @@
 2. Activar o virtual environment
 
    ```
-   source mkdocs/bin/activate
+   source mkdocs_venv/bin/activate
    ```
 
 3. Gerar o site que se regenera com as alterações
 
    ```
-   mkdocs server
+   mkdocs serve
    ```

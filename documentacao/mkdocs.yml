@@ -1,5 +1,33 @@
-site_name: Estudo e definição de um novo modelo conceptual para a CAOP adaptado ao PostgreSQL/PostGIS, adaptação ao modelo de dados INSPIRE e desenvolvimento de scripts
+site_name: Modelo de Dados para a Carta Administrativa Oficial de Portugal
+
+site_description: Estudo e definição de um novo modelo de dados para a CAOP adaptado ao PostgreSQL/PostGIS, adaptação ao modelo de dados INSPIRE e desenvolvimento de scripts
+
+site_author: Alexandre Neto, Giovanni Manghi, Alexander Bruy
 
 theme:
   name: material
+  logo: assets/naturalgis_logo.png
+  favicon: assets/naturalgis_logo.png
+  palette:
+    scheme: default
+    primary: light green
 
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+
+nav:
+  # - 'modelo_de_dados.md'
+  # - 'implementacao_modelo.md'
+  - 'guia_do_utilizador.md'
+
+plugins:
+    - with-pdf:
+        copyright: CC BY-SA 4.0 2024 NaturalGIS.
+        cover_subtitle: Manual de utilização em QGIS
+        # cover_logo: assets/banner_ng.png
+        output_path: modelo_caop_postgresql_postgis.pdf
