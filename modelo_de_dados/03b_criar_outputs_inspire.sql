@@ -8,6 +8,7 @@ DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_boundaries_cont;
 
 CREATE MATERIALIZED VIEW master.inspire_admin_boundaries_cont AS
 SELECT 
+	row_number() over () as id,
 	'http://id.igeo.pt/so/AU/AdministrativeBoundaries/' || t.identificador || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 	'PT' AS country,
 	nla.nome_en AS "nationalLevel",
@@ -26,6 +27,7 @@ CREATE INDEX ON master.inspire_admin_boundaries_cont USING gist(geometry);
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_5thorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_5thorder_cont AS
 SELECT DISTINCT ON (dicofre)
+row_number() over () as id,
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dicofre || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
@@ -47,6 +49,7 @@ CREATE INDEX ON master.inspire_admin_units_5thorder_cont USING gist(geometry);
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_4thorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_4thorder_cont AS
 SELECT DISTINCT ON (dico)
+row_number() over () as id,
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dico || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
@@ -68,6 +71,7 @@ CREATE INDEX ON master.inspire_admin_units_4thorder_cont USING gist(geometry);
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_3rdorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_3rdorder_cont AS
 SELECT DISTINCT ON (di)
+row_number() over () as id,
 'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || di || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
@@ -95,6 +99,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_ram;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_ram AS
 SELECT 
+	row_number() over () as id,
 	t.identificador AS "inspireId",
 	'PT' AS country,
 	nla.nome_en AS "nationalLevel",
@@ -111,6 +116,7 @@ FROM master.ram_trocos AS t
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_cen_ori;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_cen_ori AS
 SELECT 
+row_number() over () as id,
 t.identificador AS "inspireId",
 'PT' AS country,
 nla.nome_en AS "nationalLevel",
@@ -126,7 +132,8 @@ JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.n
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_oci;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_oci AS
-SELECT 
+SELECT
+row_number() over () as id,
 t.identificador AS "inspireId",
 'PT' AS country,
 nla.nome_en AS "nationalLevel",
