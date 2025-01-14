@@ -8,7 +8,7 @@ DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_boundaries_cont;
 
 CREATE MATERIALIZED VIEW master.inspire_admin_boundaries_cont AS
 SELECT 
-	row_number() over () as id,
+	row_number() over (order by t.inicio_objecto) as id,
 	'http://id.igeo.pt/so/AU/AdministrativeBoundaries/' || t.identificador || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 	'PT' AS country,
 	nla.nome_en AS "nationalLevel",
@@ -19,399 +19,242 @@ SELECT
 	ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN 'PT1' || t.ea_esquerda END,
 		  CASE WHEN char_length(t.ea_direita) > 5 THEN 'PT1' || t.ea_direita END] AS "admUnit",
 	t.geometria::geometry(linestring, 3763) AS geometry
-FROM base.cont_troco AS t
+FROM vsr_table_at_time (NULL::base.cont_troco, now()::timestamp) AS t -- substituir now por uma data ou uma versão
 	JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.identificador;
 
+CREATE UNIQUE INDEX ON master.inspire_admin_boundaries_cont(id);
 CREATE INDEX ON master.inspire_admin_boundaries_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_5thorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_5thorder_cont AS
-SELECT DISTINCT ON (dicofre)
-row_number() over () as id,
-'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dicofre || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
+SELECT DISTINCT ON (dtmnfr)
+row_number() over (order by dtmnfr, t.inicio_objecto) as id,
+'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dtmnfr || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
 NULL::timestamp AS "endLifespanVersion", -- A definir
 freguesia AS name,
-'PT1' || dicofre AS "nationalCode",
+'PT1' || dtmnfr AS "nationalCode",
 '5thOrder' AS "nationalLevel",
 'Freguesia' AS "nationalLevelName",
 sa.nome AS "residenceOfAutorithy",
-'PT1' || LEFT(dicofre,4) AS "upperLevelUnit",
+'PT1' || LEFT(dtmnfr,4) AS "upperLevelUnit",
 f.geometria::geometry(multipolygon,3763) AS geometry
 FROM master.cont_freguesias AS f
-	LEFT JOIN base.cont_troco AS t ON f.dicofre IN (t.ea_direita, t.ea_esquerda)
+	LEFT JOIN vsr_table_at_time (NULL::base.cont_troco, now()::timestamp) AS t ON f.dtmnfr IN (t.ea_direita, t.ea_esquerda)
 	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(f.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '5'
-ORDER BY dicofre, t.inicio_objecto DESC;
+ORDER BY dtmnfr, t.inicio_objecto DESC;
 
+CREATE UNIQUE INDEX ON master.inspire_admin_units_5thorder_cont(id);
 CREATE INDEX ON master.inspire_admin_units_5thorder_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_4thorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_4thorder_cont AS
-SELECT DISTINCT ON (dico)
-row_number() over () as id,
-'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dico || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
+SELECT DISTINCT ON (dtmn)
+row_number() over (order by dtmn, t.inicio_objecto) as id,
+'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dtmn || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
 NULL::timestamp AS "endLifespanVersion", -- A definir
 municipio AS name,
-'PT1' || dico AS "nationalCode",
+'PT1' || dtmn AS "nationalCode",
 '4thOrder' AS "nationalLevel",
 'Município' AS "nationalLevelName",
 sa.nome AS "residenceOfAutorithy",
-'PT1' || LEFT(dico,2) AS "upperLevelUnit",
+'PT1' || LEFT(dtmn,2) AS "upperLevelUnit",
 m.geometria::geometry(multipolygon, 3763) AS geometry
 FROM master.cont_municipios AS m
-	LEFT JOIN base.cont_troco AS t ON m.dico IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
+	LEFT JOIN vsr_table_at_time (NULL::base.cont_troco, now()::timestamp) as t ON m.dtmn IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
 	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(m.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '4'
-ORDER BY dico, t.inicio_objecto DESC; 
+ORDER BY dtmn, t.inicio_objecto DESC; 
 
+CREATE UNIQUE INDEX ON master.inspire_admin_units_4thorder_cont(id);
 CREATE INDEX ON master.inspire_admin_units_4thorder_cont USING gist(geometry);
 
 DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_3rdorder_cont;
 CREATE MATERIALIZED VIEW master.inspire_admin_units_3rdorder_cont AS
-SELECT DISTINCT ON (di)
-row_number() over () as id,
-'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || di || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
+SELECT DISTINCT ON (dt)
+row_number() over (order by dt, t.inicio_objecto) as id,
+'http://id.igeo.pt/so/AU/AdministrativeUnits/' || 'PT1' || dt || '/' || to_char(t.inicio_objecto, 'YYYYMMDD') AS "inspireId",
 'PT' AS country,
 t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
 NULL::timestamp AS "endLifespanVersion", -- A definir
 distrito AS name,
-'PT1' || di AS "nationalCode",
+'PT1' || dt AS "nationalCode",
 '3thOrder' AS "nationalLevel",
 'Distrito' AS "nationalLevelName",
 sa.nome AS "residenceOfAutorithy",
 'PT1' AS "upperLevelUnit",
 d.geometria AS geometry
 FROM master.cont_distritos AS d
-	LEFT JOIN base.cont_troco AS t ON d.di IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
+	LEFT JOIN base.cont_troco AS t ON d.dt IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
 	LEFT JOIN base.sede_administrativa AS sa ON st_intersects(d.geometria, st_transform(sa.geometria, 3763)) AND sa.tipo_sede_administrativa = '3'
-ORDER BY di, t.inicio_objecto DESC;
+ORDER BY dt, t.inicio_objecto DESC;
 
+CREATE UNIQUE INDEX ON master.inspire_admin_units_3rdorder_cont(id);
 CREATE INDEX ON master.inspire_admin_units_3rdorder_cont USING gist(geometry);
 
 GRANT ALL ON ALL TABLES IN SCHEMA master TO administrador;
 GRANT SELECT ON ALL TABLES IN SCHEMA master TO editor, visualizador;
 
+--  O mesmo código convertido em função que permita criar as camadas inspire para as diferrentes regioes
 
--- MADEIRA
+CREATE OR REPLACE FUNCTION public.gerar_outputs_inspire(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', data_hora timestamp DEFAULT now()::timestamp )
+-- Função para gerar camadas inspire baseadas nos outputs da CAOP guardados no schema escolhido
+-- ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
+-- parametros:
+-- - output_schema (TEXT) - nome do schema com os outputs CAOP, e onde serão guardados as tabelas default 'master'
+-- - prefixo (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+-- - data_hora (TIMESTAMP) , permite definir um dia e hora para criar um output baseado em dados passados, default hora actual
+RETURNS Boolean AS
+$body$
+DECLARE
+	epsg TEXT;
+BEGIN
+	-- Determinar o código EPGS baseado no prefixo usado ao chamar a função
+	CASE
+		WHEN prefixo = 'cont' THEN	epsg := '3763';
+		WHEN prefixo = 'ram' THEN	epsg := '5016';
+		WHEN prefixo = 'raa_oci' THEN	epsg := '5014';
+		WHEN prefixo = 'raa_cen_ori' THEN	epsg := '5015';
+		ELSE
+			RAISE EXCEPTION 'Prefixo inválido!';
+			RETURN FALSE;
+	END CASE;
 
-DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_ram;
-CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_ram AS
-SELECT 
-	row_number() over () as id,
-	t.identificador AS "inspireId",
-	'PT' AS country,
-	nla.nome_en AS "nationalLevel",
-	'2023-12-31'::timestamp AS "beginLifespanVersion", -- A definir
+EXECUTE FORMAT (
+	'DROP MATERIALIZED VIEW IF EXISTS %1$I.inspire_admin_boundaries_%2$s;
+	
+	CREATE MATERIALIZED VIEW  %1$I.inspire_admin_boundaries_%2$s AS
+	SELECT 
+		row_number() over (order by t.inicio_objecto) as id,
+		''http://id.igeo.pt/so/AU/AdministrativeBoundaries/'' || t.identificador || ''/'' || to_char(t.inicio_objecto, ''YYYYMMDD'') AS "inspireId",
+		''PT'' AS country,
+		nla.nome_en AS "nationalLevel",
+		t.inicio_objecto::timestamp AS "beginLifespanVersion",
+		NULL::timestamp AS "endLifespanVersion", -- A definir
+		''agreed'' AS "legalStatus",
+		''notEdgeMatched'' AS "technicalStatus",
+		ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN ''PT1'' || t.ea_esquerda END,
+			  CASE WHEN char_length(t.ea_direita) > 5 THEN ''PT1'' || t.ea_direita END] AS "admUnit",
+		t.geometria::geometry(linestring, %4$s) AS geometry
+	FROM vsr_table_at_time (NULL::base.%2$s_troco,  %3$L::timestamp) AS t
+		JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.identificador;
+	
+	CREATE UNIQUE INDEX ON %1$I.inspire_admin_boundaries_%2$s(id);
+	CREATE INDEX ON %1$I.inspire_admin_boundaries_%2$s USING gist(geometry);
+	
+	DROP MATERIALIZED VIEW IF EXISTS %1$I.inspire_admin_units_5thorder_%2$s;
+	CREATE MATERIALIZED VIEW %1$I.inspire_admin_units_5thorder_%2$s AS
+	SELECT DISTINCT ON (dtmnfr)
+	row_number() over (order by dtmnfr, t.inicio_objecto) as id,
+	''http://id.igeo.pt/so/AU/AdministrativeUnits/'' || ''PT1'' || dtmnfr || ''/'' || to_char(t.inicio_objecto, ''YYYYMMDD'') AS "inspireId",
+	''PT'' AS country,
+	t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
 	NULL::timestamp AS "endLifespanVersion", -- A definir
-	'agreed' AS "legalStatus",
-	'notEdgeMatched' AS "technicalStatus",
-	ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN t.ea_esquerda END,
-		  CASE WHEN char_length(t.ea_direita) > 5 THEN t.ea_direita END] AS "admUnit",
-	t.geometria AS geometry
-FROM master.ram_trocos AS t
-	JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.nome;
+	freguesia AS name,
+	''PT1'' || dtmnfr AS "nationalCode",
+	''5thOrder'' AS "nationalLevel",
+	''Freguesia'' AS "nationalLevelName",
+	sa.nome AS "residenceOfAutorithy",
+	''PT1'' || LEFT(dtmnfr,4) AS "upperLevelUnit",
+	f.geometria::geometry(multipolygon,%4$s) AS geometry
+	FROM %1$I.%2$s_freguesias AS f
+		LEFT JOIN vsr_table_at_time (NULL::base.%2$s_troco,  %3$L::timestamp) AS t ON f.dtmnfr IN (t.ea_direita, t.ea_esquerda)
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(f.geometria, st_transform(sa.geometria, %4$s)) AND sa.tipo_sede_administrativa = ''5''
+	ORDER BY dtmnfr, t.inicio_objecto DESC;
+	
+	CREATE UNIQUE INDEX ON %1$I.inspire_admin_units_5thorder_%2$s(id);
+	CREATE INDEX ON %1$I.inspire_admin_units_5thorder_%2$s USING gist(geometry);
+	
+	DROP MATERIALIZED VIEW IF EXISTS %1$I.inspire_admin_units_4thorder_%2$s;
+	CREATE MATERIALIZED VIEW %1$I.inspire_admin_units_4thorder_%2$s AS
+	SELECT DISTINCT ON (dtmn)
+	row_number() over (order by dtmn, t.inicio_objecto) as id,
+	''http://id.igeo.pt/so/AU/AdministrativeUnits/'' || ''PT1'' || dtmn || ''/'' || to_char(t.inicio_objecto, ''YYYYMMDD'') AS "inspireId",
+	''PT'' AS country,
+	t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
+	NULL::timestamp AS "endLifespanVersion", -- A definir
+	municipio AS name,
+	''PT1'' || dtmn AS "nationalCode",
+	''4thOrder'' AS "nationalLevel",
+	''Município'' AS "nationalLevelName",
+	sa.nome AS "residenceOfAutorithy",
+	''PT1'' || LEFT(dtmn,2) AS "upperLevelUnit",
+	m.geometria::geometry(multipolygon, %4$s) AS geometry
+	FROM %1$I.%2$s_municipios AS m
+		LEFT JOIN vsr_table_at_time (NULL::base.%2$s_troco,  %3$L::timestamp) as t ON m.dtmn IN (LEFT(t.ea_direita,4), LEFT(t.ea_esquerda,4))
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(m.geometria, st_transform(sa.geometria, %4$s)) AND sa.tipo_sede_administrativa = ''4''
+	ORDER BY dtmn, t.inicio_objecto DESC; 
+	
+	CREATE UNIQUE INDEX ON %1$I.inspire_admin_units_4thorder_%2$s(id);
+	CREATE INDEX ON %1$I.inspire_admin_units_4thorder_%2$s USING gist(geometry);
+	
+	DROP MATERIALIZED VIEW IF EXISTS %1$I.inspire_admin_units_3rdorder_%2$s;
+	CREATE MATERIALIZED VIEW %1$I.inspire_admin_units_3rdorder_%2$s AS
+	SELECT DISTINCT ON (dt)
+	row_number() over (order by dt, t.inicio_objecto) as id,
+	''http://id.igeo.pt/so/AU/AdministrativeUnits/'' || ''PT1'' || dt || ''/'' || to_char(t.inicio_objecto, ''YYYYMMDD'') AS "inspireId",
+	''PT'' AS country,
+	t.inicio_objecto::timestamp AS "beginLifespanVersion", -- A definir
+	NULL::timestamp AS "endLifespanVersion", -- A definir
+	distrito AS name,
+	''PT1'' || dt AS "nationalCode",
+	''3thOrder'' AS "nationalLevel",
+	''Distrito'' AS "nationalLevelName",
+	sa.nome AS "residenceOfAutorithy",
+	''PT1'' AS "upperLevelUnit",
+	d.geometria AS geometry
+	FROM %1$I.%2$s_distritos AS d
+		LEFT JOIN base.%2$s_troco AS t ON d.dt IN (LEFT(t.ea_direita,2), LEFT(t.ea_esquerda,2))
+		LEFT JOIN base.sede_administrativa AS sa ON st_intersects(d.geometria, st_transform(sa.geometria, %4$s)) AND sa.tipo_sede_administrativa = ''3''
+	ORDER BY dt, t.inicio_objecto DESC;
+	
+	CREATE UNIQUE INDEX ON %1$I.inspire_admin_units_3rdorder_%2$s(id);
+	CREATE INDEX ON %1$I.inspire_admin_units_3rdorder_%2$s USING gist(geometry);
+	
+	GRANT ALL ON ALL TABLES IN SCHEMA %1$I TO administrador;
+	GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador;'
+, output_schema, prefixo, data_hora, epsg);
 
-DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_cen_ori;
-CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_cen_ori AS
-SELECT 
-row_number() over () as id,
-t.identificador AS "inspireId",
-'PT' AS country,
-nla.nome_en AS "nationalLevel",
-'2023-12-31'::timestamp AS "beginLifespanVersion", -- A definir
-NULL::timestamp AS "endLifespanVersion", -- A definir
-'agreed' AS "legalStatus",
-'notEdgeMatched' AS "technicalStatus",
-ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN t.ea_esquerda END,
-	  CASE WHEN char_length(t.ea_direita) > 5 THEN t.ea_direita END] AS "admUnit",
-t.geometria AS geometry
-FROM master.raa_cen_ori_trocos AS t
-JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.nome;
+	RETURN TRUE;
+END;
+$body$
+LANGUAGE 'plpgsql';
 
-DROP MATERIALIZED VIEW IF EXISTS master.inspire_admin_units_boundaries_raa_oci;
-CREATE MATERIALIZED VIEW master.inspire_admin_units_boundaries_raa_oci AS
-SELECT
-row_number() over () as id,
-t.identificador AS "inspireId",
-'PT' AS country,
-nla.nome_en AS "nationalLevel",
-'2023-12-31'::timestamp AS "beginLifespanVersion", -- A definir
-NULL::timestamp AS "endLifespanVersion", -- A definir
-'agreed' AS "legalStatus",
-'notEdgeMatched' AS "technicalStatus",
-ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN t.ea_esquerda END,
-	  CASE WHEN char_length(t.ea_direita) > 5 THEN t.ea_direita END] AS "admUnit",
-t.geometria AS geometry
-FROM master.raa_oci_trocos AS t
-JOIN dominios.nivel_limite_administrativo AS nla ON t.nivel_limite_admin = nla.nome;
+CREATE OR REPLACE FUNCTION public.gerar_outputs_inspire(output_schema text DEFAULT 'master'::regnamespace, prefixo TEXT DEFAULT 'cont', output_versao TEXT DEFAULT '')
+-- Função para gerar camadas inspire baseadas nos outputs da CAOP guardados no schema escolhido
+-- ATENÇÃO: NECESSITA DE PERMISSÕES DE ADMINISTRADOR PARA CORRER POIS CRIA SCHEMAS e DÁ PERMISSÕES.
+-- parametros:
+-- - output_schema (TEXT) - nome do schema com os outputs CAOP, e onde serão guardados as tabelas default 'master'
+-- - prefixo (TEXT) - prefixo que permite separar entre o continente e as ilhas, valores possiveis são ('cont', 'ram','raa_oci','raa_cen_ori'), default 'cont'
+-- - output_versao (TEXT) , número de uma versão existente na tabela versioning.versao
+RETURNS Boolean AS
+$body$
+DECLARE 
+	data_hora timestamp;
+BEGIN
+	data_hora := (SELECT v.data_hora FROM "versioning".versoes AS v WHERE v.versao ILIKE output_versao );
 
+	CASE WHEN data_hora IS NULL THEN
+		RAISE EXCEPTION 'Versão (%) não foi encontrada.', output_versao;
+		RETURN FALSE;
+	ELSE
+		EXECUTE format('select public.gerar_outputs_inspire(%L, %L, %L::timestamp);',output_schema, prefixo, data_hora);	
+		RETURN TRUE;
+	END CASE;
 
---
+END;
+$body$
+LANGUAGE 'plpgsql';
 
-SELECT
+-- TESTEs
 
+-- Gerar camadas inspire para o schema master
+SELECT gerar_outputs_inspire('master','cont');
+SELECT gerar_outputs_inspire('master','ram');
+SELECT gerar_outputs_inspire('master','raa_oci');
+SELECT gerar_outputs_inspire('master','raa_cen_ori');
 
-DROP TABLE IF EXISTS temp.ebm_cont_trocos;
-CREATE TABLE TEMP.ebm_cont_trocos AS
-SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
-FROM base.cont_troco;
-
-DROP TABLE IF EXISTS temp.ebm_ram_trocos;
-CREATE TABLE TEMP.ebm_ram_trocos AS
-SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
-FROM base.ram_troco;
-
-DROP TABLE IF EXISTS temp.ebm_raa_oci_trocos;
-CREATE TABLE TEMP.ebm_raa_oci_trocos AS
-SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
-FROM base.raa_oci_troco;
-
-DROP TABLE IF EXISTS temp.ebm_raa_cen_ori_trocos;
-CREATE TABLE TEMP.ebm_raa_cen_ori_trocos AS
-SELECT identificador, st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200) AS geometria
-FROM base.raa_cen_ori_troco;
-
-CREATE INDEX ON TEMP.ebm_cont_trocos USING gist(geometria);
-CREATE INDEX ON TEMP.ebm_ram_trocos USING gist(geometria);
-CREATE INDEX ON TEMP.ebm_raa_oci_trocos USING gist(geometria);
-CREATE INDEX ON TEMP.ebm_raa_cen_ori_trocos USING gist(geometria);
-
-DROP TABLE IF EXISTS temp.ebm_poligonos CASCADE;
-CREATE TABLE temp.ebm_poligonos (
-	id serial PRIMARY KEY,
-	geometria geometry(polygon, 4258)
-);
-
-INSERT INTO temp.ebm_poligonos (geometria)
-WITH poly AS (
-	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
-	FROM temp.ebm_cont_trocos
-)
-SELECT st_transform(geom, 4258)
-FROM poly 
-WHERE st_area(geom) >= 2500;
-
-INSERT INTO temp.ebm_poligonos (geometria)
-WITH poly AS (
-	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
-	FROM temp.ebm_ram_trocos
-)
-SELECT st_transform(geom, 4258)
-FROM poly 
-WHERE st_area(geom) >= 2500;
-
-INSERT INTO temp.ebm_poligonos (geometria)
-WITH poly AS (
-	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
-	FROM temp.ebm_raa_oci_trocos
-)
-SELECT st_transform(geom, 4258)
-FROM poly 
-WHERE st_area(geom) >= 2500;
-
-INSERT INTO temp.ebm_poligonos (geometria)
-WITH poly AS (
-	SELECT (st_dump(st_polygonize(geometria))).geom AS geom
-	FROM temp.ebm_raa_cen_ori_trocos
-)
-SELECT st_transform(geom, 4258)
-FROM poly 
-WHERE st_area(geom) >= 2500;
-
-CREATE INDEX ON temp.ebm_poligonos USING gist(geometria);
-
-DROP TABLE IF EXISTS temp.ebm_centroides CASCADE;
-CREATE TABLE temp.ebm_centroides AS
-SELECT 
-	entidade_administrativa,
-	tipo_area_administrativa_id,
-	'1' AS shn_prefix,
-	st_transform(geometria,4258)::geometry(point,4258) AS geometria
-FROM base.cont_centroide_ea AS ce 
-UNION ALL
-SELECT 
-	entidade_administrativa,
-	tipo_area_administrativa_id,
-	'3' AS shn_prefix,
-	st_transform(geometria,4258)::geometry(point,4258) AS geometria
-FROM base.ram_centroide_ea AS ce
-UNION ALL
-SELECT 
-	entidade_administrativa,
-	tipo_area_administrativa_id,
-	'2' AS shn_prefix,
-	st_transform(geometria,4258)::geometry(point,4258) AS geometria
-FROM base.raa_oci_centroide_ea AS ce
-UNION ALL
-SELECT 
-	entidade_administrativa,
-	tipo_area_administrativa_id,
-	'3' AS shn_prefix,
-	st_transform(geometria,4258)::geometry(point,4258) AS geometria
-FROM base.raa_cen_ori_centroide_ea AS ce;
-
-DROP MATERIALIZED VIEW master.ebm_a CASCADE;
-CREATE MATERIALIZED VIEW master.ebm_a as
-SELECT
-	concat('_EG.EBM:AA.','PT', ce.shn_prefix, ce.entidade_administrativa) AS "InspireId",
-	NULL AS "beginLifeSpanVersion",
-	'PT' AS "ICC",
-	concat('PT',ce.shn_prefix, ce.entidade_administrativa) AS "SHN", -- falta separar se OR continente ou ilhas PT1, PT2 ou PT3
-	ce.tipo_area_administrativa_id AS "TAA",
-	p.geometria::geometry(multipolygon, 4258) AS geometria
-FROM TEMP.ebm_poligonos AS p
-	JOIN temp.ebm_centroides AS ce ON st_intersects(p.geometria, ce.geometria);
-
-CREATE INDEX ON master.ebm_a USING gist(geometria);
-
-CREATE MATERIALIZED VIEW master.ebm_nam as
-WITH all_areas AS (
-SELECT sum(area_ha) AS area_ha FROM master.cont_distritos
-UNION ALL
-SELECT sum(area_ha) AS area_ha FROM master.ram_distritos
-UNION ALL
-SELECT sum(area_ha) AS area_ha FROM master.raa_oci_distritos
-UNION ALL
-SELECT sum(area_ha) AS area_ha FROM master.raa_cen_ori_distritos)
-SELECT -- Portugal
-	'PT' AS "ICC",
-	'PT0000000'AS "SHN",
-	2 AS "USE", -- continente
-	2512 AS "ISN", -- continente
-	'Portugal'  AS "NAMN",
-	'Portugal' AS NAMA,
-	'por' AS "NLN",
-	'UNK' AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(sum(area_ha)/100)::numeric(15,2) AS "ARA", -- Aqui vamos ter de adicionar a area das ilhas com uma subquery
-	NULL AS "effectiveDate"
-FROM all_areas
-UNION ALL
-SELECT -- Continente
-	'PT' AS "ICC",
-	'PT1000000'AS "SHN",
-	2 AS "USE", -- continente
-	2512 AS "ISN", -- continente
-	'Continente'  AS "NAMN",
-	'Continente' AS NAMA,
-	'por' AS "NLN",
-	'PT0000000' AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM master.cont_distritos
-UNION ALL
-SELECT -- Distritos continente
-	'PT' AS "ICC",
-	concat('PT1', di, '0000') AS "SHN",
-	3 AS "USE", -- distritos
-	2514 AS "ISN", -- distritos
-	distrito  AS "NAMN",
-	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	'PT1000000' AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.cont_distritos AS cd
-UNION ALL
-SELECT -- Municipios Continente
-	'PT1' AS "ICC",
-	concat('PT1', dico, '00') AS "SHN",
-	4 AS "USE", -- municipios
-	2516 AS "ISN", -- municipios
-	municipio  AS "NAMN",
-	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	concat('PT1', LEFT(dico,2),'0000') AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.cont_municipios AS cf
-UNION ALL
-SELECT -- Freguesias continente
-	'PT1' AS "ICC",
-	concat('PT1', dicofre) AS "SHN",
-	5 AS "USE", -- freguesias
-	2517 AS "ISN", -- freguesia
-	designacao_simplificada AS "NAMN",
-	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	concat('PT1', LEFT(dicofre,4),'00') AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.cont_freguesias AS cf
-UNION ALL
-SELECT -- MADEIRA
-	'PT' AS "ICC",
-	'PT3000000'AS "SHN",
-	2 AS "USE", -- regiao autonoma da madeira
-	2513 AS "ISN", -- Ilhas
-	'Região Autónoma da Madeira'  AS "NAMN",
-	'Regiao Autonoma da Madeira' AS NAMA,
-	'por' AS "NLN",
-	'PT0000000' AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(sum(area_ha)/100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM master.ram_distritos
-UNION ALL
-SELECT -- Ilhas
-	'PT' AS "ICC",
-	concat('PT3', di, '0000') AS "SHN",
-	3 AS "USE", -- distritos ou ilhas
-	2515 AS "ISN", -- distritos
-	distrito  AS "NAMN",
-	TRANSLATE(distrito ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	'PT3000000' AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.ram_distritos AS cd
-UNION ALL
-SELECT -- Municipios Madeira
-	'PT3' AS "ICC",
-	concat('PT3', dico, '00') AS "SHN",
-	4 AS "USE", -- municipios
-	2516 AS "ISN", -- municipios
-	municipio  AS "NAMN",
-	TRANSLATE(municipio ,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	concat('PT3', LEFT(dico,2),'0000') AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.ram_municipios AS cf
-UNION ALL
-SELECT -- Freguesias Madeira
-	'PT3' AS "ICC",
-	concat('PT3', dicofre) AS "SHN",
-	5 AS "USE", -- freguesias
-	2517 AS "ISN", -- freguesia
-	designacao_simplificada AS "NAMN",
-	TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúù','aaaaceeeiioooouu') AS NAMA,
-	'por' AS "NLN",
-	concat('PT3', LEFT(dicofre,4),'00') AS "SHNupper",
-	NULL AS "ROA",
-	NULL AS "PPL",
-	(area_ha / 100)::numeric(15,2) AS "ARA",
-	NULL AS "effectiveDate"
-FROM
-	master.ram_freguesias AS cf; 
+-- gerar camadas inspire usando a versão
+SELECT gerar_outputs_inspire('master','cont','v2024');

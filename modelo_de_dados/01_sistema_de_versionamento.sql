@@ -79,7 +79,7 @@ BEGIN
 
 	-- cria trigger para actualizar campos de versionamento na tabela original
 	EXECUTE 'CREATE TRIGGER ' || quote_ident(_table || '_vrs_trigger') || ' BEFORE INSERT OR DELETE OR UPDATE ON ' || _t ||
-		' FOR EACH ROW WHEN ((pg_trigger_depth() < 1)) EXECUTE PROCEDURE "vrs_table_update"()';
+		' FOR EACH ROW EXECUTE PROCEDURE "vrs_table_update"()';
 
 	RETURN true;
 END
@@ -170,6 +170,25 @@ BEGIN
 END
 $body$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION "vsr_table_at_time"(_t anyelement, output_versao TEXT DEFAULT '')
+-- Função alternativa, baseada na anterior mas tem como input o numero de versão, em vez de um data e hora
+RETURNS SETOF anyelement AS
+$body$
+DECLARE 
+	data_hora timestamp;
+BEGIN
+	data_hora := (SELECT v.data_hora FROM "versioning".versoes AS v WHERE v.versao ILIKE output_versao );
+
+	CASE WHEN data_hora IS NULL THEN
+		RAISE EXCEPTION 'Versão (%) não foi encontrada.', output_versao;
+	ELSE
+		RETURN QUERY EXECUTE format('select * from "vsr_table_at_time"(NULL::%s, %L::timestamp);',pg_typeof(_t), data_hora);	
+	END CASE;
+
+END;
+$body$
+LANGUAGE 'plpgsql';
 
 /*
 EXEMPLOS DE USO
