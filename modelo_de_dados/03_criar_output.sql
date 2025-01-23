@@ -542,17 +542,17 @@ BEGIN
 		
 		UPDATE %1$s_lados_em_falta AS lef SET
 			nivel_limite_admin = 3
-		FROM master.cont_distritos AS d
+		FROM master.%1$s_distritos AS d
 		WHERE lef.nivel_limite_admin IS NULL AND lef.geometria && d.geometria AND st_relate(lef.geometria, d.geometria,''F*FF*F***'');
 
 		UPDATE %1$s_lados_em_falta AS lef SET
 			nivel_limite_admin = 4
-		FROM master.cont_municipios AS m
+		FROM master.%1$s_municipios AS m
 		WHERE lef.nivel_limite_admin IS NULL AND lef.geometria && m.geometria AND st_relate(lef.geometria, m.geometria,''F*FF*F***'');
 
 		UPDATE %1$s_lados_em_falta AS lef SET
 			nivel_limite_admin = 5
-		FROM master.cont_freguesias AS f
+		FROM master.%1$s_freguesias AS f
 		WHERE lef.nivel_limite_admin IS NULL;'
 	, prefixo);
 
