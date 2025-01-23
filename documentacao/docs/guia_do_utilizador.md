@@ -34,6 +34,8 @@ foram criados projectos QGIS para cada umas das regiões com Sistemas de Coorden
 
 Os projectos estão guardados directamente na base de dados. Por uma questão de salvaguarda dos projectos, estes são *read-only* para os editores. Para efectuar alterações permanentes aos projectos é necessário usar-se o utilizador `administrador`.
 
+Os passos de **Configuração da ligação à base de dados** e **Instalação do Plugin CAOP Tools** apenas necessitam de ser feito uma vez em cada máquina. Se ambos já foram executados no passado, pode avançar directamente para **Edição dos dados CAOP (Geral)**.
+
 ## Configuração da ligação à base de dados
 
 Tanto os dados, como os projectos de edição preparados são guardados numa base de dados PostgreSQL/PostGIS. Por essa razão, para aceder aos mesmos através do QGIS, a primeira operação será estabelecer uma ligação à base de dados.
@@ -49,10 +51,12 @@ Tanto os dados, como os projectos de edição preparados são guardados numa bas
  4. Na janela **Criar nova ligação PostGIS**, preencher os seguintes campos:
  
     * **Nome:** `CAOP Produção` ou `CAOP Testes`
-    * **Máquina:** `192.168.10.102`
-    * **Porta:** `5432`
+    * **Máquina:** `xxx.xxx.xx.xxx`
+    * **Porta:** `xxxx`
     * **Base de dados:** `caop` ou `caop_testes`
  
+    Adaptar a **Máquina** e **porta** aos dados disponibilizados pela informática.
+
  5. Ainda na janela **Criar nova ligação PostGIS**, na secção **Autenticação**, escolher o separador **Configurações** e clicar no botão **Criar nova configuração de autenticação**.
  
  6. Se exigido, escolha uma palavra-passe mestra. Esta será a única palavra-passe que terá de decorar quando precisar de aceder a projectos com necessidade de autenticação.
@@ -227,7 +231,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
     ![alt text](imagens/image-29.png)
  
-12. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a cortar. É possível adicionar novos troços à selecção carregando no **Shiff** enquando se desenha um novo rectangulo. Este passo de preselecção não é totalmente obrigatório, mas ajuda a evitar cortes indesejados em outros troços na proximidade.
+12. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a cortar. É possível adicionar novos troços à selecção carregando no **Shift** enquando se desenha um novo rectangulo. Este passo de preselecção não é totalmente obrigatório, mas ajuda a evitar cortes indesejados em outros troços na proximidade.
 
     ![Seleccionar troços a cortar](imagens/image.png)
 
@@ -400,7 +404,7 @@ com a CAOP 2012.1 para se se possa recuperar troços e centroides.
 
     ![alt text](imagens/image-37.png)
  
- 7. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a recuperar. É possível adicionar novos troços à selecção carregando no **Shiff** enquando se desenha um novo rectangulo.
+ 7. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a recuperar. É possível adicionar novos troços à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
 
     ![alt text](imagens/image-43.png)
 
@@ -416,6 +420,8 @@ com a CAOP 2012.1 para se se possa recuperar troços e centroides.
 19. Na barra de digitalização clicar  em **Colar Elementos**.
 
     ![alt text](imagens/image-44.png)
+
+20. Na **Barra de atributos** escolher Abrir tabela de attributos element TODO
 
 20. Adicionado(s) o(s) novo(s) troço(s) é necessário garantir que os troços adjacentes estão devidamente cortados e conectados nas intersecções. Usando as ferramentas de navegação, aproximar o mapa de uma zona de intersecção entre um novo troço e os existentes. Nesta fase, pode ser conveniente desligar a camada de referencia dos troços de 2012.1.
 
@@ -464,6 +470,8 @@ com a CAOP 2012.1 para se se possa recuperar troços e centroides.
 
     **Nota**: Se o botão de gravação ficar cinzento, é sinal que a gravação foi um sucesso.
 
+11. TODO seleccionar camada lig_troco_fonte e gravar as alterações.
+
 28. De seguida, vamos adicionar quer ao novo troço, quer a todos os troços que delimitam as novas freguesias, a fonte que criamos nos primeiros passos. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
 
     ![alt text](imagens/image-72.png)
@@ -508,7 +516,7 @@ com a CAOP 2012.1 para se se possa recuperar troços e centroides.
 
     ![alt text](imagens/image-115.png)
 
-22. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar os centroides a recuperar. É possível adicionar novos elementos à selecção carregando no **Shiff** enquando se desenha um novo rectangulo.
+22. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar os centroides a recuperar. É possível adicionar novos elementos à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
 
     ![alt text](imagens/image-114.png)
 
@@ -531,6 +539,8 @@ com a CAOP 2012.1 para se se possa recuperar troços e centroides.
 12. Rever e corrigir os dados introduzidos na tabela, tendo particular atenção ao nome das entidades administrativas pois foi feita uma conversão automática de Maiúsculas para minúsculas, podendo ter ficado alguns erros em palavras como `De`, `Da`, etc...
 
     ![alt text](imagens/image-119.png)
+
+Nota: TODO também eliminar alguma linha repetida em caso de mais que um centroide por freguesia
 
 13. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar as edições da camada`. Para enviar as novas entidades administrativas para a base de dados.
 
@@ -641,6 +651,8 @@ Outro processo comum será a união de uma ou mais freguesias. Ou seja, a elimin
 **Nota:** Faltará ainda eliminar as entidades administrativas obsoletas. No entanto, esse passo apenas pode ser executado após actualização dos conjuntos de dados finais, uma vez que esse processo irá refazer as relações entre a nova entidade administrativa e os troços que a delimitam, e assim "libertar" entidade administrativa obsoleta. Este processo é explicado na secção seguinte.
 
 :::
+
+### Criar nova ilha.
 
 ## Actualizar conjuntos de dados finais
 
