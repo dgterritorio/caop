@@ -1,7 +1,7 @@
 
 # CAOP
 
-Espaço de trabalho do desenvolvimento da base de dados Geográficos em PostgreSQL/PostGIS segundo as especificações técnicas da CAOP:
+Espaço de trabalho dedicado à base de dados Geográficos em PostgreSQL/PostGIS da Carta Administrativa Oficial de Portugal - CAOP.
 
 * Modelo de dados: [caop/documentacao/docs/modelo_de_dados.md](./documentacao/docs/modelo_de_dados.md)
 
