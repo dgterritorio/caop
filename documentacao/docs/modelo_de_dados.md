@@ -77,7 +77,7 @@ Os objectos desta entidade representam a Nomenclatura das Unidades Territoriais 
 
 Esta entidade estabelece uma relação de 1:n com a entidade municípios e uma relação de n:1 com a entidade NUTS II a que pertence.
 
-### Entidade `ǸUTS II`
+### Entidade `NUTS II`
 
 Os objectos desta entidade representam a Nomenclatura das Unidades Territoriais para Fins Estatísticos (NUTS - *Nomenclature of Territorial Units for Statistics*) de nível 2.
 
