@@ -9,6 +9,6 @@ Espaço de trabalho dedicado à base de dados Geográficos em PostgreSQL/PostGIS
 
 Conjuntos de Dados:
 
-* Versão atual: [Carta Administrativa Oficial de Portugal | DGT](https://www.dgterritorio.gov.pt/cartografia/cartografia-tematica/caop) separador mais informação
+* Versão atual: [Carta Administrativa Oficial de Portugal](https://www.dgterritorio.gov.pt/cartografia/cartografia-tematica/caop)  | DGT separador mais informação
 * Versões anteriores: [Carta Administrativa Oficial de Portugal](https://www.dgterritorio.gov.pt/cartografia/cartografia-tematica/caop) | DGT separadores Versões anteriores
 
