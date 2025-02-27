@@ -239,7 +239,7 @@ BEGIN
 
 	EXECUTE format('
 		GRANT ALL ON ALL TABLES IN SCHEMA %1$I TO administrador;
-		GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador;'
+		GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador, ogc_api, servicos_wms;'
 		, output_schema);
 
 	RETURN TRUE;
@@ -402,7 +402,7 @@ BEGIN
 
 	EXECUTE format('
 		GRANT ALL ON ALL TABLES IN SCHEMA %1$I TO administrador;
-		GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador;'
+		GRANT SELECT ON ALL TABLES IN SCHEMA %1$I TO editor, visualizador, ogc_api, servicos_wms;'
 		, output_schema);
 
 	RETURN TRUE;
