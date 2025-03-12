@@ -96,6 +96,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_areas_administrativas;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_areas_administrativas_id_idx ON %1$I.%2$s_areas_administrativas(id);
 		CREATE INDEX IF NOT EXISTS %2$s_areas_administrativas_geometria_idx ON %1$I.%2$s_areas_administrativas USING gist(geometria);'
 		, output_schema, prefixo, data_hora, epsg);
 
@@ -121,6 +122,7 @@ BEGIN
 		
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_freguesias;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_freguesias_dtmnfr_idx ON %1$I.%2$s_freguesias(dtmnfr);
 		CREATE INDEX IF NOT EXISTS %2$s_freguesias_geometria_idx ON %1$I.%2$s_freguesias USING gist(geometria);'
 		, output_schema, prefixo, epsg);
 
@@ -144,6 +146,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_municipios;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_municipios_dtmn_idx ON %1$I.%2$s_municipios(dtmn);
 		CREATE INDEX IF NOT EXISTS %2$s_municipios_geometria_idx ON %1$I.%2$s_municipios USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
@@ -165,6 +168,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_distritos;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_distritos_dt_idx ON %1$I.%2$s_distritos(dt);
 		CREATE INDEX IF NOT EXISTS %2$s_distritos_geometria_idx ON %1$I.%2$s_distritos USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
@@ -189,6 +193,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts3;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_nuts3_codigo_idx ON %1$I.%2$s_nuts3(codigo);
 		CREATE INDEX IF NOT EXISTS	%2$s_nuts3_geometria_idx ON %1$I.%2$s_nuts3 USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
@@ -211,6 +216,7 @@ BEGIN
 		
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts2;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_nuts2_codigo_idx ON %1$I.%2$s_nuts2(codigo);
 		CREATE INDEX IF NOT EXISTS	%2$s_nuts2_geometria_idx ON %1$I.%2$s_nuts2 USING gist(geometria);'
 	, output_schema, prefixo, epsg);
 
@@ -232,6 +238,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_nuts1;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_nuts1_codigo_idx ON %1$I.%2$s_nuts1(codigo);
 		CREATE INDEX IF NOT EXISTS	%2$s_nuts1_geometria_idx ON %1$I.%2$s_nuts1 USING gist(geometria);'
 		, output_schema, prefixo, epsg);
 	
@@ -370,6 +377,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_trocos;
 
+		CREATE UNIQUE INDEX IF NOT EXISTS %2$s_trocos_identificador_idx ON %1$I.%2$s_trocos(identificador);
 		CREATE INDEX IF NOT EXISTS %2$s_trocos_geometria_idx ON %1$I.%2$s_trocos USING gist(geometria);'
 	, output_schema, prefixo, data_hora, epsg);
 
@@ -395,7 +403,9 @@ BEGIN
 		     JOIN vsr_table_at_time (NULL::"dominios".tipo_fonte, %2$L::timestamp) tf ON tf.identificador::text = f.tipo_fonte::TEXT
 		WITH NO DATA;
 
-		REFRESH MATERIALIZED VIEW %1$I.inf_fonte_troco;'
+		REFRESH MATERIALIZED VIEW %1$I.inf_fonte_troco;
+
+		CREATE UNIQUE INDEX IF NOT EXISTS %1$I.inf_fonte_troco_id_idx ON  %1$I.inf_fonte_troco(id);'
 	, output_schema, data_hora);
 
 	-- actualiza permissões do schema
