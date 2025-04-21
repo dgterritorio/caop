@@ -7,6 +7,11 @@ CREATE SCHEMA IF NOT EXISTS euroboundaries;
 -- Caso haja alterações na CAOP que alterem este limites "fixos" as edições terão de ser transpostas
 -- Para a seguinte tabela
 
+-- NOTA: A pedido do EuroGeographics foram alterados os limites ficos de 2024, na zona de Tavira.
+-- Por essa razão o proóximo código encontra-se comentado.
+-- Após publicação do Euroboundaries 2026, pode-se importar a emb_boundaries_2026, adaptar o código
+-- comentado e voltar a activar o código.
+/*
 -- Criar uma nova tabela para agregar todos os trocos que vão gerar o Euroboundaries
 CREATE TABLE IF NOT EXISTS euroboundaries.ebm_trocos_fixos (LIKE euroboundaries.ebm_boundaries_2024 INCLUDING ALL);
 TRUNCATE TABLE euroboundaries.ebm_trocos_fixos;
@@ -17,6 +22,7 @@ SELECT * FROM euroboundaries.ebm_boundaries_2024
 WHERE  icc  =  'ES#PT' or mol in ( '1', '2' );
 
 CREATE INDEX ON euroboundaries.ebm_trocos_fixos USING gist(geom);
+*/
 
 -- Poligono EBM total para cortar troços e identificar polígonos gerados que ficam fora do EBM
 DROP TABLE IF EXISTS euroboundaries.ebm_temp_poligono_clip;
@@ -276,25 +282,25 @@ WHERE st_area(geometria::geography) < 2500;
 DROP TABLE IF EXISTS euroboundaries.caop_areas_administrativas;
 CREATE TABLE euroboundaries.caop_areas_administrativas AS
 SELECT 
-	dicofre AS entidade_administrativa,
+	dtmnfr AS entidade_administrativa,
 	'1' AS shn_prefix,
 	st_transform(geometria, 4258)::geometry(polygon, 4258) AS geometria
 FROM master.cont_areas_administrativas
 UNION ALL
 SELECT 
-	dicofre AS entidade_administrativa,
+	dtmnfr AS entidade_administrativa,
 	'3' AS shn_prefix,
 	st_transform(geometria, 4258)::geometry(polygon, 4258) AS geometria
 FROM master.ram_areas_administrativas
 UNION ALL
 SELECT 
-	dicofre AS entidade_administrativa,
+	dtmnfr AS entidade_administrativa,
 	'2' AS shn_prefix,
 	st_transform(geometria, 4258)::geometry(polygon, 4258) AS geometria
 FROM master.raa_cen_ori_areas_administrativas
 UNION ALL
 SELECT 
-	dicofre AS entidade_administrativa,
+	dtmnfr AS entidade_administrativa,
 	'2' AS shn_prefix,
 	st_transform(geometria, 4258)::geometry(polygon, 4258) AS geometria
 FROM master.raa_oci_areas_administrativas;
@@ -341,7 +347,7 @@ DROP TABLE IF EXISTS master.ebm_a CASCADE;
 CREATE TABLE master.ebm_a as
 SELECT DISTINCT ON ("InspireId", geometry)
 	concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) AS "InspireId",
-	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
+	'2024-12-31'::timestamp AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
 	concat('PT',caa.shn_prefix, caa.entidade_administrativa) AS "SHN",
 	ce.tipo_area_administrativa_id AS "TAA",
@@ -365,9 +371,15 @@ WHERE "TAA" IS NULL;
 -- Correr o ST_nodes para quebrar as linhas nas intersecções
 DROP TABLE IF EXISTS TEMP.ebm_trocos_finais_para_coastal_water;
 CREATE TABLE TEMP.ebm_trocos_finais_para_coastal_water AS
+WITH trocos_temp as (
+	SELECT geom FROM euroboundaries.ebm_boundaries_2024
+	WHERE  mol in ('9')
+	UNION ALL 
+	SELECT geom FROM euroboundaries.ebm_trocos_fixos
+	WHERE  mol in ('1','2')
+)
 SELECT (st_dump(st_node(st_collect(geom)))).geom AS geom 
-FROM euroboundaries.ebm_boundaries_2024
-WHERE  mol in ('1','2','9');
+FROM trocos_temp;
 
 -- Criação de uma tabela de poligonos para guardar o resultado de um processo de polygonização
 -- Apenas são considerados polígonos cujo centroide fique FORA dos limites em terra do euroboundaries
@@ -393,7 +405,7 @@ INSERT INTO master.ebm_a
 SELECT DISTINCT ON ("InspireId", geometry)
 	CASE WHEN caa.entidade_administrativa IS NULL THEN '_EG.EBM:AA.PT0000000'
 		ELSE concat('_EG.EBM:AA.','PT', caa.shn_prefix, caa.entidade_administrativa) END AS "InspireId",
-	'2022-12-31'::timestamp AS "beginLifeSpanVersion",
+	'2024-12-31'::timestamp AS "beginLifeSpanVersion",
 	'PT' AS "ICC",
 	CASE WHEN caa.entidade_administrativa IS NULL THEN 'PT0000000'
 		ELSE concat('PT',caa.shn_prefix, caa.entidade_administrativa) END AS "SHN",
@@ -468,7 +480,7 @@ UNION ALL
 UNION ALL
 	SELECT -- Distritos continente
 		'PT' AS "ICC",
-		concat('PT1', di, '0000') AS "SHN",
+		concat('PT1', dt, '0000') AS "SHN",
 		3 AS "USE", -- distritos
 		2514 AS "ISN", -- distritos
 		distrito  AS "NAMN",
@@ -485,13 +497,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Municipios Continente
 		'PT' AS "ICC",
-		concat('PT1', dico, '00') AS "SHN",
+		concat('PT1', dtmn, '00') AS "SHN",
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT1', LEFT(dico,2),'0000') AS "SHNupper",
+		concat('PT1', LEFT(dtmn,2),'0000') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -502,13 +514,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Freguesias continente
 		'PT' AS "ICC",
-		concat('PT1', dicofre) AS "SHN",
+		concat('PT1', dtmnfr) AS "SHN",
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT1', LEFT(dicofre,4),'00') AS "SHNupper",
+		concat('PT1', LEFT(dtmnfr,4),'00') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -536,7 +548,7 @@ UNION ALL
 UNION ALL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
-		concat('PT3', di, '0000') AS "SHN",
+		concat('PT3', dt, '0000') AS "SHN",
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilhas
 		distrito  AS "NAMN",
@@ -553,13 +565,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Municipios Madeira
 		'PT' AS "ICC",
-		concat('PT3', dico, '00') AS "SHN",
+		concat('PT3', dtmn, '00') AS "SHN",
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT3', LEFT(dico,2),'0000') AS "SHNupper",
+		concat('PT3', LEFT(dtmn,2),'0000') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -570,13 +582,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Freguesias Madeira
 		'PT' AS "ICC",
-		concat('PT3', dicofre) AS "SHN",
+		concat('PT3', dtmnfr) AS "SHN",
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT3', LEFT(dicofre,4),'00') AS "SHNupper",
+		concat('PT3', LEFT(dtmnfr,4),'00') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -604,7 +616,7 @@ UNION ALL
 UNION ALL -- ACORES OCIDENTAL
 	SELECT -- Ilhas
 		'PT' AS "ICC",
-		concat('PT2', di, '0000') AS "SHN",
+		concat('PT2', dt, '0000') AS "SHN",
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilha
 		distrito  AS "NAMN",
@@ -621,13 +633,13 @@ UNION ALL -- ACORES OCIDENTAL
 UNION ALL
 	SELECT -- Municipios acores ocidental
 		'PT' AS "ICC",
-		concat('PT2', dico, '00') AS "SHN",
+		concat('PT2', dtmn, '00') AS "SHN",
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
+		concat('PT2', LEFT(dtmn,2),'0000') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -638,13 +650,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Freguesias Acores Ocidental
 		'PT' AS "ICC",
-		concat('PT2', dicofre) AS "SHN",
+		concat('PT2', dtmnfr) AS "SHN",
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
+		concat('PT2', LEFT(dtmnfr,4),'00') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -655,7 +667,7 @@ UNION ALL
 UNION ALL
 	SELECT -- Ilhas -- Acores central e oriental
 		'PT' AS "ICC",
-		concat('PT2', di, '0000') AS "SHN",
+		concat('PT2', dt, '0000') AS "SHN",
 		3 AS "USE", -- distritos ou ilhas
 		2515 AS "ISN", -- ilhas
 		distrito  AS "NAMN",
@@ -672,13 +684,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Municipios acores central e oriental
 		'PT' AS "ICC",
-		concat('PT2', dico, '00') AS "SHN",
+		concat('PT2', dtmn, '00') AS "SHN",
 		4 AS "USE", -- municipios
 		2516 AS "ISN", -- municipios
 		municipio  AS "NAMN",
 		TRANSLATE(municipio ,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT2', LEFT(dico,2),'0000') AS "SHNupper",
+		concat('PT2', LEFT(dtmn,2),'0000') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",
@@ -689,13 +701,13 @@ UNION ALL
 UNION ALL
 	SELECT -- Freguesias Acores central e oriental
 		'PT' AS "ICC",
-		concat('PT2', dicofre) AS "SHN",
+		concat('PT2', dtmnfr) AS "SHN",
 		5 AS "USE", -- freguesias
 		2517 AS "ISN", -- freguesia
 		designacao_simplificada AS "NAMN",
 		TRANSLATE(designacao_simplificada,'àáãâçéêèìíóòõôúùÀÁÃÂÇÉÊÈÌÍÓÒÕÔÚÙ','aaaaceeeiioooouuAAAACEEEIIOOOOUUU') AS NAMA,
 		'por' AS "NLN",
-		concat('PT2', LEFT(dicofre,4),'00') AS "SHNupper",
+		concat('PT2', LEFT(dtmnfr,4),'00') AS "SHNupper",
 		sa.ebm_roa AS "ROA",
 		NULL AS "PPL",
 		(area_ha / 100)::numeric(15,2) AS "ARA",

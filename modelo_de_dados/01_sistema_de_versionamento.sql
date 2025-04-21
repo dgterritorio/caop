@@ -253,6 +253,8 @@ GRANT USAGE ON SCHEMA versioning TO administrador, editor, visualizador;
 GRANT SELECT ON ALL TABLES IN SCHEMA versioning TO editor, visualizador;
 GRANT UPDATE, DELETE, INSERT ON ALL TABLES IN SCHEMA versioning TO administrador;
 
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA versioning TO administrador, editor, visualizador;
+
 /*
 
 -- Remover versionamento em todas a tabelas do schema base
