@@ -20,6 +20,7 @@ header-includes: |
     \pagestyle{fancy}
     \fancyhead[RE,RO]{CAOP - Visualização e Edição em QGIS}
     \fancyhead[LO,LE]{NaturalGIS CC BY-SA 4.0}
+block-headings: true
 ---
 
 # Visualização e edição dos dados CAOP em QGIS
@@ -183,7 +184,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
 :::columns
 
-1. Seguindo as intruções mostradas acima, abrir o projecto QGIS correspondente à região em que se irá trabalhar (e.g. `projecto_caop_edicao_cont`).
+1. Seguindo as instruções mostradas acima, abrir o projecto QGIS correspondente à região em que se irá trabalhar (e.g. `projecto_caop_edicao_cont`).
 
 2. Na toolbar **CAOP tools**, editar o campo **Motivo** com a descrição das alterações se vão fazer, por exemplo (e.g. `PDA Foros de Arrão`)
 
@@ -350,242 +351,239 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
 ### Dividir uma união de freguesias (área administrativa) em dois ou mais
 
-Outra tipo de edição comum é a divisão da área de uma união de freguesias (área administrativa) em duas (ou mais) novas freguesias.
+Outra tipo de edição comum é a divisão da área de uma união de freguesias (área administrativa) em duas (ou mais) novas freguesias, recuperando a organização administrativa que existia em 2012. 
 
 #### Resumo
 
-* Criar novas entidades administrativas
-* Criar uma nova fonte
-* Desenhar novos troços ou recuperar troços existentes da versão caop 2012.1
-  que representem as linhas de fronteira entre as novas freguesias a criar
-* Atribuir a nova fonte a todos os troços adcionados ou alterados
-* Adicionar novos centroides nas respectivas areas administrativas (freguesias)
+* Editar o motivo
+* Se necessário criar nova fonte que justifique a alteração
+* Recuperar os centroides e entidades da versão 2012.1
+* Recuperar os troços existentes da versão caop 2012.1
+* Atribuir a nova fonte a todos os troços adicionados e alterados
 * Eliminar os centroides antigos que representavam a união das freguesias
 * Eliminar a entidade administrativa da união das freguesias
 
-#### Descrição passo a passo
+#### Descrição passo a passo  
 
-Para facilitar o processo, foram adicionadas aos projectos tabelas de referencia
-com a CAOP 2012.1 para se se possa recuperar troços e centroides.
+Para facilitar o processo, foram adicionadas aos projectos tabelas de referência com a CAOP 2012.1 para que se possa identificar os troços e centroides a recuperar. Foram também criadas duas ferramentas para ajudar a copiar os elementos de referência para a base de dados.
 
 :::columns
 
- 1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Reversão da União de Freguesias de Benavila e Valongo`)
+**Editar o motivo e adicionar fonte**
 
-    ![Definição do motivo da edição](imagens/image-31.png)
- 
- 2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
+01. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Reversão da União das freguesias de Aldeia do Bispo, Águas e Aldeia de João Pires`)
+
+    ![alt Definição do motivo da edição](imagens/image-31.png)
+
+00. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
 
     ![alt text](imagens/image-25.png)
  
- 3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
+00. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
 
     ![alt text](imagens/image-26.png)
  
- 4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
+00. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
 
     ![alt text](imagens/image-32.png)
 
-10. Mantendo a camada `fonte` activa, na **Barra de Digitalização**, carregar no botão **Guardar as edições da camada**, para enviar para a base de dados a nova fonte. 
+00. Mantendo a camada `fonte` activa, na **Barra de Digitalização**, carregar no botão **Guardar as edições da camada**, para enviar para a base de dados a nova fonte. 
 
     ![alt text](imagens/image-106.png)
 
     **Nota**: Se o botão de gravação ficar cinzento, é sinal que a gravação foi um sucesso e a informação da nova fonte ficou gravada na base de dados.
 
- 5. Usando as ferramentas de Navegação, ampliar à zona de interesse que incluem a união das freguesias (e.g. `União de Freguesias de Benavila e Valongo`).
+**Recuperar Centroides e Entidades de 2012**
+
+O primeiro passo será recuperar as entidade e os centroides que em 2012 representavam as freguesias que foram unidas.
+
+01. Usando as ferramentas de Navegação, ampliar à zona de interesse que incluem a união das freguesias (e.g. `União das freguesias de Aldeia do Bispo, Águas e Aldeia de João Pires (050713)`).
 
     ![alt text](imagens/image-33.png)
 
- 5. No Painel **Camadas**, expandir e activar o grupo `CAOP 2012.1 referência`.
+00. No Painel **Camadas**, expandir e activar o grupo `CAOP 2012.1 referência`.
 
-    ![alt text](imagens/image-36.png)
+00. Ainda no Painel **Camadas**, dentro desse grupo seleccionar a camada `caop_2012_1_cont_centroides_entidades` que reflecte a situação antes da agregação das freguesias em 2013.
 
- 6. Ainda no Painel **Camadas**, dentro desse grupo seleccionar a camada de troços de referência da caop 2012.1 que reflecte a situação antes de agregação das freguesias em 2013.
+    ![alt text](imagens/image-110.png)
 
-    ![alt text](imagens/image-37.png)
- 
- 7. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a recuperar. É possível adicionar novos troços à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
+00. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar os centroides a recuperar. É possível adicionar novos centroides à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
+
+    ![alt text](imagens/image-111.png)
+
+00. Ainda com a camada seleccionada, no painel **Ferramentas de processamento**, expandir os **modelos de projecto** e clicar duas vezes na ferramenta `Copia Centroides (e Entidades) 2012.1` para a abrir.
+
+    ![alt text](imagens/image-114.png)
+
+00. Na ferramenta, garantir que a camada `caop_2012_1_cont_centroides_entidades` está seleccionada para o primeiro parâmetro, a ligação à base de dados é a desejada e carregar em **Executar** e depois.
+
+    ![alt text](imagens/image-115.png)
+
+00. Depois de fechar a ferramenta, e actualizar o ecrã (basta fazer um pouco de pan ou zoom), os centroides devem aparecer na camada centroide_ea (continente).
+
+    ![alt text](imagens/image-116.png)
+
+**Recuperar trocos de 2012**
+
+De seguida, já podemos recuperar os troços que em 2012 delimitavam as freguesias unidas, usando um processo idêntico ao anterior. Como os troços adjacentes podem ter sido editados entretanto, também teremos de garantir a coerência topológica de todos os troços envolvidos.
+
+01. No Painel **Camadas**, dentro do grupo `CAOP 2012.1 Referencia`, seleccionar a camada `caop_2012_1_cont_trocos` que reflecte a situação antes de agregação das freguesias em 2013.
 
     ![alt text](imagens/image-43.png)
-
-18. Na **Barra de Digitalização**, carregar no botão **Copiar Elementos**.
-
-    ![alt text](imagens/image-28.png)
-
-
- 5. No painel **Camadas**, activar a camada `Troços` e ligar a edição da mesma.
-
-    ![alt text](imagens/image-29.png)
-
-19. Na barra de digitalização clicar  em **Colar Elementos**.
+ 
+00. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar o(s) troço(s) a recuperar. É possível adicionar novos troços à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
 
     ![alt text](imagens/image-44.png)
 
-20. Na **Barra de atributos** escolher Abrir tabela de attributos element TODO
+00. Ainda com a camada seleccionada, no painel **Ferramentas de processamento**, expandir os **modelos de projecto** e clicar duas vezes na ferramenta `Copia Troço (e fontes) 2012.1` para a abrir.
 
-20. Adicionado(s) o(s) novo(s) troço(s) é necessário garantir que os troços adjacentes estão devidamente cortados e conectados nas intersecções. Usando as ferramentas de navegação, aproximar o mapa de uma zona de intersecção entre um novo troço e os existentes. Nesta fase, pode ser conveniente desligar a camada de referencia dos troços de 2012.1.
+    ![alt text](imagens/image-117.png)
 
-    ![alt text](imagens/image-45.png)
+00. Na ferramenta, garantir que a camada `caop_2012_1_cont_trocos` está seleccionada para o primeiro parâmetro, a ligação à base de dados é a desejada e carregar em **Executar** e depois.
 
-    
-21. Usando uma ferramenta de selecção (e.g. **Selecionar por área**), seleccionar o troço adjacente para verificar se está quebrado na intersecção. Se estiver, podemos saltar os próximo 3 passos.
+    ![alt text](imagens/image-118.png)
+
+00. Depois de fechar a ferramenta, e actualizar o ecrã (basta fazer um pouco de pan ou zoom), os troços devem aparecer na camada trocos (continente).
+
+    ![alt text](imagens/image-119.png)
+
+00. Adicionado(s) o(s) novo(s) troço(s) é necessário garantir que os troços adjacentes estão devidamente cortados e conectados nas intersecções. No Painel **Camadas**, seleccionar a camada `troco (Continente)` e ligar a edição da mesma.
+
+    ![alt text](imagens/image-29.png)
+
+00. Usando as ferramentas de navegação, aproximar o mapa de uma zona de intersecção entre um novo troço e os existentes. Nesta fase, pode ser conveniente desligar a camada de referencia dos troços de 2012.1.
+
+00. Usando uma ferramenta de selecção (e.g. **Selecionar por área**), seleccionar o troço adjacente para verificar se está quebrado na intersecção. Se estiver, podemos saltar os próximo 3 passos.
+
+    ![alt text](imagens/image-46.png)
+
+00. Havendo necessidade de cortar troços existentes, mantendo o troço em questão selecionado, na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools. (ATENÇÃO: não usar a ferramenta de corte nativa do QGIS, caso contrário os novos troços irão perder a ligação às fontes)
 
     ![alt text](imagens/image-87.png)
 
-22. Havendo necessidade de cortar troços existentes, mantendo o troço em questão selecionado, na toolbar `CAOP tools`, activar a ferramenta de corte do CAOP Tools. (ATENÇÃO: não usar a ferramenta de corte nativa do QGIS, caso contrário os novos troços irão perder a ligação às fontes)
+00. Na barra de Snapping activar o snapping, garantindo que está activa na camada activa e que **edição topológica está desligada**.
 
     ![alt text](imagens/image-91.png)
 
-14. Com a ferramenta de corte por cima do mapa, mantendo o troço a cortar seleccionado, desenhar (clicando com o botão esquerdo do rato para adicionar vértices) uma linha que atravesse o troço no local de intersecção com o novo troço. Para terminar a linha, clicar com o botão direito do rato. Sempre que possível, devemos cortar as linhas em vertices já existentes.
+00. Com a ferramenta de corte por cima do mapa, mantendo o troço a cortar seleccionado, desenhar (clicando com o botão esquerdo do rato para adicionar vértices) uma linha que atravesse o troço no local de intersecção com o novo troço. Para terminar a linha, clicar com o botão direito do rato. Sempre que possível, devemos cortar as linhas em vertices já existentes.
 
     ![alt text](imagens/image-92.png)
 
-    **Nota 1:** Ao desenhar, pode usar a tecla **Delete** para eliminar o último vértice introduzido, em caso de engano.
+    **Nota** Ao desenhar, pode usar a tecla **Delete** para eliminar o último vértice introduzido, em caso de engano.
 
-15. Repetir o passo anterior para todas as intersecções entre o(s) novo(s) troço(s) e troços existentes.
-
-22. Muito provavelmente, os extremos dos troços originais (cortados ou não) e o novo troço não serão totalmente coincidentes, pelo que será necessário garantir a conectividade dos mesmos. Para isso podemos usar a ferramenta de [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool). Ainda com a camada `troço` activa, activar a ferramenta de vertices.
+00. Muito provavelmente, os extremos dos troços originais (cortados ou não) e o novo troço não serão totalmente coincidentes, pelo que será necessário garantir a conectividade dos mesmos. Para isso podemos usar a ferramenta de [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool). Ainda com a camada `troço` activa, activar a ferramenta de vertices.
 
     ![alt text](imagens/image-40.png)
 
-23. Fazer zoom até uma escala elevada na região onde dois troços se intersectam. E clicar com o botão esquerdo do rato no vértice do novo troço para o agarrar. (se necessário, selecionar o elemento de antemão)
+00. Fazer zoom até uma escala elevada na região onde dois troços se intersectam. E clicar com o botão esquerdo do rato no vértice do novo troço para o agarrar. (se necessário, selecionar o elemento de antemão)
 
-    ![alt text](imagens/image-127.png)
+    ![alt text](imagens/image-107.png)
 
-24. Mover o rato para um pouco para o lado e voltar a clicar com o botão esquerdo para o largar.
+00. Mover o rato para um pouco para o lado e voltar a clicar com o botão esquerdo para o largar.
 
-    ![alt text](imagens/image-93.png)
+    ![alt text](imagens/image-108.png)
 
-25. Voltar a repetir o passo anterior, agora na direção contrária e aproveitando o snapping no troço original para o largar com precisão.
+00. Voltar a repetir o passo anterior, agora na direção contrária e aproveitando o snapping no troço original para o largar com precisão.
 
-    ![alt text](imagens/image-103.png)
-
-26. Mover todos os extremos dos novos troços de forma a garantir que estão devidamente conectados.
+    ![alt text](imagens/image-109.png)
 
     **Nota:** Durante as sessões de treino, surgiu a dúvida de qual o troço deveria ser movido, se o novo, ou os originais. É importante ter em atenção a elevada escala, muito provavelmente estamos a falar de movimentações abaixo do milimetro e portanto sem impacto significativo. Aliás, o próprio processo de corte de uma linha recta e tendo em conta as limitações computacionais, já obrigou a uma minúscula movimentação do troço original.
 
-10. Mantendo a camada `troço` activa, na **Barra de Digitalização**, carregar no botão **Guardar as edições da camada**, para enviar todas as alterações aos troços para a base de dados. 
+00. Repetir o(s) passo(s) anterior para todas as intersecções entre o(s) novo(s) troço(s) e troços existentes de forma a garantir que estão devidamente conectados.
+
+00. Mantendo a camada `troço` activa, na **Barra de Digitalização**, carregar no botão **Guardar as edições da camada**, para enviar todas as alterações aos troços para a base de dados. 
 
     ![alt text](imagens/image-106.png)
 
     **Nota**: Se o botão de gravação ficar cinzento, é sinal que a gravação foi um sucesso.
 
-11. TODO seleccionar camada lig_troco_fonte e gravar as alterações.
+**Eliminar centroides e entidades obsoletas**
 
-28. De seguida, vamos adicionar quer ao novo troço, quer a todos os troços que delimitam as novas freguesias, a fonte que criamos nos primeiros passos. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
+É necessário eliminar o centroide e entidade que representava a união das freguesias agora extinta.
 
-    ![alt text](imagens/image-72.png)
+01. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
 
-29. Clicar sobre um dos troços afectados (e.g. troço recuperado de 2012). Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
+    ![alt text](imagens/image-74.png)
 
-    ![alt text](imagens/image-107.png)
-
-    **Nota:** Para evitar tantos passos no futuro, no painel de indentificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
-
-    ![alt text](imagens/image-95.png)
-
-30. No formulário do novo troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho ou existência deste troço. Clicar no botão **Adicionar elemento filho**.
-
-    ![alt text](imagens/image-96.png) 
-
-31. No formulário que abre, escrever no campo fonte_id as descrição do diploma (e.g. `25/2024`). Escolher na lista a fonte correcta. Carregar em **OK**.
-
-    ![alt text](imagens/image-108.png)
-
-32. No caso concreto do troço novo, também é necessário recuperar as fontes de 2012.1. Usando a ferramenta de identificação sobre a camada de referencia 2012.1, é possivel verificar as fontes que lhe estavam associadas. Infelizmente, dadas as alterações impostas pelo novo modelo de dados, não será possível usar copy/paste. Ao invés, será necessário repetir os dois passos anteriores procurando pela fonte respectiva.
-
-    ![alt text](imagens/image-111.png)
-   
-    ![alt text](imagens/image-112.png)
-
-32. No formulário do troço, já deveremos ver as novas fontes. Podemos clicar em **Ok** para fechar o formulário.
-
-    ![alt text](imagens/image-113.png)
-
-33. Como no caso da divisão de freguesias todos os troços vão sofrer alterações, nem que seja aos atributos entidade direita e entidade esquerda, devemos repetir os passos anteriores (X a X) para todos os troços que delimitam as novas freguesias, adicionando a nova fonte. Representadas na seguinte imagem todos os elementos seleccionados.
-
-    ![alt text](imagens/image-110.png)
-
-33. Adicionadas as fontes a todos os troços, só nos falta gravar as alterações na tabela lig_troco_fonte, que faz a ligação entre as fontes e os troços numa relação de N:M. No painel **Camadas**, activar a camada `lig_troco_fonte`. Na **barra de digitalização**, clicar no botão `Guardar as edições da camada`.
-
-    ![alt text](imagens/image-106.png)
-
-20. De seguida, iremos criar as novas entidades administrativas e criar ou editar os centroides necessário de forma a que cada área administrativa tenha um centroide. A camada de referência centroides_entidades 2012.1 permitirá recuperar tanto as entidades como os centroides.
-
-21. No painel **Camadas** activar a camada caop_2012_1_centroides_entidades.
-
-    ![alt text](imagens/image-115.png)
-
-22. Com uma ferramenta de seleção (e.g. **Selecionar por área**), selecionar os centroides a recuperar. É possível adicionar novos elementos à selecção carregando no **Shift** enquando se desenha um novo rectangulo.
-
-    ![alt text](imagens/image-114.png)
-
-18. Na **Barra de Digitalização**, carregar no botão **Copiar Elementos**.
-
-    ![alt text](imagens/image-28.png)
-
-11. No painel **Camadas**, activar a camada `entidade_administrativa` e ligar a edição.
-
-    ![alt text](imagens/image-116.png)
-
-19. Na barra de digitalização clicar  em **Colar Elementos**.
-
-    ![alt text](imagens/image-117.png)
-
-11. Na **Barra de Atributos** clicar no botão **Abrir tabela de atributos (novos e alterados)**.
-
-    ![alt text](imagens/image-118.png)
-
-12. Rever e corrigir os dados introduzidos na tabela, tendo particular atenção ao nome das entidades administrativas pois foi feita uma conversão automática de Maiúsculas para minúsculas, podendo ter ficado alguns erros em palavras como `De`, `Da`, etc...
-
-    ![alt text](imagens/image-119.png)
-
-Nota: TODO também eliminar alguma linha repetida em caso de mais que um centroide por freguesia
-
-13. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar as edições da camada`. Para enviar as novas entidades administrativas para a base de dados.
-
-    ![alt text](imagens/image-106.png)
-
-14. No painel **Camadas**, no grupo `Base editável`, activar a camada `centroides_ea` e ligar a edição da mesma.
-
-    ![alt text](imagens/image-120.png)
-
-19. Na barra de digitalização clicar  em **Colar Elementos** (Assumindo que o clipboard ainda contém a cópias dos centroides feita anteriormente). Os novos centroides devem aparecer no mapa.
-
-    ![alt text](imagens/image-121.png)
-
-20. É necessário eliminar o centroide que representava a união das freguesias. Usando uma qualquer ferramenta de selecção (e.g. **Selecionar por área**), seleccionar o centroide a eliminar e na **Barra de digitalização** clicar em **Eliminar seleccionados**.
-
-    ![alt text](imagens/image-122.png)
-
-13. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar as edições da camada`. Para enviar as alterações à camada centroides para a base de dados.
-
-    ![alt text](imagens/image-106.png)
-
-24. Agora, é necessário procurar e eliminar a entidade administrativa obsoleta. No painel **Camadas**, clicar com o botão direito na camada `Entidades Administrativas` e escolher abrir tabela de atributos. 
-
-    ![alt text](imagens/image-123.png)
-
-25. No canto inferior esquerdo da tabela de atributos selecionar **Mostrar todos os elemento** > **Filtro de Campos** > **Nome**
-
-    ![alt text](imagens/image-81.png)
-
-26. Usando o campo de filtro, podemos escrever por um termo a procurar (e.g. `Benavila`) e seleccionamos o nome correcto e carregamos em Enter.
-
-    ![alt text](imagens/image-125.png)
-
-27. Isto irá filtrar aos elementos que contenham esse nome. Depois podemos selecionar a linha correspondente à União de Freguesias e carregar no botão eliminar.
+00. Usando uma qualquer ferramenta de selecção (e.g. **Selecionar por área**), seleccionar o centroide a eliminar e na **Barra de digitalização** clicar em **Eliminar seleccionados**.
 
     ![alt text](imagens/image-126.png)
 
+00. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar as edições da camada`. Para enviar as alterações à camada centroides para a base de dados.
 
-13. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar alterações à camada`. Para enviar as alterações à camada entidades administrativas para a base de dados.
+    ![alt text](imagens/image-106.png)
+
+Nesta fase, o processo de edição está quase completo, mas para conseguirmos eliminar a entidade administrativa obsoleta temos de garantir que não existem referências à mesma na camada dos troços, actualizando os campos ea_esquerda e ea_direita. A forma mais rápida será gerando os outputs.
+
+01. Na barra de ferramentas **CAOP Ferramentas** clicar em **Actualizar outputs master**
+
+    ![alt text](imagens/image-130.png)
+
+00. Escolher a ligação à base de dados e a região a processar e carregar em **Executar**.
+
+    ![alt text](imagens/image-131.png)
+
+00. Convém inspeccionar o resultado. No painel das **Camadas** activar o grupo `master outputs` e verificar que os polígonos na camada áreas administrativas foram criados correctamente.
+    
+    **NOTA:** Se algum polígono não for gerado correctamente, poderá valer a pena correr as ferramentas de validação para ajudar a identificar e corrigir o problema.
+
+00. Agora, já será possível eliminar a entidade administrativa obsoleta. No painel **Camadas**, clicar com o botão direito na camada `Entidades Administrativas` e escolher abrir tabela de atributos. 
+
+    ![alt text](imagens/image-127.png)
+
+00. No canto inferior esquerdo da tabela de atributos selecionar **Mostrar todos os elemento** > **Filtro de Campos** > **Nome**
+
+    ![alt text](imagens/image-81.png)
+
+00. Usando o campo de filtro, podemos começar a escrever por um termo a procurar (e.g. `Aldeia do Bispo`) e seleccionamos a união de freguesias correcta e carregamos em Enter.
+
+    ![alt text](imagens/image-128.png)
+
+00. Isto irá filtrar aos elementos que contenham esse nome. Depois podemos selecionar a linha correspondente à União de Freguesias, activar a edição e carregar em **Eliminar elementos selesccionado**.
+
+    ![alt text](imagens/image-129.png)
+
+00. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar alterações à camada`. Para enviar as alterações à camada entidades administrativas para a base de dados.
 
     ![alt text](imagens/image-106.png)
 
     Nota: Caso nesta fase surja um erro, é possível que nos tenhamos esquecido de eliminar e gravar algum centroide que ainda faz uso desta entidade administrativa.
 
-14. Nesta fase, o processo está completo e podemos desactivar a edição de todas as camadas, e correr a ferramenta de geração de polígonos.
+**Adicionar fonte aos troços afectados**
+
+De seguida, vamos adicionar quer ao novo troço, quer a todos os troços que delimitam as novas freguesias, a fonte que criamos nos primeiros passos. 
+
+01. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
+
+    ![alt text](imagens/image-72.png)
+
+00. Clicar sobre um dos troços afectados (e.g. troço recuperado de 2012). Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
+
+    ![alt text](imagens/image-107.png)
+
+    **Nota:** Para evitar tantos passos no futuro, no painel de identificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
+
+    ![alt text](imagens/image-95.png)
+
+00. No formulário do novo troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho ou existência deste troço. Clicar no botão **Activar modo de edição para a camada filha** e depois no **Adicionar elemento filho**.
+
+    ![alt text](imagens/image-121.png)
+
+00. No formulário que abre, comece a escrever no campo fonte_id as descrição do diploma (e.g. `25-A/2025`). Escolher na lista a fonte correcta. Carregar em **OK**.
+
+    ![alt text](imagens/image-122.png)
+
+00. No formulário do troço, já deveremos ver a nova fonte. Podemos clicar em **Guardar alterações na camada filha** e depois em **Cancelar** para fechar o formulário.
+
+    ![alt text](imagens/image-123.png)
+
+00. Como no caso da divisão de freguesias todos os troços vão sofrer alterações, nem que seja aos atributos entidade direita e entidade esquerda, devemos repetir os passos anteriores (X a X) para todos os troços que delimitam as novas freguesias, adicionando a nova fonte. Representadas na seguinte imagem todos os elementos seleccionados.
+
+    ![alt text](imagens/image-124.png)
+
+**Gerar outputs e validar**
+
+Nesta fase, o processo está completo e podemos desactivar a edição de todas as camadas. Antes de darmos o processo por finalizado, devemos correr as ferramentas para gerar os novos polígonos e validar os resultados descritas em secções abaixo. 
 
 :::
 
@@ -599,7 +597,7 @@ Outro processo comum será a união de uma ou mais freguesias. Ou seja, a elimin
 * Adicionar uma nova entidade administrativa que una as entidades anteriores
 * Adicionar um centroide de identificação da nova área administrativa
 * Eliminar os troços e centroides obsoletos
-* ?? Atribuir a nova fonte a todos os troços que delimitam a nova area administrativa??
+* Atribuir a nova fonte a todos os troços que delimitam a nova area administrativa??
 
 #### Descrição passo a passo
 
@@ -629,6 +627,7 @@ Outro processo comum será a união de uma ou mais freguesias. Ou seja, a elimin
  8. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
 
     ![alt text](imagens/image-74.png)
+
  9. Na **Barra de Digitalização**, clique no botão **Adicionar elemento ponto** para adicionar um centroide em falta (e.g. o centroide da nova união de freguesias). Clicando depois no mapa para adicionar o ponto para a área administrativa em falta.
 
     ![alt text](imagens/image-75.png)
@@ -650,11 +649,9 @@ Outro processo comum será a união de uma ou mais freguesias. Ou seja, a elimin
 
 **Nota:** Faltará ainda eliminar as entidades administrativas obsoletas. No entanto, esse passo apenas pode ser executado após actualização dos conjuntos de dados finais, uma vez que esse processo irá refazer as relações entre a nova entidade administrativa e os troços que a delimitam, e assim "libertar" entidade administrativa obsoleta. Este processo é explicado na secção seguinte.
 
-:::
+::: \newpage
 
-### Criar nova ilha.
-
-## Actualizar conjuntos de dados finais
+## Actualizar Outputs Master
 
 Após quaisquer processos de edição, na barra **CAOP Tools**, deve-se correr a ferramentas de **Actualizar Outputs Master** para confirmar os resultados.
 
