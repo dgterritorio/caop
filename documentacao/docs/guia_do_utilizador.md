@@ -178,7 +178,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 3. Adicionar uma nova fonte
 4. Adicionar ao projecto a camada temporaria com o novo troço
 5. Cortar o(s) troço(s) antigo(s) na junção com o novo e eliminar a secção do troço desnecessário
-6. Atribuir ao novo troço a nova fonte
+6. Atribuir nova fonte aos troços alterados
 
 #### Descrição passo a passo
 
@@ -281,7 +281,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
 21. No painel de camada, desligar as camadas de referência para confirmar que o novo elemento foi colado para camada troço.
 
-22. Muito provavelmente, os extremos dos troços originais cortados e o novo troço não serão    totalmente coincidentes, pelo que será necessário garantir a conectividade dos mesmos. Para isso podemos usar a ferramenta de [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool). Ainda com a camada `troço` activa, activar a ferramenta de vertices.
+22. Muito provavelmente, os extremos dos troços originais cortados e o novo troço não serão totalmente coincidentes, pelo que será necessário garantir a conectividade dos mesmos. Para isso podemos usar a ferramenta de [Ferramenta de vertices](https://docs.qgis.org/latest/pt_PT/docs/user_manual/working_with_vector/editing_geometry_attributes.html#vertex-tool). Ainda com a camada `troço` activa, activar a ferramenta de vertices.
 
     ![alt text](imagens/image-40.png)
 
@@ -305,11 +305,11 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
     ![alt text](imagens/image-106.png)
 
-28. De seguida, vamos adicionar ao novo troço a fonte que criamos nos primeiros passos. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
+28. De seguida, vamos adicionar tanto ao novo troço como aos que foram cortados a fonte que criamos nos primeiros passos. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
 
     ![alt text](imagens/image-72.png)
 
-29. Clicar sobre o novo troço. Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
+29. Clicar sobre o troço. Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
 
     ![alt text](imagens/image-94.png)
 
@@ -317,7 +317,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
     ![alt text](imagens/image-95.png)
 
-30. No formulário do novo troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho deste troço, sem supresa, ainda não existe nenhuma fonte associada. Clicar no botão **Adicionar elemento filho**.
+30. No formulário do troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho deste troço, sem supresa, ainda não existe nenhuma fonte associada. Clicar no botão **Adicionar elemento filho**.
 
     ![alt text](imagens/image-96.png) 
 
@@ -329,7 +329,9 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
     ![alt text](imagens/image-98.png)
 
-33. Só nos falta gravas as alterações na tabela lig_troco_fonte, que faz a ligação entre as fontes e os troços numa relação de N:M. No entanto, como eliminamos alguns elementos dos troços, teremos algumas linhas que não poderão ser gravadas e que terão de ser eliminadas. No painel **Camadas** clicar com o botão direito na camada lig_troco_fonte e selecionar o opção **Abrir tabela de atributos**.
+32. Repetir os passos anteriores para todos os troços que foram afectados, nomeadamente aqueles que foram cortados.
+
+33. Só nos falta gravar as alterações na tabela `lig_troco_fonte`, que faz a ligação entre as fontes e os troços numa relação de N:M. No entanto, como eliminamos alguns elementos dos troços, teremos algumas linhas que não poderão ser gravadas e que terão de ser eliminadas. No painel **Camadas** clicar com o botão direito na camada lig_troco_fonte e selecionar o opção **Abrir tabela de atributos**.
 
     ![alt text](imagens/image-99.png)
 
