@@ -65,6 +65,7 @@ BEGIN
 					ea.nome AS freguesia,
 					m.nome AS municipio,
 					di.nome AS distrito_ilha,
+					n3.codigo as nuts3_cod,
 					n3.nome AS nuts3,
 					n2.nome AS nuts2,
 					n1.nome AS nuts1
@@ -82,6 +83,7 @@ BEGIN
 				taa.nome AS tipo_area_administrativa,
 				a.municipio,
 				a.distrito_ilha,
+				a.nuts3_cod,
 				a.nuts3,
 				a.nuts2,
 				a.nuts1,
@@ -109,15 +111,16 @@ BEGIN
 				freguesia,
 				municipio,
 				distrito_ilha,
+				nuts3_cod,
 				nuts3,
 				nuts2,
 				nuts1,
 				(st_collect(geometria))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
 				(sum(st_perimeter(geometria)) / 1000)::integer AS perimetro_km,
-				REPLACE(freguesia,''União das freguesias de '','''') as designacao_simplificada
+				REGEXP_REPLACE(freguesia, ''União (de|das) freguesias\s+(de|da|do|das|dos)\s+(?!cidade)'', '''', ''i'') as designacao_simplificada
 			FROM %1$I.%2$s_areas_administrativas
-			GROUP BY dtmnfr, freguesia, municipio, distrito_ilha, nuts3, nuts2, nuts1
+			GROUP BY dtmnfr, freguesia, municipio, distrito_ilha, nuts3_cod, nuts3, nuts2, nuts1
 		WITH NO DATA;
 		
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_freguesias;
@@ -133,6 +136,7 @@ BEGIN
 				LEFT(dtmnfr,4) AS dtmn,
 				municipio,
 				distrito_ilha,
+				nuts3_cod,
 				nuts3,
 				nuts2,
 				nuts1,
@@ -141,7 +145,7 @@ BEGIN
 				(st_perimeter((st_union(geometria))) / 1000)::integer AS perimetro_km,
 				count(*) AS n_freguesias
 			FROM %1$I.%2$s_freguesias
-			GROUP BY dtmn, municipio, distrito_ilha, nuts3, nuts2, nuts1
+			GROUP BY dtmn, municipio, distrito_ilha, nuts3_cod, nuts3, nuts2, nuts1
 		WITH NO DATA;
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_municipios;
@@ -156,6 +160,7 @@ BEGIN
 			SELECT
 				LEFT(dtmn,2) AS dt,
 				distrito_ilha AS distrito,
+				left(nuts3_cod,1) as nuts1_cod,
 				nuts1,
 				st_multi((st_union(geometria)))::geometry(multipolygon, %3$s) AS geometria,
 				(sum(st_area(geometria)) / 10000)::numeric(15,2) AS area_ha,
@@ -163,7 +168,7 @@ BEGIN
 				count(*) AS n_municipios,
 				sum(n_freguesias) AS n_freguesias
 			FROM %1$I.%2$s_municipios
-			GROUP BY dt, distrito, nuts1
+			GROUP BY dt, distrito, nuts1_cod, nuts1
 		WITH NO DATA;
 
 		REFRESH MATERIALIZED VIEW %1$I.%2$s_distritos;
@@ -405,7 +410,7 @@ BEGIN
 
 		REFRESH MATERIALIZED VIEW %1$I.inf_fonte_troco;
 
-		CREATE UNIQUE INDEX IF NOT EXISTS %1$I.inf_fonte_troco_id_idx ON  %1$I.inf_fonte_troco(id);'
+		CREATE UNIQUE INDEX IF NOT EXISTS inf_fonte_troco_id_idx ON  %1$I.inf_fonte_troco(id);'
 	, output_schema, data_hora);
 
 	-- actualiza permissões do schema
