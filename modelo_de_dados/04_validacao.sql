@@ -130,14 +130,14 @@ CREATE MATERIALIZED VIEW validacao.cont_diferencas_geom_gerado_publicado as
 SELECT 
 	ROW_NUMBER() OVER () AS fid,
 	caa.id AS id_caa_gerado,
-	caa.dicofre,
-	caap.dicofre AS dicofre_p,
+	caa.dtmnfr,
+	caap.dtmnfr AS dtmnfr_p,
 	caa.freguesia,
 	caap.freguesia AS freguesia_p,
-	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 3763) AS geom
+	st_multi(ST_SymDifference(caa.geometria, caap.geometria))::geometry(multipolygon, 3763) AS geom
 FROM master.cont_areas_administrativas AS caa 
-	JOIN TEMP.cont_aad_caop2022_publicada as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
+	JOIN caop2024.cont_areas_administrativas as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geometria))
+WHERE NOT st_equals(caa.geometria, caap.geometria) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geometria));
 
 CREATE INDEX ON validacao.cont_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -269,14 +269,14 @@ CREATE MATERIALIZED VIEW validacao.ram_diferencas_geom_gerado_publicado as
 SELECT 
 	ROW_NUMBER() OVER () AS fid,
 	caa.id AS id_caa_gerado,
-	caa.dicofre,
-	caap.dicofre AS dicofre_p,
+	caa.dtmnfr,
+	caap.dtmnfr AS dtmnfr_p,
 	caa.freguesia,
 	caap.freguesia AS freguesia_p,
-	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5016) AS geom
+	st_multi(ST_SymDifference(caa.geometria, caap.geometria))::geometry(multipolygon, 5016) AS geom
 FROM master.ram_areas_administrativas AS caa 
-	JOIN "temp".arqmadeira_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
+	JOIN caop2024.ram_areas_administrativas as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geometria))
+WHERE NOT st_equals(caa.geometria, caap.geometria) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geometria));
 
 CREATE INDEX ON validacao.ram_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -407,14 +407,14 @@ CREATE MATERIALIZED VIEW validacao.raa_oci_diferencas_geom_gerado_publicado as
 SELECT 
 	ROW_NUMBER() OVER () AS fid,
 	caa.id AS id_caa_gerado,
-	caa.dicofre,
-	caap.dicofre AS dicofre_p,
+	caa.dtmnfr,
+	caap.dtmnfr AS dtmnfr_p,
 	caa.freguesia,
 	caap.freguesia AS freguesia_p,
-	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5014) AS geom
+	st_multi(ST_SymDifference(caa.geometria, caap.geometria))::geometry(multipolygon, 5016) AS geom
 FROM master.raa_oci_areas_administrativas AS caa 
-	JOIN "temp".arqmadeira_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
+	JOIN caop2024.raa_oci_areas_administrativas as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geometria))
+WHERE NOT st_equals(caa.geometria, caap.geometria) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geometria));
 
 CREATE INDEX ON validacao.raa_oci_diferencas_geom_gerado_publicado USING gist(geom);
 
@@ -541,23 +541,19 @@ CREATE INDEX ON validacao.raa_cen_ori_poligonos_temp_erros USING gist(geometria)
 DROP MATERIALIZED VIEW IF EXISTS validacao.raa_cen_ori_diferencas_geom_gerado_publicado;
 
 CREATE MATERIALIZED VIEW validacao.raa_cen_ori_diferencas_geom_gerado_publicado AS
-WITH central_oriental_aad_caop2022 AS (
-	SELECT * FROM "temp".arqacores_gcentral_aad_caop2022
-	UNION ALL
-	SELECT * FROM "temp".arqacores_goriental_aad_caop2022)
 SELECT 
 	ROW_NUMBER() OVER () AS fid,
 	caa.id AS id_caa_gerado,
-	caa.dicofre,
-	caap.dicofre AS dicofre_p,
+	caa.dtmnfr,
+	caap.dtmnfr AS dtmnfr_p,
 	caa.freguesia,
 	caap.freguesia AS freguesia_p,
-	st_multi(ST_SymDifference(caa.geometria, caap.geom))::geometry(multipolygon, 5015) AS geom
+	st_multi(ST_SymDifference(caa.geometria, caap.geometria))::geometry(multipolygon, 5016) AS geom
 FROM master.raa_cen_ori_areas_administrativas AS caa 
-	JOIN central_oriental_aad_caop2022 as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geom))
-WHERE NOT st_equals(caa.geometria, caap.geom) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geom));
+	JOIN caop2024.raa_cen_ori_areas_administrativas as caap ON st_contains(caa.geometria, st_pointonsurface(caap.geometria))
+WHERE NOT st_equals(caa.geometria, caap.geometria) AND NOT ST_IsEmpty(ST_SymDifference(caa.geometria, caap.geometria));
 
-CREATE INDEX ON validacao.raa_ori_diferencas_geom_gerado_publicado USING gist(geom);
+CREATE INDEX ON validacao.raa_cen_ori_diferencas_geom_gerado_publicado USING gist(geom);
 
 --- Permissões ---
 

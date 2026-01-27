@@ -251,10 +251,13 @@ LANGUAGE 'plpgsql';
 -- TESTEs
 
 -- Gerar camadas inspire para o schema master
-SELECT gerar_outputs_inspire('master','cont');
-SELECT gerar_outputs_inspire('master','ram');
-SELECT gerar_outputs_inspire('master','raa_oci');
-SELECT gerar_outputs_inspire('master','raa_cen_ori');
+SELECT gerar_outputs_inspire('master','cont',now()::timestamp);
+SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_oci',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_cen_ori',now()::timestamp);
 
--- gerar camadas inspire usando a versão
-SELECT gerar_outputs_inspire('master','cont','v2024');
+-- gerar camadas inspire para uma versão
+SELECT gerar_outputs_inspire('caop2024','cont','v2024');
+SELECT gerar_outputs_inspire('caop2024','ram','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_oci','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_cen_ori','v2024');

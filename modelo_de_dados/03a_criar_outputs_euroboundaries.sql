@@ -243,7 +243,7 @@ FROM todos_trocos;
 DROP TABLE IF EXISTS euroboundaries.ebm_poligonos_finais CASCADE;
 CREATE TABLE euroboundaries.ebm_poligonos_finais (
 	id serial PRIMARY KEY,
-	geometria geometry(polygon, 4258)
+	geometria geometry(multipolygon, 4258)
 );
 
 INSERT INTO euroboundaries.ebm_poligonos_finais (geometria)
