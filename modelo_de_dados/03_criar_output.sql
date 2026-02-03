@@ -33,7 +33,7 @@ BEGIN
 	EXECUTE format('
 		CREATE SCHEMA IF NOT EXISTS %1$I;
 		GRANT ALL ON SCHEMA %1$I TO administrador;
-		GRANT USAGE ON SCHEMA %1$I TO editor, visualizador;'
+		GRANT USAGE ON SCHEMA %1$I TO editor, visualizador, ogc_api, servicos_wms;'
 		, output_schema);
 
 	-- query para transformar os trocos em poligonos
