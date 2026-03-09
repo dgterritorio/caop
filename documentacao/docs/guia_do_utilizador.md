@@ -142,6 +142,8 @@ Os projectos de edição estão organizados por grupos da seguinte forma:
 
 ![Organização do projecto](imagens/image-10.png)
 
+:::columns
+
 ### Ligar Snapping
 
 Sempre que se esteja a editar as geometrias da CAOP (em particular os troços) é importante garantir que a função de **snapping** está ligada. O snapping ajuda a garantir a coerência topológica entre os vários troços. Em QGIS, para ligar o snapping, seguimos os seguintes passos:
@@ -158,6 +160,8 @@ Sempre que se esteja a editar as geometrias da CAOP (em particular os troços) �
 Na barra de Ferramentas **CAOP Tools** existe um campo de texto, onde se deve preencher o motivo da actual edição. Este texto é guardado automaticamente nos registos das tabelas, ajudando a descrever o histórico de cada registo. Este texto pode ser, por exemplo, idêntico à descrição da fonte que originou a alteração.
 
 ![Edição do motivo](imagens/image-12.png)
+
+:::
 
 ## Execução de operações de edição comuns
 
@@ -515,7 +519,7 @@ De seguida, já podemos recuperar os troços que em 2012 delimitavam as freguesi
 
     ![alt text](imagens/image-106.png)
 
-Nesta fase, o processo de edição está quase completo, mas para conseguirmos eliminar a entidade administrativa obsoleta temos de garantir que não existem referências à mesma na camada dos troços, actualizando os campos ea_esquerda e ea_direita. A forma mais rápida será gerando os outputs.
+    Nesta fase, o processo de edição está quase completo, mas para conseguirmos eliminar a entidade administrativa obsoleta temos de garantir que não existem referências à mesma na camada dos troços, actualizando os campos ea_esquerda e ea_direita. A forma mais rápida será gerando os outputs.
 
 01. Na barra de ferramentas **CAOP Ferramentas** clicar em **Actualizar outputs master**
 
@@ -599,59 +603,154 @@ Outro processo comum será a união de uma ou mais freguesias. Ou seja, a elimin
 * Adicionar uma nova entidade administrativa que una as entidades anteriores
 * Adicionar um centroide de identificação da nova área administrativa
 * Eliminar os troços e centroides obsoletos
-* Atribuir a nova fonte a todos os troços que delimitam a nova area administrativa??
+* Eliminar Entidade Administrativa obsoleta
+* Atribuir a nova fonte a todos os troços que delimitam a nova area administrativa
 
 #### Descrição passo a passo
 
+Vamos então ver o processo passo a passo
+
 :::columns
 
- 1. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Criar União das Freguesias da Carvoeira e Ericeira`)
+**Registar uma nova fonte que justifique a alteração**
+
+00. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Criar União das Freguesias da Carvoeira e Ericeira`)
 
     ![alt text](imagens/image-83.png)
- 2. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
+
+00. No Painel **Camadas**, seleccionar a camada `Fontes` e ligar a edição da mesma.
 
     ![alt text](imagens/image-25.png)
- 3. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
+
+00. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova fonte.
 
     ![alt text](imagens/image-26.png)
- 4. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
+
+00. Preencha o formulário a informação relativa à nova fonte e clique em Ok.
 
     ![alt text](imagens/image-84.png)
- 5. No Painel **Camadas**, seleccionar a camada `entidade_Administrativa` e ligar a edição da mesma.
+
+**Adicionar uma nova entidade administrativa que una as entidades anteriores**
+
+00. No Painel **Camadas**, seleccionar a camada `entidade_Administrativa` e ligar a edição da mesma.
 
     ![alt text](imagens/image-71.png)
- 6. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova entidade administrativa.
+
+00. Na **Barra de Digitalização**, clique no botão **Adicionar registo** para adicionar uma nova entidade administrativa.
 
     ![alt text](imagens/image-26.png)
- 7. Preencher o formulário com a informação relativa à nova entidade administrativa e clique em Ok.
+
+00. Preencher o formulário com a informação relativa à nova entidade administrativa e clique em Ok.
+
+ **Adicionar um centroide de identificação da nova área administrativa**
 
     ![alt text](imagens/image-85.png)
- 8. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
+
+00. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
 
     ![alt text](imagens/image-74.png)
 
- 9. Na **Barra de Digitalização**, clique no botão **Adicionar elemento ponto** para adicionar um centroide em falta (e.g. o centroide da nova união de freguesias). Clicando depois no mapa para adicionar o ponto para a área administrativa em falta.
+00. Na **Barra de Digitalização**, clique no botão **Adicionar elemento ponto** para adicionar um centroide em falta (e.g. o centroide da nova união de freguesias). Clicando depois no mapa para adicionar o ponto para a área administrativa em falta.
 
     ![alt text](imagens/image-75.png)
+
 10. Preencher o formulário a informação relativa ao novo centroide com a entidade administrativa respectiva e clique em OK.
 
     ![alt text](imagens/image-86.png)
-11. Gravar todos os novos elementos na base de dados. Por uma questão de dependência das camadas, devemos começar por gravar a camada da entidade administrativa. Assim, pela seguinte ordem, activar as camadas `entidade_administrativa`, `fontes`, `centroides_ea` e na **Barra de digitalizaçáo** clicar em **Guardar alterações à camada**.
 
-    ![alt text](imagens/image-88.png)
+11. Se ainda não o tiver feito, gravar todas as camadas editadas até agora. Por uma questão de dependência das camadas, devemos começar por gravar a camada da entidade administrativa. No Painel **Camadas**, activar a camada `entidade_administrativa` e na **Barra de digitalizaçáo** clicar em **Guardar alterações à camada**.
+
+    ![alt text](imagens/image-106.png)
+
+12. Repetir o passo anterior para as camadas `fontes` e `centroides_ea.` 
+
+**Eliminar os troços e centroides obsoletos**
+
 12. Com a camada `centroides_ea` activa, usar uma qualquer ferramenta de selecçao (e.g. **Selecionar por area**), seleccionar os centroides obsoletos e clicar em **Eliminar selecionados**. Por fim, gravar as alterações à camada.
 
     ![alt text](imagens/image-89.png)
+
 13. No Painel **Camadas**, seleccionar a camada `Troços` e ligar a edição da mesma.
 
     ![alt text](imagens/image-29.png)
-14. Com a camada `troço` activa, usar uma qualquer ferramenta de selecçao (e.g. **Selecionar por area**), seleccionar o troço ou troços que compunham a fronteira entre as duas áreas administrativas e clicar em **Eliminar selecionados**. Por fim, gravar as alterações à camada.
+
+14. Com a camada `troço` activa, usar uma qualquer ferramenta de selecçao (e.g. **Selecionar por area**), seleccionar o troço ou troços que compunham a fronteira entre as duas ou mais áreas administrativas a unir e clicar em **Eliminar selecionados**. Verificar com cuidado se todos os troços obsoletos são eliminados e por fim, gravar as alterações à camada.
 
     ![alt text](imagens/image-90.png)
 
-**Nota:** Faltará ainda eliminar as entidades administrativas obsoletas. No entanto, esse passo apenas pode ser executado após actualização dos conjuntos de dados finais, uma vez que esse processo irá refazer as relações entre a nova entidade administrativa e os troços que a delimitam, e assim "libertar" entidade administrativa obsoleta. Este processo é explicado na secção seguinte.
+**Eliminar Entidade Administrativa obsoleta**
 
-::: \newpage
+00. Nesta fase geramos os master outputs tanto para perceber se tudo é gerado correctamente, mas principalmente para recalcular os campos ea_direita e ea_esquerda da camada dos troços e assim "libertar" as entidades administrativas obsoletas. Na barra de ferramentas **CAOP Ferramentas** clicar em **Actualizar outputs master**
+
+    ![alt text](imagens/image-132.png)
+
+00. Escolher a ligação à base de dados e a região a processar e carregar em **Executar**.
+
+    ![alt text](imagens/image-131.png)
+
+00. Convém inspeccionar o resultado. No painel das **Camadas** activar o grupo `master outputs` e verificar que o polígono que representa a união das freguesias na `camada áreas administrativas` foi criado correctamente.
+    
+    **NOTA:** Se o polígono não for gerado correctamente, poderá valer a pena correr as ferramentas de validação para ajudar a identificar e corrigir o problema.
+
+00. Agora, já será possível eliminar as entidades administrativas obsoletas. No painel **Camadas**, clicar com o botão direito na camada `Entidades Administrativas` e escolher abrir tabela de atributos.
+
+    ![alt text](imagens/image-127.png)
+
+00. No canto inferior esquerdo da tabela de atributos selecionar **Mostrar todos os elemento** > **Filtro de Campos** > **Nome**
+
+    ![alt text](imagens/image-81.png)
+
+00. Usando o campo de filtro, podemos começar a escrever por um termo a procurar (e.g. `Aldeia do Bispo`) e seleccionamos a freguesias correcta e carregamos em Enter.
+
+    ![alt text](imagens/image-133.png)
+
+00. Isto irá filtrar aos elementos que contenham esse nome. Depois podemos selecionar a linha correspondente à freguesia, activar a edição e carregar em **Eliminar elementos seleccionados**.
+
+    ![alt text](imagens/image-134.png)
+
+00. Repetimos o passo anterior para todas as freguesias que foram unidas.
+
+00. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar alterações à camada`. Para enviar as alterações à camada entidades administrativas para a base de dados.
+
+    ![alt text](imagens/image-106.png)
+
+    Nota: Caso nesta fase surja um erro, é possível que nos tenhamos esquecido de eliminar e gravar algum centroide que ainda faz uso desta entidade administrativa.
+
+**Adicionar fonte aos troços afectados**
+
+De seguida, vamos adicionar a todos os troços que delimitam a nova união de freguesias, a fonte que criamos nos primeiros passos. 
+
+01. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
+
+    ![alt text](imagens/image-72.png)
+
+00. Clicar sobre um dos troços alterados. Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
+
+    ![alt text](imagens/image-135.png)
+
+    **Nota:** Para evitar tantos passos no futuro, no painel de identificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
+
+    ![alt text](imagens/image-95.png)
+
+00. No formulário do troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho ou existência deste troço. Clicar no botão **Activar modo de edição para a camada filha** e depois no **Adicionar elemento filho**.
+
+    ![alt text](imagens/image-121.png)
+
+00. No formulário que abre, comece a escrever no campo fonte_id as descrição do diploma (e.g. `667/2024`). Escolher na lista a fonte correcta. Carregar em **OK**.
+
+    ![alt text](imagens/image-137.png)
+
+00. No formulário do troço, já deveremos ver a nova fonte. Podemos clicar em **Guardar alterações na camada filha** e depois em **Cancelar** para fechar o formulário.
+
+    ![alt text](imagens/image-138.png)
+
+00. Repetir os passo anteriores para todo os troços que delimitam a nova união de freguesias, garantindo que nenhum troço é esquecido.
+
+**Gerar outputs e validar**
+
+Nesta fase, o processo está completo e podemos desactivar a edição de todas as camadas. Antes de darmos o processo por finalizado, devemos correr as ferramentas para gerar os novos polígonos e validar os resultados descritas em secções abaixo. 
+
+:::
 
 ## Actualizar Outputs Master
 
@@ -683,7 +782,7 @@ Para tal, no barra de ferramentas CAOP Tools, carregar no botão **Actualizar Va
 
 Esta ferramenta actualiza as camadas existentes no grupo **Validação**.
 
-![Alt text](imagens/image-19.png)
+![Alt text](imagens/image-19.png "Alt text")
 
 Cada camada representa um erro específico. O número no final indica o número de erros encontrados.
 
@@ -731,3 +830,11 @@ Executadas todas as alterações necessárias para aquele ano, é conveniente re
 Para gerar o output para esta versão, podemos usar o nome da versão na ferramenta Gerar CAOP em vez de uma data.
 
 ![Alt text](imagens/image-23.png)
+
+### Gerar outputs em formato Inspire
+
+Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC.
+
+Para esse efeito foi criada uma função PgplSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. Para execução desde comando o utilizador necessita de ter permissões de administrador.
+
+De seguida, mostra-se como executar o comando no QGIS, mas poderia correr-se noutro software cliente qualquer (PSQL, PgAdmin4, DBeaver).
