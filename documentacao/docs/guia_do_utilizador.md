@@ -754,23 +754,36 @@ Nesta fase, o processo está completo e podemos desactivar a edição de todas a
 
 ## Actualizar Outputs Master
 
-Após quaisquer processos de edição, na barra **CAOP Tools**, deve-se correr a ferramentas de **Actualizar Outputs Master** para confirmar os resultados.
+Após quaisquer processos de edição, devemos actualizar os outputs dos schema master, para confirmarmos a qualidade das alterações. Isto pode ser feito por via do plugin QGIS ou via consola SQL.
 
-![Alt text](imagens/image-14.png)
+### Usando o Plugin QGIS
 
-1. Escolher a ligação à base de dados desejada
-2. Escolher a Região que se está a editar
-3. Carregar em Executar
+01. Na barra **CAOP Tools**, clicar na ferramenta **Actualizar Outputs Master**..
 
-![Alt text](imagens/image-15.png)
+    ![Alt text](imagens/image-14.png)
 
-Esta ferramenta actualiza as camadas de output CAOP, para os dados actuais, no schema `master`.
+02. Escolher a ligação à base de dados desejada. Escolher a Região que se está a editar e carregar em **Executar**.
+
+    ![Alt text](imagens/image-15.png)
+
+Depois de executado, esta ferramenta actualiza as camadas de output CAOP, para os dados actuais, no schema `master`.
+
+### Via Consola SQL
+A mesma operação pode ser executada numa qualquer consola cliente postgreSQL (e.g. PSQL, PgAdmin, Dbeaver, QGIS DB Manager) ligada à base de dados, através da execução dos seguintes comandos escolhendo um dos prefixo da região (`cont`, `ram`, `raa_oci`, `raa_cen_ori`):
+
+```sql
+SELECT public.actualizar_poligonos_caop('master', 'cont');
+SELECT public.actualizar_trocos('cont');
+SELECT public.gerar_trocos_caop('master', 'cont', NULL::timestamp);
+```
 
 ## Validar Outputs
 
-Após actualizar os outputs, é essencial garantir a sua coerência geomética e topológica das edições.
+Após actualizar os outputs do schema master, é essencial garantir a coerência geométrica e topológica das edições.
 
-Para tal, no barra de ferramentas CAOP Tools, carregar no botão **Actualizar Validações**.
+### Usando o Plugin QGIS
+
+Para tal, no barra de ferramentas do plugin CAOP Tools, carregar no botão **Actualizar Validações**.
 
 ![Alt text](imagens/image-16.png)
 
@@ -796,45 +809,109 @@ Cada camada representa um erro específico. O número no final indica o número 
 
 **Nota:** As validações referentes aos troços, podem ser executadas sem ser necessário correr o Actualizar Outputs Master. Apenas é necessário que todas as edições da camada estejam gravados na base de dados.
 
-### Gerar output CAOP
+### Via Consola PostgreSQL
 
-Uma vez satisfeitos com as alterações, e no caso de querermos guardar os resultados num schema que não o `master`, podemos usar a ferramenta **Gerar CAOP**.
+A mesma operação pode ser executada numa qualquer consola cliente postgreSQL (e.g. PSQL, PgAdmin, Dbeaver, QGIS DB Manager) ligada à base de dados, através da execução dos seguintes comandos escolhendo um dos prefixo da região (`cont`, `ram`, `raa_oci`, `raa_cen_ori`):
 
-![Alt text](imagens/image-18.png)
+```sql
+SELECT public.actualizar_validacao('cont');
+```
 
-1. Escolher a ligação à base de dados desejada
-2. Escolher o Schema
-3. Escolher a Região que se está a editar
-4. Na data, indicar o dia de amanhã
-5. Carregar em executar
+Tal como via GUI, este comando actualiza as vistas materializadas existentes no schema `validacao` para a região escolhida
+
+## Gerar output CAOP (Admin)
+
+Uma vez satisfeitos com todas as alterações para uma nova versão da CAOP, será necessário guardar os outputs finais num schema que não o master `master`.  Podemos fazê-lo através do plugin QGIS ou via consola SQL. Em ambos os casos, **a operação requer permissões de Administrador**.
+
+### Via Plugin QGIS
+
+01. Na barra de ferramentas **CAOP Tools**, clicar na ferramenta **Gerar CAOP**.
+ 
+    ![Alt text](imagens/image-18.png)
+
+02. Na janela **Gerar Versão CAOP**:
+    * Indicar a ligação à base de dados
+    * Escolher o nome adequado para o schema (e.g. caop2024)
+    * Escolher a Região a gerar
+    * Na data, indicar o dia e hora e hora actuais
+    * Carregar em **Executar**
 
 ![Alt text](imagens/image-20.png)
 
-NOTA: Esta ferramenta pode ser usada para ver os estado da CAOP numa data anterior à actual, bastando para isso colocar uma data diferente. Também se pode escolher uma versão anterior.
+NOTA: Esta ferramenta pode ser usada para gerar os estado da CAOP numa data anterior à actual, bastando para isso colocar uma data diferente.
 
-Caso se pretenda, podemos executar esta ferramenta em modo de execução em lote para todas as regiões.
+Caso se pretenda, podemos executar esta ferramenta em modo de execução em lote para todas as regiões carregando no botão **Executar em Lote**.
 
 ![Alt text](imagens/image-21.png)
 
-### Criar versão CAOP
+### Registar nova versão CAOP (Admin)
 
-Executadas todas as alterações necessárias para aquele ano, é conveniente registar uma nova versão CAOP. Esse registo é feito através data tabela `versioning.versao`.
+Executadas todas as alterações necessárias para aquele ano ou versão, é conveniente registar uma nova versão CAOP. Esse registo é feito através data tabela `versioning.versao`. **Esta operação requer permissões de Administrador**
 
-1. No grupo versioning, carregar com o botão direito do rato na camada e escolher **Abrir tabela de atributos**.
-2. Ligar a edição da camada e clicar no botão **Adicionar elemento**
-3. Preencher o formulário e clicar em OK
+01. NO projecto QGIS, no grupo versioning, carregar com o botão direito do rato na camada e escolher **Abrir tabela de atributos**.
+02. Ligar a edição da camada e clicar no botão **Adicionar elemento**
+03. Preencher o formulário, escolhendo um nome para a versão, e opcionalemnte uma descrição. Na data_hora devemos escolher uma pouco depois das últimas alterações. Clicar em **OK**
 
    ![Alt text](imagens/image-22.png)
-4. Gravar a camada
 
-Para gerar o output para esta versão, podemos usar o nome da versão na ferramenta Gerar CAOP em vez de uma data.
+04. Gravar a camada `Versões`
 
-![Alt text](imagens/image-23.png)
+Assim, no futuro, para gerar o output para esta versão, podemos usar o nome da versão na ferramenta **Gerar CAOP** em vez de uma data.
 
-### Gerar outputs em formato Inspire
+   ![Alt text](imagens/image-23.png)
 
-Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC.
+### Gerar outputs em formato Inspire (Admin)
 
-Para esse efeito foi criada uma função PgplSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. Para execução desde comando o utilizador necessita de ter permissões de administrador.
+Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC. 
 
-De seguida, mostra-se como executar o comando no QGIS, mas poderia correr-se noutro software cliente qualquer (PSQL, PgAdmin4, DBeaver).
+Para esse efeito foi criada uma função PgPlSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. **Esta operação requer permissões de Administrador**
+
+```sql
+SELECT gerar_outputs_inspire(<nome do schema>,<regiao>,<data_hora>);
+```
+
+Por exemplo, para testar os outputs Inspire no schema master para todas as regiões podemos correr o comando:
+
+```sql
+SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
+SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_oci',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_cen_ori',now()::timestamp);
+```
+
+Para gerar os outputs inspire para uma versão CAOP finalizada (e.g. `v2024`)
+
+```sql
+SELECT gerar_outputs_inspire('caop2024','cont','v2024');
+SELECT gerar_outputs_inspire('caop2024','ram','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_oci','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_cen_ori','v2024');
+```
+
+### Gerar outputs em formato Inspire (Admin)
+
+Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC. 
+
+Para esse efeito foi criada uma função PgPlSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. **Esta operação requer permissões de Administrador**
+
+```sql
+SELECT gerar_outputs_inspire(<nome do schema>,<regiao>,<data_hora>);
+```
+
+Por exemplo, para testar os outputs Inspire no schema master para todas as regiões podemos correr o comando:
+
+```sql
+SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
+SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_oci',now()::timestamp);
+SELECT gerar_outputs_inspire('master','raa_cen_ori',now()::timestamp);
+```
+
+Para gerar os outputs inspire para uma versão CAOP finalizada (e.g. `v2024`)
+
+```sql
+SELECT gerar_outputs_inspire('caop2024','cont','v2024');
+SELECT gerar_outputs_inspire('caop2024','ram','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_oci','v2024');
+SELECT gerar_outputs_inspire('caop2024','raa_cen_ori','v2024');
+```
