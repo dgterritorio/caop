@@ -2,7 +2,7 @@
 title:  CAOP - Manual de edição CAOP no QGIS
 author:
 - Alexandre Neto, Giovanni Manghi, Alexander Bruy (NaturalGIS)
-date: 23 de Junho de 2024
+date: 11 de Março de 2026
 papersize: a4
 documentclass: scrartcl
 top-level-division: part
@@ -862,13 +862,15 @@ Assim, no futuro, para gerar o output para esta versão, podemos usar o nome da 
 
 ### Gerar outputs em formato Inspire (Admin)
 
-Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC. 
+Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC.
 
 Para esse efeito foi criada uma função PgPlSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. **Esta operação requer permissões de Administrador**
 
 ```sql
 SELECT gerar_outputs_inspire(<nome do schema>,<regiao>,<data_hora>);
 ```
+
+Nota: Para execução desta função é necessário que dentro do schema escolhido já existam os outputs CAOP respectivos.
 
 Por exemplo, para testar os outputs Inspire no schema master para todas as regiões podemos correr o comando:
 
@@ -888,30 +890,28 @@ SELECT gerar_outputs_inspire('caop2024','raa_oci','v2024');
 SELECT gerar_outputs_inspire('caop2024','raa_cen_ori','v2024');
 ```
 
-### Gerar outputs em formato Inspire (Admin)
+### Gerar outputs em formato Euroboundaries (Admin)
 
-Tendo uma versão CAOP finalizada, podemos criar outputs de acordo as normas inspire para que possam ser usados em serviços OGC. 
+Tendo uma versão CAOP finalizada, podemos criar outputs no formato EuroBoundaries. 
 
 Para esse efeito foi criada uma função PgPlSQL na base de dados para tornar este processo mais simples, recorrendo a qualquer software cliente do PostgreSQL. **Esta operação requer permissões de Administrador**
 
 ```sql
-SELECT gerar_outputs_inspire(<nome do schema>,<regiao>,<data_hora>);
+SELECT gerar_outputs_euroboundaries(<nome do schema>,<data_hora>);
 ```
 
-Por exemplo, para testar os outputs Inspire no schema master para todas as regiões podemos correr o comando:
+Nota: Para execução desta função é necessário que dentro do schema escolhido já existam os outputs CAOP respectivos.
+
+Por exemplo, para testar os outputs Euroboundaries no schema master podemos correr o comando:
 
 ```sql
-SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
-SELECT gerar_outputs_inspire('master','ram',now()::timestamp);
-SELECT gerar_outputs_inspire('master','raa_oci',now()::timestamp);
-SELECT gerar_outputs_inspire('master','raa_cen_ori',now()::timestamp);
+SELECT gerar_outputs_euroboundaries('master',now()::timestamp);
 ```
 
-Para gerar os outputs inspire para uma versão CAOP finalizada (e.g. `v2024`)
+Para gerar os outputs EuroBoundaries para uma versão CAOP finalizada (e.g. `v2024`)
 
 ```sql
-SELECT gerar_outputs_inspire('caop2024','cont','v2024');
-SELECT gerar_outputs_inspire('caop2024','ram','v2024');
-SELECT gerar_outputs_inspire('caop2024','raa_oci','v2024');
-SELECT gerar_outputs_inspire('caop2024','raa_cen_ori','v2024');
+SELECT gerar_outputs_euroboundaries('caop2024','v2024');
 ```
+
+No schema escolhido encontrão as tabelas `ebm_a`, `ebm_nam` e `ebm_nuts`.
