@@ -317,7 +317,7 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
     ![alt text](imagens/image-94.png)
 
-    **Nota:** Para evitar tantos passos no futuro, no painel de indentificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
+    **Nota:** Para evitar tantos passos no futuro, no painel de identificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
 
     ![alt text](imagens/image-95.png)
 
@@ -357,7 +357,9 @@ Neste processo, deve-se usar a ferramentas de **Dividir elementos** específica 
 
 ### Dividir uma união de freguesias (área administrativa) em dois ou mais
 
-Outra tipo de edição comum é a divisão da área de uma união de freguesias (área administrativa) em duas (ou mais) novas freguesias, recuperando a organização administrativa que existia em 2012. 
+Outra tipo de edição comum é a divisão da área de uma união de freguesias (área administrativa) em duas (ou mais) novas freguesias, recuperando a organização administrativa que existia em 2012.
+
+**NOTA: Durante este procedimento irá ser necessário usar novos códigos (dtmnfr) para as Entidades Administrativas (Freguesias) resultantes. A criação e gestão destes códigos é da inteira responsabilidade do Instituto Nacional de Estatística (INE).**
 
 #### Resumo
 
@@ -595,7 +597,9 @@ Nesta fase, o processo está completo e podemos desactivar a edição de todas a
 
 ### Unir duas (ou mais) áreas administrativas
 
-Outro processo comum será a união de uma ou mais freguesias. Ou seja, a eliminação das duas fronteiras. 
+Outro processo comum será a união de uma ou mais freguesias. Ou seja, a eliminação das duas fronteiras.
+
+**NOTA: Durante este procedimento irá ser necessário usar novos códigos (dtmnfr) para as Entidades Administrativas (Uniões de Freguesias) resultantes. A criação e gestão destes códigos é da inteira responsabilidade do Instituto Nacional de Estatística (INE).**
 
 #### Resumo
 
@@ -614,7 +618,7 @@ Vamos então ver o processo passo a passo
 
 **Registar uma nova fonte que justifique a alteração**
 
-00. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Criar União das Freguesias da Carvoeira e Ericeira`)
+01. Na toolbar `CAOP tools`, editar o campo **Motivo** com a descrição das alterações se vão fazer (e.g. `Criar União das Freguesias da Carvoeira e Ericeira`)
 
     ![alt text](imagens/image-83.png)
 
@@ -632,7 +636,7 @@ Vamos então ver o processo passo a passo
 
 **Adicionar uma nova entidade administrativa que una as entidades anteriores**
 
-00. No Painel **Camadas**, seleccionar a camada `entidade_Administrativa` e ligar a edição da mesma.
+01. No Painel **Camadas**, seleccionar a camada `entidade_Administrativa` e ligar a edição da mesma.
 
     ![alt text](imagens/image-71.png)
 
@@ -642,11 +646,11 @@ Vamos então ver o processo passo a passo
 
 00. Preencher o formulário com a informação relativa à nova entidade administrativa e clique em Ok.
 
- **Adicionar um centroide de identificação da nova área administrativa**
-
     ![alt text](imagens/image-85.png)
 
-00. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
+ **Adicionar um centroide de identificação da nova área administrativa**
+
+01. No Painel **Camadas**, seleccionar a camada `centroides_ea` e ligar a edição da mesma.
 
     ![alt text](imagens/image-74.png)
 
@@ -710,7 +714,7 @@ Vamos então ver o processo passo a passo
 
 00. Repetimos o passo anterior para todas as freguesias que foram unidas.
 
-00. No painel **Camadas**,na **barra de digitalização**, clicar no botão `Guardar alterações à camada`. Para enviar as alterações à camada entidades administrativas para a base de dados.
+00. Na **barra de digitalização**, clicar no botão `Guardar alterações à camada`. Para enviar as alterações à camada entidades administrativas para a base de dados.
 
     ![alt text](imagens/image-106.png)
 
@@ -718,33 +722,38 @@ Vamos então ver o processo passo a passo
 
 **Adicionar fonte aos troços afectados**
 
-De seguida, vamos adicionar a todos os troços que delimitam a nova união de freguesias, a fonte que criamos nos primeiros passos. 
+De seguida, vamos adicionar a fonte que criamos nos primeiros passos a todos os troços que delimitam a nova união de freguesias. 
 
-01. Na **Barra de attributos** activar a ferramenta **Identificar elementos**.
+01. No painel **Camadas**, activar a camada `Troços`. Usando uma ferramenta de selecção (e.g. **Selecionar por área**) seleccionar todos os troços que delimitam a nova união de freguesias. É possível carregar na tecla **shift** para adicionar elementos a uma selecção já feita.
 
-    ![alt text](imagens/image-72.png)
+    ![alt text](imagens/image-139.png)
 
-00. Clicar sobre um dos troços alterados. Irá aparecer um novo painel chamado **Identificar Resultados**. Na barra de ferramentas do painel, clicar em **Editar formulário do elemento**.
+00. Na barra dos **Atributos**, escolher a opção **Abrir tabela de atributos (elementos selecionados)**
 
-    ![alt text](imagens/image-135.png)
+    ![alt text](imagens/image-140.png)
 
-    **Nota:** Para evitar tantos passos no futuro, no painel de identificar resultado, podemos configurar a ferramenta identificar elementos para abrir automaticamente o formulário quando apenas um elemento é identificado.
+00. Na tabela de atributos da camada `troços`, activar a vista de formulário (1), seleccionar o separador das fontes (2) e escolher o primeiro troço da lista.
 
-    ![alt text](imagens/image-95.png)
+    ![alt text](imagens/image-142.png)
 
-00. No formulário do troço, seleccionar o separador `Fontes`. Aqui podemos ver todas as fontes que contribuiram para o desenho ou existência deste troço. Clicar no botão **Activar modo de edição para a camada filha** e depois no **Adicionar elemento filho**.
 
-    ![alt text](imagens/image-121.png)
+00. No separador `Fontes` podemos ver todas as fontes que contribuiram para o desenho ou existência deste troço. Clicar no botão **Activar modo de edição para a camada filha** e depois no **Adicionar elemento filho**.
+
+    ![alt text](imagens/image-143.png)
 
 00. No formulário que abre, comece a escrever no campo fonte_id as descrição do diploma (e.g. `667/2024`). Escolher na lista a fonte correcta. Carregar em **OK**.
 
     ![alt text](imagens/image-137.png)
 
-00. No formulário do troço, já deveremos ver a nova fonte. Podemos clicar em **Guardar alterações na camada filha** e depois em **Cancelar** para fechar o formulário.
+00. formulário do troço, já deveremos ver listada a nova fonte, a verde. 
+    
+    ![alt text](imagens/image-144.png)
 
-    ![alt text](imagens/image-138.png)
+00. Repetir os passo anteriores selecionando um novo troço listados na tabela de atributos. De notar que, a ordem da listagem dos troços pode altera-se inesperadamente, no final do processo é conveniente vericar todos os troços, um a um, para confirmar que contém a nova fonte.
 
-00. Repetir os passo anteriores para todo os troços que delimitam a nova união de freguesias, garantindo que nenhum troço é esquecido.
+00. Por fim, no separador das fontes de qualquer um dos troços, gravar e desactivar a edição das fontes.
+
+    ![alt text](imagens/image-145.png)
 
 **Gerar outputs e validar**
 
