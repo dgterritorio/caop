@@ -50,12 +50,9 @@ class CaopToolsPlugin:
     def __init__(self, iface):
         self.iface = iface
 
-        locale = QgsApplication.locale()
-        qmPath = os.path.join(plugin_path, "i18n", f"caoptools_{locale}.qm")
-
-        if os.path.exists(qmPath):
-            self.translator = QTranslator()
-            self.translator.load(qmPath)
+        # locale() may be "pt" or "pt_PT"; load() falls back from caoptools_pt_PT to caoptools_pt.qm
+        self.translator = QTranslator()
+        if self.translator.load(f"caoptools_{QgsApplication.locale()}", os.path.join(plugin_path, "i18n")):
             QCoreApplication.installTranslator(self.translator)
 
         self.provider = CaopToolsProvider()

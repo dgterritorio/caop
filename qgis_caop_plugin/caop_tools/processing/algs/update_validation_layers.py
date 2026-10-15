@@ -61,7 +61,7 @@ class UpdateValidationLayers(QgsProcessingAlgorithm):
         return QIcon(os.path.join(plugin_path, "..", "icons", "update-validation.svg"))
 
     def tr(self, text):
-        return QCoreApplication.translate("caoptools", text)
+        return QCoreApplication.translate("UpdateValidationLayers", text)
 
     def __init__(self):
         super().__init__()

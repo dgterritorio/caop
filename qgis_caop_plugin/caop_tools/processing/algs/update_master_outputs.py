@@ -61,7 +61,7 @@ class UpdateMasterOutputs(QgsProcessingAlgorithm):
         return QIcon(os.path.join(plugin_path, "..", "icons", "update-master.svg"))
 
     def tr(self, text):
-        return QCoreApplication.translate("caoptools", text)
+        return QCoreApplication.translate("UpdateMasterOutputs", text)
 
     def __init__(self):
         super().__init__()

@@ -99,12 +99,12 @@
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="109"/>
         <source>Version</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão</translation>
     </message>
     <message>
         <location filename="../processing/algs/generate_caop_version.py" line="133"/>
         <source>Please specify either timestamp or version you want to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Por favor, especifique a data e hora ou a versão a usar.</translation>
     </message>
 </context>
 <context>

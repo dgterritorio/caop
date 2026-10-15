@@ -67,7 +67,7 @@ class GenerateCaopVersion(QgsProcessingAlgorithm):
         return QIcon(os.path.join(plugin_path, "..", "icons", "generate-caop.svg"))
 
     def tr(self, text):
-        return QCoreApplication.translate("caoptools", text)
+        return QCoreApplication.translate("GenerateCaopVersion", text)
 
     def __init__(self):
         super().__init__()
