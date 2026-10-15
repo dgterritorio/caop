@@ -800,9 +800,6 @@ CREATE OR REPLACE FUNCTION public.gerar_outputs_euroboundaries(output_schema tex
 RETURNS Boolean AS
 $body$
 BEGIN
-	-- Criar schema euroboundaries se não existir
-	EXECUTE 'CREATE SCHEMA IF NOT EXISTS euroboundaries;';
-
 	-- NOTA: A parte dos troços fixos do Euroboundaries está comentada no código original
 	-- e depende de importação manual. Mantemos essa estrutura mas comentada.
 	/*
@@ -822,88 +819,69 @@ BEGIN
 
 	-- Criar tabelas temporárias do schema base com os dados a usar para uma data específica
 	EXECUTE format('
-		DROP TABLE IF EXISTS euroboundaries.cont_troco_temp;
 		CREATE TABLE euroboundaries.cont_troco_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.cont_troco,  %1$L::timestamp) as t;
 		CREATE INDEX ON euroboundaries.cont_troco_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.ram_troco_temp;
 		CREATE TABLE euroboundaries.ram_troco_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.ram_troco,  %1$L::timestamp) as t;
 		CREATE INDEX ON euroboundaries.ram_troco_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.raa_oci_troco_temp;
 		CREATE TABLE euroboundaries.raa_oci_troco_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.raa_oci_troco,  %1$L::timestamp) as t;
 		CREATE INDEX ON euroboundaries.raa_oci_troco_temp USING GIST(geometria);
 		
-		DROP TABLE IF EXISTS euroboundaries.raa_cen_ori_troco_temp;
 		CREATE TABLE euroboundaries.raa_cen_ori_troco_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.raa_cen_ori_troco,  %1$L::timestamp) as t;
 		CREATE INDEX ON euroboundaries.raa_cen_ori_troco_temp USING GIST(geometria);
 		
-		DROP TABLE IF EXISTS euroboundaries.cont_centroide_ea_temp;
 		CREATE TABLE euroboundaries.cont_centroide_ea_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.cont_centroide_ea,  %1$L::timestamp);
 		CREATE INDEX ON euroboundaries.cont_centroide_ea_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.ram_centroide_ea_temp;
 		CREATE TABLE euroboundaries.ram_centroide_ea_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.ram_centroide_ea,  %1$L::timestamp);
 		CREATE INDEX ON euroboundaries.ram_centroide_ea_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.raa_oci_centroide_ea_temp;
 		CREATE TABLE euroboundaries.raa_oci_centroide_ea_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.raa_oci_centroide_ea,  %1$L::timestamp);
 		CREATE INDEX ON euroboundaries.raa_oci_centroide_ea_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.raa_cen_ori_centroide_ea_temp;
 		CREATE TABLE euroboundaries.raa_cen_ori_centroide_ea_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.ram_centroide_ea,  %1$L::timestamp);
 		CREATE INDEX ON euroboundaries.raa_cen_ori_centroide_ea_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.sede_administrativa_temp;
 		CREATE TABLE euroboundaries.sede_administrativa_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.sede_administrativa,  %1$L::timestamp);
 		CREATE INDEX ON euroboundaries.sede_administrativa_temp USING GIST(geometria);
 
-		DROP TABLE IF EXISTS euroboundaries.lig_cont_troco_fonte_temp;
 		CREATE TABLE euroboundaries.lig_cont_troco_fonte_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.lig_cont_troco_fonte, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.lig_ram_troco_fonte_temp;
 		CREATE TABLE euroboundaries.lig_ram_troco_fonte_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.lig_ram_troco_fonte, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.lig_raa_oci_troco_fonte_temp;
 		CREATE TABLE euroboundaries.lig_raa_oci_troco_fonte_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.lig_raa_oci_troco_fonte, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.lig_raa_cen_ori_troco_fonte_temp;
 		CREATE TABLE euroboundaries.lig_raa_cen_ori_troco_fonte_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.lig_raa_cen_ori_troco_fonte, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.fonte_temp;
 		CREATE TABLE euroboundaries.fonte_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.fonte, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.municipio_temp;
 		CREATE TABLE euroboundaries.municipio_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.municipio, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.nuts3_temp;
 		CREATE TABLE euroboundaries.nuts3_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.nuts3, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.nuts2_temp;
 		CREATE TABLE euroboundaries.nuts2_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.nuts2, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.nuts1_temp;
 		CREATE TABLE euroboundaries.nuts1_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.nuts1, %1$L::timestamp);
 
-		DROP TABLE IF EXISTS euroboundaries.entidade_administrativa_temp;
 		CREATE TABLE euroboundaries.entidade_administrativa_temp AS
 		SELECT * FROM vsr_table_at_time (NULL::base.entidade_administrativa, %1$L::timestamp);
 		',
@@ -911,7 +889,6 @@ BEGIN
 
 	-- Poligono EBM total para cortar troços e identificar polígonos gerados que ficam fora do EBM
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_temp_poligono_clip;
 		CREATE TABLE euroboundaries.ebm_temp_poligono_clip AS
 		SELECT ST_CollectionExtract(ST_polygonize(geom),3)::geometry(multipolygon, 4258) AS geom
 		FROM euroboundaries.ebm_trocos_fixos;
@@ -920,7 +897,6 @@ BEGIN
 	-- Agrupar numa outra tabela, todos os limites interiores vindos da CAOP no mesmo sistema de coordenadas
 	-- e após processo de simplificação
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_trocos_caop_generalizados;
 		CREATE TABLE IF NOT EXISTS euroboundaries.ebm_trocos_caop_generalizados (LIKE euroboundaries.ebm_boundaries_2024 INCLUDING ALL);';
 
 	-- CONTINENTE
@@ -1016,7 +992,6 @@ BEGIN
 
 	-- Criar tabela com todos os endpoints dos limites fixos, que serão mais tarde usados como referência
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_pontos_referencia;
 		CREATE TABLE euroboundaries.ebm_pontos_referencia AS
 		WITH endpoints AS (
 			SELECT ST_StartPoint(geom) AS geom FROM euroboundaries.ebm_trocos_fixos
@@ -1030,8 +1005,6 @@ BEGIN
 	-- Criar tabela com pontos dos limites interiores que não toquem em nenhuma outra geometria ou
 	-- nem nos limites externos
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_temp_limites_exteriores;
-
 		CREATE TABLE euroboundaries.ebm_temp_limites_exteriores AS
 		SELECT
 			st_TRANSFORM(st_simplifyvw(ST_SimplifyPreserveTopology(geometria,5),200),4258) AS geom
@@ -1057,7 +1030,6 @@ BEGIN
 
 	-- Identificar dangles
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_limites_interiores_dangles;
 		CREATE TABLE euroboundaries.ebm_limites_interiores_dangles AS
 		WITH endpoints AS (
 			SELECT id, ''start'' AS edge, ST_StartPoint(geom) AS geom FROM euroboundaries.ebm_trocos_caop_generalizados
@@ -1101,7 +1073,6 @@ BEGIN
 
 	-- Criar troços finais
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_trocos_finais;
 		CREATE TABLE euroboundaries.ebm_trocos_finais AS 
 		WITH todos_trocos AS (
 			SELECT geom FROM euroboundaries.ebm_trocos_fixos AS etf 
@@ -1112,7 +1083,6 @@ BEGIN
 
 	-- Criar polígonos finais
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.ebm_poligonos_finais CASCADE;
 		CREATE TABLE euroboundaries.ebm_poligonos_finais (
 			id serial PRIMARY KEY,
 			geometria geometry(multipolygon, 4258)
@@ -1150,7 +1120,6 @@ BEGIN
 	-- Colocar numa unica tabela todos os poligonos da CAOP nos sistema de coordenadas da EBM
 	-- E com os atributos adaptados ao Euroboundaries
 	EXECUTE '
-		DROP TABLE IF EXISTS euroboundaries.caop_areas_administrativas;
 		CREATE TABLE euroboundaries.caop_areas_administrativas AS
 		SELECT 
 			dtmnfr AS entidade_administrativa,
@@ -1180,7 +1149,6 @@ BEGIN
 
 	-- Centroides
 	EXECUTE '
-	DROP TABLE IF EXISTS euroboundaries.ebm_centroides CASCADE;
 	CREATE TABLE euroboundaries.ebm_centroides AS
 	SELECT 
 		entidade_administrativa,
@@ -1239,7 +1207,6 @@ BEGIN
 
 	-- Isolar os troços necessários para gerar as COASTAL WATER
 	EXECUTE '
-		DROP TABLE IF EXISTS temp.ebm_trocos_finais_para_coastal_water;
 		CREATE TABLE temp.ebm_trocos_finais_para_coastal_water AS
 		WITH trocos_temp as (
 			SELECT geom FROM euroboundaries.ebm_boundaries_2024
@@ -1253,7 +1220,6 @@ BEGIN
 
 	-- Criação de uma tabela de poligonos para coastal water
 	EXECUTE '
-		DROP TABLE IF EXISTS temp.ebm_poligonos_finais_coastal_water;
 		CREATE TABLE temp.ebm_poligonos_finais_coastal_water (
 			id serial PRIMARY KEY,
 			geometria geometry(polygon, 4258)
@@ -1307,7 +1273,6 @@ BEGIN
 
 	-- Criar tabela ebm_nam_temp
 	EXECUTE format('
-		DROP TABLE IF EXISTS euroboundaries.ebm_nam_temp CASCADE;
 		CREATE TABLE euroboundaries.ebm_nam_temp as
 		WITH all_areas AS (
 			SELECT sum(area_ha) AS area_ha FROM %1$I.cont_distritos
@@ -1671,6 +1636,41 @@ BEGIN
 		GRANT ALL ON ALL TABLES IN SCHEMA euroboundaries TO administrador;
 		GRANT SELECT ON ALL TABLES IN SCHEMA euroboundaries TO editor, visualizador;', 
 		output_schema);
+
+	-- Eliminar todas as tabelas temporárias
+	EXECUTE '
+        DROP TABLE IF EXISTS euroboundaries.cont_troco_temp;
+        DROP TABLE IF EXISTS euroboundaries.ram_troco_temp;
+        DROP TABLE IF EXISTS euroboundaries.raa_oci_troco_temp;
+        DROP TABLE IF EXISTS euroboundaries.raa_cen_ori_troco_temp;
+        DROP TABLE IF EXISTS euroboundaries.cont_centroide_ea_temp;
+        DROP TABLE IF EXISTS euroboundaries.ram_centroide_ea_temp;
+        DROP TABLE IF EXISTS euroboundaries.raa_oci_centroide_ea_temp;
+        DROP TABLE IF EXISTS euroboundaries.raa_cen_ori_centroide_ea_temp;
+        DROP TABLE IF EXISTS euroboundaries.sede_administrativa_temp;
+        DROP TABLE IF EXISTS euroboundaries.lig_cont_troco_fonte_temp;
+        DROP TABLE IF EXISTS euroboundaries.lig_ram_troco_fonte_temp;
+        DROP TABLE IF EXISTS euroboundaries.lig_raa_oci_troco_fonte_temp;
+        DROP TABLE IF EXISTS euroboundaries.lig_raa_cen_ori_troco_fonte_temp;
+        DROP TABLE IF EXISTS euroboundaries.fonte_temp;
+        DROP TABLE IF EXISTS euroboundaries.municipio_temp;
+        DROP TABLE IF EXISTS euroboundaries.nuts3_temp;
+        DROP TABLE IF EXISTS euroboundaries.nuts2_temp;
+        DROP TABLE IF EXISTS euroboundaries.nuts1_temp;
+        DROP TABLE IF EXISTS euroboundaries.entidade_administrativa_temp;
+        DROP TABLE IF EXISTS euroboundaries.ebm_temp_poligono_clip;
+        DROP TABLE IF EXISTS euroboundaries.ebm_trocos_caop_generalizados;
+        DROP TABLE IF EXISTS euroboundaries.ebm_pontos_referencia;
+        DROP TABLE IF EXISTS euroboundaries.ebm_temp_limites_exteriores;
+        DROP TABLE IF EXISTS euroboundaries.ebm_limites_interiores_dangles;
+        DROP TABLE IF EXISTS euroboundaries.ebm_trocos_finais;
+        DROP TABLE IF EXISTS euroboundaries.ebm_poligonos_finais;
+        DROP TABLE IF EXISTS euroboundaries.caop_areas_administrativas;
+        DROP TABLE IF EXISTS euroboundaries.ebm_centroides;
+        DROP TABLE IF EXISTS euroboundaries.ebm_nam_temp;
+        DROP TABLE IF EXISTS temp.ebm_trocos_finais_para_coastal_water;
+        DROP TABLE IF EXISTS temp.ebm_poligonos_finais_coastal_water;';
+
 
 	RETURN TRUE;
 END;
