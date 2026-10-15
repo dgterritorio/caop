@@ -14,7 +14,8 @@ SELECT
 	nla.nome_en AS "nationalLevel",
 	t.inicio_objecto::timestamp AS "beginLifespanVersion",
 	NULL::timestamp AS "endLifespanVersion", -- A definir
-	'agreed' AS "legalStatus",
+	CASE WHEN t.estado_limite_admin != 2 then ''agreed''
+		ELSE ''notAgreed'' END AS "legalStatus" ,
 	'notEdgeMatched' AS "technicalStatus",
 	ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN 'PT1' || t.ea_esquerda END,
 		  CASE WHEN char_length(t.ea_direita) > 5 THEN 'PT1' || t.ea_direita END] AS "admUnit",
@@ -133,7 +134,8 @@ EXECUTE FORMAT (
 		nla.nome_en AS "nationalLevel",
 		t.inicio_objecto::timestamp AS "beginLifespanVersion",
 		NULL::timestamp AS "endLifespanVersion", -- A definir
-		''agreed'' AS "legalStatus",
+		CASE WHEN t.estado_limite_admin != 2 then ''agreed''
+		ELSE ''notAgreed'' END AS "legalStatus",
 		''notEdgeMatched'' AS "technicalStatus",
 		ARRAY[CASE WHEN char_length(t.ea_esquerda) > 5 THEN ''PT1'' || t.ea_esquerda END,
 			  CASE WHEN char_length(t.ea_direita) > 5 THEN ''PT1'' || t.ea_direita END] AS "admUnit",
