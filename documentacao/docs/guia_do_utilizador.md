@@ -786,6 +786,14 @@ SELECT public.actualizar_trocos('cont');
 SELECT public.gerar_trocos_caop('master', 'cont', NULL::timestamp);
 ```
 
+A título de exemplo, no QGIS, é possível executar comandos SQL da seguinte forma. No painel navegador, carregar o botão direito do rato na ligação à base de dados e escolher Executar SQL...
+
+![alt text](imagens/image-146.png)
+
+Escrever os vários comandos na consola, sempre separados por ponto-e-vírgulas, e clicar em Executar.
+
+![alt text](imagens/image-147.png)
+
 ## Validar Outputs
 
 Após actualizar os outputs do schema master, é essencial garantir a coerência geométrica e topológica das edições.
@@ -924,3 +932,74 @@ SELECT gerar_outputs_euroboundaries('caop2024','v2024');
 ```
 
 No schema escolhido encontrão as tabelas `ebm_a`, `ebm_nam` e `ebm_nuts`.
+
+### Gerar layouts de impressão (Admin)
+
+Tendo uma versão CAOP finalizada, é possível imprimir alguns mapas usando o projecto QGIS `atlas_de_impressao`, guardado na base de dados, no schema `public`. Este projecto contém vários layouts de impressão:
+
+* **República Portuguesa (A3)** - mapa único do país com a divisão por distritos e ilhas
+
+    ![República Portuguesa (A3)](imagens/layout_republica_portuguesa.png)
+
+* **Atlas Municípios (A3) com localizacao** - uma página por município  com a divisão em Freguesias, o enquadramento em termos de distrito ou ilhas e no país (e.g. Torre de Moncorvo)
+
+    ![Atlas Municípios (A3)](imagens/layout_atlas_municipios.png)
+
+* **Atlas Distritos (A3)** - uma página por distrito com a divisão em municípios e o enquandramento nas NUTS (e.g. Braga)
+
+    ![Atlas Distritos (A3)](imagens/layout_atlas_distritos.png)
+
+* **Atlas NUTS (A3)** - uma página por nível NUTS (NUTS 1, 2 e 3) (e.g. NUTS 3)
+
+    ![Atlas NUTS (A3)](imagens/layout_atlas_nuts.png)
+
+Os layouts usam as vistas materializadas do schema `layouts`, que **têm de ser refeitas a cada nova versão da CAOP**. Para isso foi criada uma função PgPlSQL na base de dados. **Esta operação requer permissões de Administrador**
+
+```sql
+SELECT public.gerar_vistas_wgs84_layouts(<nome do schema>);
+```
+
+Por exemplo, usando o schema da versão CAOP 2025 (e.g. `CAOP2025`):
+
+```sql
+SELECT public.gerar_vistas_wgs84_layouts('CAOP2025');
+```
+
+Este comando pode ser executado em qualquer consola cliente PostgreSQL (e.g. PSQL, PgAdmin, Dbeaver, QGIS DB Manager) ligada à base de dados. No QGIS, no Painel Navegador, carregar com o botão direito do rato na ligação à base de dados de produção e escolher Executar SQL...
+
+![alt text](imagens/image-146.png)
+
+Escrever o comando na consola e clicar em Executar.
+
+![alt text](imagens/layout_executar_sql.png)
+
+Depois de executado o comando e refeitas as vistas:
+
+1. No QGIS, no painel **Navegador**, expandir a ligação PostgreSQL à base de dados `caop`, o schema `public` e abrir o projecto `atlas_de_impressao` (duplo clique).
+
+   ![alt text](imagens/image-149.png)
+
+2. No menu **Projecto > Composições**, abrir o layout pretendido.
+
+   ![alt text](imagens/image-150.png)
+
+3. Na barra de ferramentas **Atlas**, activar a pré-visualização do atlas (**Pré-visualizar Atlas**) e confirmar que as páginas estão correctas. 
+
+   ![alt text](imagens/image-151.png)
+
+   **Nota:** O layout **República Portuguesa (A3)** não usa atlas e pode ser exportado directamente.
+
+4. Ainda na barra de ferramentas **Atlas**, exportar as páginas do atlas no formato desejado, usando os botões **Exportar Atlas como Imagens**, **Exportar Atlas como SVG** ou **Exportar Atlas como PDF**.
+
+   ![alt text](imagens/image-152.png)
+
+5. Após indicar a directoria onde guardar os ficheiros exportados, definir as opções de exportação (variam consoante o formato) e clicar em **gravar**.
+
+   ![alt text](imagens/image-153.png)
+
+   O processo de exportação pode demorar algum tempo. O nome de cada ficheiro é gerado automaticamente, por exemplo:
+    * Municípios: `A3_<dtmn>_<municipio>`
+    * Distritos: `A3_distrito_<dt>_<distrito>`
+    * NUTS: `A3_NUTS 1`, `A3_NUTS 2` e `A3_NUTS 3`
+
+   ![alt text](imagens/image-154.png)
