@@ -27,12 +27,10 @@ from qgis.core import (
     Qgis,
     QgsFeatureRequest,
     QgsGeometry,
-    QgsPointXY,
     QgsProject,
     QgsFeature,
     QgsDataSourceUri,
     QgsVectorLayerUtils,
-    qgsDoubleNear,
 )
 
 
@@ -84,15 +82,15 @@ def split_features(layer, curve, preserve_circular, topological_editing):
 
         original_geom = feat.geometry()
         feature_geom = QgsGeometry(original_geom)
-        split_points = [QgsPointXY(p) for p in curve.points()]
+        # splitFeature=False: keep feature_geom intact and return every part in new_geometries
         (
             split_function_return,
             new_geometries,
             feature_topology_test_points,
         ) = feature_geom.splitGeometry(
-            split_points, preserve_circular, topological_editing
+            curve, preserve_circular, topological_editing, False
         )
-        topology_test_points.append(feature_topology_test_points)
+        topology_test_points.extend(feature_topology_test_points)
         if split_function_return == Qgis.GeometryOperationResult.Success:
             for geom in new_geometries:
                 attribute_map = dict()
@@ -120,8 +118,7 @@ def split_features(layer, curve, preserve_circular, topological_editing):
                     )
 
             if topological_editing:
-                for p in feature_topology_test_points:
-                    add_topological_points(layer, p)
+                layer.addTopologicalPoints(feature_topology_test_points)
 
             number_of_split_features += 1
 
@@ -178,68 +175,6 @@ def split_features(layer, curve, preserve_circular, topological_editing):
         result = Qgis.GeometryOperationResult.NothingHappened
 
     return result, topology_test_points
-
-
-def add_topological_points(layer, p):
-    if not layer.isSpatial():
-        return 1
-
-    segment_search_epsilon = 1e-12 if layer.crs().isGeographic() else 1e-8
-    threshold = layer.geometryOptions().geometryPrecision()
-
-    if qgsDoubleNear(threshold, 0.0):
-        threshold = 0.0000001
-        if layer.crs().mapUnits() == Qgis.DistanceUnit.Meters:
-            threshold = 0.001
-        elif layer.crs().mapUnits() == Qgis.DistanceUnit.Feet:
-            threshold = 0.0001
-
-    search_rect = QgsRectangle(
-        p.x() - threshold, p.y() - threshold, p.x() + threshold, p.y() + threshold
-    )
-    sqr_snapping_tolerance = threshold * threshold
-
-    fit = layer.getFeatures(
-        QgsFeatureRequest()
-        .setFilterRect(search_rect)
-        .setFlags(QgsFeatureRequest.ExactIntersect)
-        .setNoAttributes()
-    )
-    features = dict()
-    segments = dict()
-
-    for f in fit:
-        (
-            sqr_dist_segment_snap,
-            snapped_point,
-            after_vertex,
-            _,
-        ) = f.geometry().closestSegmentWithContext(p, segment_search_epsilon)
-        if sqr_dist_segment_snap < sqr_snapping_tolerance:
-            segments[f.id()] = after_vertex
-            features[f.id()] = f.geometry()
-
-    if len(segments) == 0:
-        return 2
-
-    points_added = False
-    for fid, segment_after_vertex in segments.items():
-        geom = features[fid]
-        (
-            at_vertex,
-            before_vertex,
-            after_vertex,
-            sqr_dist_vertex_snap,
-        ) = geom.closestVertex(p)
-        if sqr_dist_vertex_snap < sqr_snapping_tolerance:
-            continue
-
-        if not layer.insertVertex(p, fid, segment_after_vertex):
-            pass
-        else:
-            points_added = True
-
-    return 0 if pointsAdded else 2
 
 
 def is_new_feature(fid, layer):
