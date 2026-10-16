@@ -7,3 +7,4 @@
 __pycache__/
 db_docs/
 mkdocs_venv/
+layouts/

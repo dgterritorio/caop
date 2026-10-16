@@ -68,7 +68,7 @@ def split_features(layer, curve, preserve_circular, topological_editing):
         features = layer.getFeatures(
             QgsFeatureRequest()
             .setFilterRect(bbox)
-            .setFlags(QgsFeatureRequest.ExactIntersect)
+            .setFlags(QgsFeatureRequest.Flag.ExactIntersect)
         )
 
     topology_test_points = list()

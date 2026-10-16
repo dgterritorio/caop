@@ -30,7 +30,6 @@ from qgis.PyQt.QtGui import QIcon
 
 from qgis.core import (
     QgsApplication,
-    QgsMapLayerType,
     QgsWkbTypes,
     Qgis,
     QgsExpressionContextUtils,
@@ -77,7 +76,7 @@ class CaopToolsPlugin:
         self.toolbar.addAction(self.action_split)
 
         settings = QgsSettings()
-        motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
+        motives = settings.value("caoptools/motives", [], list, QgsSettings.Section.Plugins)
         self.edit_comment = QLineEdit()
         self.edit_comment.setMaxLength(255)
         self.edit_comment.setClearButtonEnabled(True)
@@ -87,7 +86,7 @@ class CaopToolsPlugin:
         self.edit_comment.setToolTip(self.tr("Editing reason (max. 255 characters)"))
         self.motive_model = QStringListModel(motives)
         completer = QCompleter(self.motive_model, self.edit_comment)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.edit_comment.setCompleter(completer)
         self.edit_comment.editingFinished.connect(self.update_comment)
         self.toolbar.addWidget(self.edit_comment)
@@ -169,18 +168,18 @@ class CaopToolsPlugin:
         )
         if comment:
             settings = QgsSettings()
-            motives = settings.value("caoptools/motives", [], list, QgsSettings.Plugins)
+            motives = settings.value("caoptools/motives", [], list, QgsSettings.Section.Plugins)
             motives = [v for v in motives if v != comment]
             motives.insert(0, comment)
-            settings.setValue("caoptools/motives", motives[:5], QgsSettings.Plugins)
+            settings.setValue("caoptools/motives", motives[:5], QgsSettings.Section.Plugins)
             self.motive_model.setStringList(motives[:5])
 
     def enable_actions(self, layer):
-        if layer is None or layer.type() != QgsMapLayerType.VectorLayer:
+        if layer is None or layer.type() != Qgis.LayerType.Vector:
             self.action_split.setEnabled(False)
             return
 
-        if QgsWkbTypes.flatType(layer.wkbType()) != QgsWkbTypes.LineString:
+        if QgsWkbTypes.flatType(layer.wkbType()) != Qgis.WkbType.LineString:
             self.action_split.setEnabled(False)
             return
 

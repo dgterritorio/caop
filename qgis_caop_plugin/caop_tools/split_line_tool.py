@@ -25,7 +25,7 @@ __copyright__ = "(C) 2023, NaturalGIS"
 from qgis.PyQt.QtCore import Qt
 
 from qgis.gui import QgsMapToolCapture
-from qgis.core import Qgis, QgsWkbTypes, QgsPointLocator, QgsProject
+from qgis.core import Qgis, QgsPointLocator, QgsProject
 from qgis.utils import iface
 
 from caop_tools.utils import split_features
@@ -33,7 +33,7 @@ from caop_tools.utils import split_features
 
 class SplitLineTool(QgsMapToolCapture):
     def __init__(self, canvas, cad_dock):
-        super().__init__(canvas, cad_dock, QgsMapToolCapture.CaptureLine)
+        super().__init__(canvas, cad_dock, QgsMapToolCapture.CaptureMode.CaptureLine)
 
         self.setSnapToLayerGridEnabled(False)
 
@@ -60,17 +60,17 @@ class SplitLineTool(QgsMapToolCapture):
 
         split = False
 
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             error = 0
 
             if (
-                layer.geometryType() == QgsWkbTypes.PolygonGeometry
+                layer.geometryType() == Qgis.GeometryType.Polygon
                 and len(self.pointsZM()) == 0
             ):
                 m = (
                     self.canvas()
                     .snappingUtils()
-                    .snapToCurrentLayer(event.pos(), QgsPointLocator.Vertex)
+                    .snapToCurrentLayer(event.pos(), QgsPointLocator.Type.Vertex)
                 )
                 if m.isValid():
                     error = self.addVertex(event.mapPoint(), m)
@@ -90,7 +90,7 @@ class SplitLineTool(QgsMapToolCapture):
                 return
 
             self.startCapturing()
-        elif event.button() == Qt.RightButton:
+        elif event.button() == Qt.MouseButton.RightButton:
             if not split and self.size() < 2:
                 self.stopCapturing()
                 return
@@ -124,7 +124,7 @@ class SplitLineTool(QgsMapToolCapture):
                             and l.isSpatial()
                             and l != layer
                             and l.geometryType()
-                            in (QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry)
+                            in (Qgis.GeometryType.Line, Qgis.GeometryType.Polygon)
                         ):
                             l.beginEditCommand(
                                 self.tr("Topological points from CAOP features split")
