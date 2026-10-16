@@ -3,7 +3,7 @@ name=CAOP Tools
 description=Set of tools to maintain CAOP model
 about=Set of tools to maintain CAOP model.
 category=Plugins
-version=0.1.5
+version=0.2.0
 qgisMinimumVersion=3.34
 qgisMaximumVersion=4.99
 
